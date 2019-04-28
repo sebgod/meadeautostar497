@@ -1,4 +1,5 @@
-﻿using ASCOM.Utilities.Interfaces;
+﻿using System;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -9,5 +10,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         bool Connected { get; set; }
 
         string CommandString(string command, bool raw);
+        bool Slewing { get; }
+        DateTime utcDate { get; set; }
     }
 }

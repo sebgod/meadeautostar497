@@ -73,7 +73,7 @@ namespace ASCOM.MeadeAutostar497
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Telescope Driver for Meade Autostar 497 based telescopes.";
+        private static string driverDescription = "Meade Autostar 497 .net";
 
         internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
         internal static string comPortDefault = "COM1";
@@ -221,6 +221,7 @@ namespace ASCOM.MeadeAutostar497
                 if (value)
                 {
                     LogMessage("Connected Set", "Connecting to port {0}", comPort);
+                    _telescopeController.Port = comPort;
                     _telescopeController.Connected = true;
                 }
                 else
@@ -810,8 +811,10 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Slewing Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Slewing", false);
+                tl.LogMessage("Slewing Get", "Started");
+                var result = _telescopeController.Slewing;
+                tl.LogMessage("Slewing Get", $"Result = {result}");
+                return result;
             }
         }
 
@@ -908,14 +911,17 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                DateTime utcDate = DateTime.UtcNow;
-                tl.LogMessage("TrackingRates", "Get - " + Format("MM/dd/yy HH:mm:ss", utcDate));
+                tl.LogMessage("UTCDate", "Get started");
+
+                var utcDate = _telescopeController.utcDate;
+                tl.LogMessage("UTCDate", "Get - " + Format("MM/dd/yy HH:mm:ss", utcDate));
                 return utcDate;
             }
             set
             {
-                tl.LogMessage("UTCDate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("UTCDate", true);
+                tl.LogMessage("UTCDate", "Set - " + Format("MM/dd/yy HH:mm:ss", value));
+                _telescopeController.utcDate = value;
+
             }
         }
 
