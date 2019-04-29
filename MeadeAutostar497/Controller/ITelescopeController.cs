@@ -1,15 +1,14 @@
 ﻿using System;
-using ASCOM.Utilities.Interfaces;
+using System.IO.Ports;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
     public interface ITelescopeController
     {
-        ISerial SerialPort { get; set; }
+        ISerialProcessor SerialPort { get; set; }
         string Port { get; set; }
         bool Connected { get; set; }
 
-        string CommandString(string command, bool raw);
         bool Slewing { get; }
         DateTime utcDate { get; set; }
     }

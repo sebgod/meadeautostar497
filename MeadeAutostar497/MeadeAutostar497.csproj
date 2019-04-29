@@ -90,6 +90,7 @@
   <ItemGroup>
     <Compile Include="AscomClasses\Telescope.cs" />
     <Compile Include="Controller\ITelescopeController.cs" />
+    <Compile Include="Controller\SerialProcessor.cs" />
     <Compile Include="Controller\TelescopeController.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -169,9 +169,9 @@ namespace ASCOM.MeadeAutostar497
         {
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
+            //this.CommandString(command, raw);
             // or
-            //throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
         }
 
@@ -187,8 +187,11 @@ namespace ASCOM.MeadeAutostar497
 
         public string CommandString(string command, bool raw)
         {
+            // it's a good idea to put all the low level communication with the device here,
+            // then all communication calls this function
+            // you need something to ensure that only one command is in progress at a time
             CheckConnected("CommandString");
-            return _telescopeController.CommandString(command, raw);
+            throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()

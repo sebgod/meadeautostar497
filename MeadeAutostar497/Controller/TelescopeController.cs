@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Data;
+using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using ASCOM.Utilities;
@@ -14,12 +15,10 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public static TelescopeController Instance => lazy.Value;
 
-        private Mutex serialMutex = new Mutex();
-
-        private ISerial _serialPort;
-        public ISerial SerialPort
+        private ISerialProcessor _serialPort;
+        public ISerialProcessor SerialPort
         {
-            get => _serialPort ?? (_serialPort = new Serial());
+            get => _serialPort ?? (_serialPort = new SerialProcessor());
             set
             {
                 if (_serialPort == value)
@@ -27,7 +26,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
                 if (_serialPort != null)
                 {
-                    if (_serialPort.Connected)
+                    if (_serialPort.IsOpen)
                         throw new InvalidOperationException("Please disconnect before changing the serial engine.");
                 }
 
@@ -55,12 +54,12 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         private bool ValidPort(string value)
         {
-            return SerialPort.AvailableComPorts.Contains(value);
+            return SerialPort.GetPortNames().Contains(value);
         }
 
         public bool Connected
         {
-            get => SerialPort.Connected;
+            get => SerialPort.IsOpen;
             set
             {
                 if (value == Connected)
@@ -71,51 +70,39 @@ namespace ASCOM.MeadeAutostar497.Controller
                     //Connecting
                     try
                     {
-                        SerialPort.DTREnable = false;
-                        SerialPort.RTSEnable = false;
-                        SerialPort.Speed = SerialSpeed.ps9600;
+                        SerialPort.DtrEnable = false;
+                        SerialPort.RtsEnable = false;
+                        SerialPort.BaudRate = 9600;
                         SerialPort.DataBits = 8;
-                        SerialPort.StopBits = SerialStopBits.One;
-                        SerialPort.Parity = SerialParity.None;
+                        SerialPort.StopBits = StopBits.One;
+                        SerialPort.Parity = Parity.None;
                         SerialPort.PortName = Port;
-                        SerialPort.Connected = true;
+                        SerialPort.Open();
 
                         TestConnectionActive();
                     }
                     catch (Exception)
                     {
-                        SerialPort.Connected = false;
+                        if (SerialPort.IsOpen)
+                            SerialPort.Close();
                         throw;
                     }
                 }
                 else
                 {
                     //Disconnecting
-                    SerialPort.Connected = false;
+                    SerialPort.Close();
                 }
             }
         }
 
         private void TestConnectionActive()
         {
-            var firmwareVersionNumber = CommandString("GVN");
+            var firmwareVersionNumber = SerialPort.CommandTerminated(":GVN#", "#");
             if (string.IsNullOrEmpty(firmwareVersionNumber))
             {
                 throw new InvalidOperationException("Failed to communicate with telescope."); 
             }
-        }
-
-        public string CommandString(string command)
-        {
-            return CommandString($"#:{command}#", false);
-        }
-
-        public string CommandString(string command, bool raw)
-        {
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-            return SerialCommand(command, true);
         }
 
         public bool Slewing
@@ -124,7 +111,7 @@ namespace ASCOM.MeadeAutostar497.Controller
             {
                 if (!Connected) return false;
 
-                var result = CommandString("D");
+                var result = SerialPort.CommandTerminated("#:D#", "#");
                 return result != string.Empty;
             }
         }
@@ -133,8 +120,8 @@ namespace ASCOM.MeadeAutostar497.Controller
         {
             get
             {
-                string telescopeDate = CommandString("GC");
-                string telescopeTime = CommandString("GL");
+                string telescopeDate = SerialPort.CommandTerminated("#:GC#", "#");
+                string telescopeTime = SerialPort.CommandTerminated("#:GL#", "#");
 
                 int month = telescopeDate.Substring(0, 2).ToInteger();
                 int day = telescopeDate.Substring(3, 2).ToInteger();
@@ -156,40 +143,22 @@ namespace ASCOM.MeadeAutostar497.Controller
             set
             {
                 //var result = SerialCommand(":SLHH:MM:SS#", true);
-                var timeResult = SerialCommand($"#:SL{value:hh:mm:ss}#", true);
-                if (timeResult != "1")
+                var timeResult = SerialPort.CommandChar($"#:SL{value:hh:mm:ss}#");
+                if (timeResult != '1')
                 {
                     throw new InvalidOperationException("Failed to set local time");
                 }
 
-                var dateResult = SerialCommand($"#:SC{value:MM/dd/yy}#", true);
-                if (dateResult.Substring(0,1) != "1")
+                var dateResult = SerialPort.CommandChar($"#:SC{value:MM/dd/yy}#");
+                if (dateResult != '1')
                 {
                     throw new InvalidOperationException("Failed to set local time");
                 }
+
+                SerialPort.ReadTerminated("#");
+                SerialPort.ReadTerminated("#");
             }
 
-        }
-
-        private string SerialCommand(string command, bool expectsResult )
-        {
-            serialMutex.WaitOne();
-            try
-            {
-                SerialPort.Transmit(command);
-                if (expectsResult)
-                {
-                    string result = SerialPort.ReceiveTerminated("#");
-
-                    return result;
-                }               
-                return string.Empty;
-            }
-            finally
-            {
-                SerialPort.ClearBuffers();
-                serialMutex.ReleaseMutex();
-            }
         }
     }
 }
