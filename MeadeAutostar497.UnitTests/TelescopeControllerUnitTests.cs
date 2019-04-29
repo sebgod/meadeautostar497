@@ -143,13 +143,25 @@ namespace MeadeAutostar497.UnitTests
         }
 
         [Test]
-        public void SettingPortToInavalidPortFails()
+        public void SettingPortToInvalidPortFails()
         {
             var exception = Assert.Throws<InvalidOperationException>(() => _telescopeController.Port = "COM5");
 
             Assert.That(exception.Message, Is.EqualTo("Unable to select port COM5 as it does not exist."));
 
             Assert.That(_telescopeController.Port, Is.EqualTo("COM1")); //port hasn't changed
+        }
+
+        [Test]
+        public void AbortSlewWorks()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.AbortSlew();
+
+            serialMock.Verify(x => x.Command("#:Q#"), Times.Once);
         }
     }
 }

@@ -27,11 +27,7 @@
 #define Telescope
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Runtime.InteropServices;
-
 using ASCOM;
 using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
@@ -293,8 +289,8 @@ namespace ASCOM.MeadeAutostar497
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("AbortSlew");
+            tl.LogMessage("AbortSlew", "Aborting slew");
+            _telescopeController.AbortSlew();
         }
 
         public AlignmentModes AlignmentMode
@@ -380,9 +376,9 @@ namespace ASCOM.MeadeAutostar497
             tl.LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
             switch (Axis)
             {
-                case TelescopeAxes.axisPrimary: return false;
-                case TelescopeAxes.axisSecondary: return false;
-                case TelescopeAxes.axisTertiary: return false;
+                case TelescopeAxes.axisPrimary: return true; //RA or AZ
+                case TelescopeAxes.axisSecondary: return true; //Dev or Alt
+                case TelescopeAxes.axisTertiary: return false; //rotator / derotator
                 default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
             }
         }

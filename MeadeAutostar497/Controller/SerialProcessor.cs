@@ -1,31 +1,10 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
-    [ComVisible(false)]
-    public interface ISerialProcessor
-    {
-        bool IsOpen { get; }
-        bool DtrEnable { get; set; }
-        bool RtsEnable { get; set; }
-        int BaudRate { get; set; }
-        int DataBits { get; set; }
-        StopBits StopBits { get; set; }
-        Parity Parity { get; set; }
-        string PortName { get; set; }
-        string[]  GetPortNames();
-        void Open();
-        void Close();
-
-        string CommandTerminated(string command, string terminator);
-        char CommandChar(string command);
-        string ReadTerminated(string terminator);
-    }
-
     [ComVisible(false)]
     public class SerialProcessor : ISerialProcessor
     {
@@ -128,6 +107,19 @@ namespace ASCOM.MeadeAutostar497.Controller
             {
                 string result = _serialPort.ReadTo("#");
                 return result;
+            }
+            finally
+            {
+                serialMutex.ReleaseMutex();
+            }
+        }
+
+        public void Command(string command)
+        {
+            serialMutex.WaitOne();
+            try
+            {
+                _serialPort.Write(command);
             }
             finally
             {

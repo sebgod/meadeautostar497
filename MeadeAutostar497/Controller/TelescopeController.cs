@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Configuration;
-using System.Data;
 using System.IO.Ports;
 using System.Linq;
-using System.Threading;
-using ASCOM.Utilities;
-using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -98,7 +93,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         private void TestConnectionActive()
         {
-            var firmwareVersionNumber = SerialPort.CommandTerminated(":GVN#", "#");
+            var firmwareVersionNumber = SerialPort.CommandTerminated("#:GVN#", "#");
             if (string.IsNullOrEmpty(firmwareVersionNumber))
             {
                 throw new InvalidOperationException("Failed to communicate with telescope."); 
@@ -155,10 +150,16 @@ namespace ASCOM.MeadeAutostar497.Controller
                     throw new InvalidOperationException("Failed to set local time");
                 }
 
-                SerialPort.ReadTerminated("#");
-                SerialPort.ReadTerminated("#");
+                //throwing away these two strings which represent 
+                SerialPort.ReadTerminated("#");  //Updating Planetary Data#
+                SerialPort.ReadTerminated("#");  //                       #
             }
 
+        }
+
+        public void AbortSlew()
+        {
+            SerialPort.Command("#:Q#");
         }
     }
 }

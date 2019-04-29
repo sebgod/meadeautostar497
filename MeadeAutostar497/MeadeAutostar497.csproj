@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AscomClasses\Telescope.cs" />
+    <Compile Include="Controller\ISerialProcessor.cs" />
     <Compile Include="Controller\ITelescopeController.cs" />
     <Compile Include="Controller\SerialProcessor.cs" />
     <Compile Include="Controller\TelescopeController.cs" />
