@@ -22,5 +22,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         char CommandChar(string command);
         string ReadTerminated(string terminator);
         void Command(string command);
+        void Lock();
+        void Unlock();
     }
 }

@@ -72,7 +72,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public string CommandTerminated(string command, string terminator)
         {
-            serialMutex.WaitOne();
+            Lock();
             try
             {
                 _serialPort.Write(command);
@@ -81,13 +81,13 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
             finally
             {
-                serialMutex.ReleaseMutex();
+                Unlock();
             }
         }
 
         public char CommandChar(string command)
         {
-            serialMutex.WaitOne();
+            Lock();
             try
             {
                 _serialPort.Write(command);
@@ -96,13 +96,13 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
             finally
             {
-                serialMutex.ReleaseMutex();
+                Unlock();
             }
         }
 
         public string ReadTerminated(string terminator)
         {
-            serialMutex.WaitOne();
+            Lock();
             try
             {
                 string result = _serialPort.ReadTo("#");
@@ -110,21 +110,31 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
             finally
             {
-                serialMutex.ReleaseMutex();
+                Unlock();
             }
         }
 
         public void Command(string command)
         {
-            serialMutex.WaitOne();
+            Lock();
             try
             {
                 _serialPort.Write(command);
             }
             finally
             {
-                serialMutex.ReleaseMutex();
+                Unlock();
             }
+        }
+
+        public void Lock()
+        {
+            serialMutex.WaitOne();
+        }
+
+        public void Unlock()
+        {
+            serialMutex.ReleaseMutex();
         }
     }
 }

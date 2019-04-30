@@ -93,7 +93,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         private void TestConnectionActive()
         {
-            var firmwareVersionNumber = SerialPort.CommandTerminated("#:GVN#", "#");
+            var firmwareVersionNumber = SerialPort.CommandTerminated(":GVN#", "#");
             if (string.IsNullOrEmpty(firmwareVersionNumber))
             {
                 throw new InvalidOperationException("Failed to communicate with telescope."); 
@@ -106,7 +106,7 @@ namespace ASCOM.MeadeAutostar497.Controller
             {
                 if (!Connected) return false;
 
-                var result = SerialPort.CommandTerminated("#:D#", "#");
+                var result = SerialPort.CommandTerminated(":D#", "#");
                 return result != string.Empty;
             }
         }
@@ -115,8 +115,8 @@ namespace ASCOM.MeadeAutostar497.Controller
         {
             get
             {
-                string telescopeDate = SerialPort.CommandTerminated("#:GC#", "#");
-                string telescopeTime = SerialPort.CommandTerminated("#:GL#", "#");
+                string telescopeDate = SerialPort.CommandTerminated(":GC#", "#");
+                string telescopeTime = SerialPort.CommandTerminated(":GL#", "#");
 
                 int month = telescopeDate.Substring(0, 2).ToInteger();
                 int day = telescopeDate.Substring(3, 2).ToInteger();
@@ -138,21 +138,29 @@ namespace ASCOM.MeadeAutostar497.Controller
             set
             {
                 //var result = SerialCommand(":SLHH:MM:SS#", true);
-                var timeResult = SerialPort.CommandChar($"#:SL{value:hh:mm:ss}#");
+                var timeResult = SerialPort.CommandChar($":SL{value:hh:mm:ss}#");
                 if (timeResult != '1')
                 {
                     throw new InvalidOperationException("Failed to set local time");
                 }
 
-                var dateResult = SerialPort.CommandChar($"#:SC{value:MM/dd/yy}#");
-                if (dateResult != '1')
+                SerialPort.Lock();
+                try
                 {
-                    throw new InvalidOperationException("Failed to set local time");
-                }
+                    var dateResult = SerialPort.CommandChar($":SC{value:MM/dd/yy}#");
+                    if (dateResult != '1')
+                    {
+                        throw new InvalidOperationException("Failed to set local time");
+                    }
 
-                //throwing away these two strings which represent 
-                SerialPort.ReadTerminated("#");  //Updating Planetary Data#
-                SerialPort.ReadTerminated("#");  //                       #
+                    //throwing away these two strings which represent 
+                    SerialPort.ReadTerminated("#"); //Updating Planetary Data#
+                    SerialPort.ReadTerminated("#"); //                       #
+                }
+                finally
+                {
+                    SerialPort.Unlock();
+                }
             }
 
         }
