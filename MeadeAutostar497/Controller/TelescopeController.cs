@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Linq;
+using ASCOM.Utilities;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -161,6 +162,59 @@ namespace ASCOM.MeadeAutostar497.Controller
                 {
                     SerialPort.Unlock();
                 }
+            }
+
+        }
+
+        public double SiteLatitude
+        {
+            get
+            {
+                var latitude = SerialPort.CommandTerminated( ":Gt#", "#");
+                
+                double lat = int.Parse(latitude.Substring(1, 2));
+                lat = lat + double.Parse(latitude.Substring(4, 2)) / 60;
+                if (latitude.Length == 9)
+                    lat = lat + double.Parse(latitude.Substring(7, 2)) / 60 / 60;
+
+                if (latitude[0] == '-')
+                    lat = -lat;
+
+                return lat;
+            }
+            set
+            {
+                if (value > 90)
+                    throw new  ASCOM.InvalidValueException("Latitude cannot be greater than 90 degrees.");
+
+                if (value < -90)
+                    throw new ASCOM.InvalidValueException("Latitude cannot be less than -90 degrees.");
+
+                int dd =  Convert.ToInt32(Math.Floor(value));
+                int mm = Convert.ToInt32(60 * (value - dd));
+
+                var result = SerialPort.CommandChar($":Sts{dd:00}*{mm:00}#");
+                if (result != '1')
+                    throw new InvalidOperationException("Failed to set site latitude.");
+            }
+        }
+
+        public double SiteLongitude
+        {
+            get
+            {
+                var longitude = SerialPort.CommandTerminated(":Gg#", "#");
+
+                double l = int.Parse(longitude.Substring(0, 3));
+                l = l + double.Parse(longitude.Substring(4, 2)) / 60;
+                if (longitude.Length == 9)
+                    l = l + double.Parse(longitude.Substring(7, 2)) / 60 / 60;
+
+                return l;
+            }
+            set
+            {
+                throw new ASCOM.PropertyNotImplementedException("not done yet.");
             }
 
         }

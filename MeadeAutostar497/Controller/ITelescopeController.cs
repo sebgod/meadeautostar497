@@ -9,6 +9,8 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         bool Slewing { get; }
         DateTime utcDate { get; set; }
+        double SiteLatitude { get; set; }
+        double SiteLongitude { get; set; }
         void AbortSlew();
     }
 }

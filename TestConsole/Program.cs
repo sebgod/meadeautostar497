@@ -43,9 +43,16 @@ namespace ASCOM
 
             //Console.WriteLine(device.Slewing);
 
-            device.UTCDate = DateTime.UtcNow;
+            //device.UTCDate = DateTime.UtcNow;
 
-            Console.WriteLine(device.UTCDate);
+            //Console.WriteLine(device.UTCDate);
+
+            double l = device.SiteLatitude;
+            device.SiteLatitude = l;
+
+            //double l = device.SiteLongitude;
+            //device.SiteLongitude = l;
+            //Console.WriteLine(device.SiteLongitude);
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");

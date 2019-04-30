@@ -387,8 +387,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -396,8 +396,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPulseGuide", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -459,8 +459,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlew", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -468,8 +468,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAltAz", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -477,8 +477,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -486,8 +486,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -495,8 +495,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -732,13 +732,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("SiteLatitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", false);
+                var siteLatitude = _telescopeController.SiteLatitude;
+                tl.LogMessage("SiteLatitude Get", $"{utilities.DegreesToDMS(siteLatitude)}");
+                return siteLatitude;
             }
             set
             {
-                tl.LogMessage("SiteLatitude Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", true);
+                tl.LogMessage("SiteLatitude Set", $"{utilities.DegreesToDMS(value)}");
+                _telescopeController.SiteLatitude = value;
             }
         }
 
@@ -746,13 +747,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("SiteLongitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", false);
+                var siteLongitude = _telescopeController.SiteLongitude;
+                tl.LogMessage("SiteLongitude Get", $"{utilities.DegreesToDMS(siteLongitude)}");
+                return siteLongitude;
             }
             set
             {
-                tl.LogMessage("SiteLongitude Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", true);
+                tl.LogMessage("SiteLongitude Set", $"{utilities.DegreesToDMS(value)}");
+                _telescopeController.SiteLongitude = value;
             }
         }
 
