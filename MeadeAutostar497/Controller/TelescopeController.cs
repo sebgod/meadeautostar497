@@ -210,15 +210,18 @@ namespace ASCOM.MeadeAutostar497.Controller
                 if (longitude.Length == 9)
                     l = l + double.Parse(longitude.Substring(7, 2)) / 60 / 60;
 
+                if (l > 180)
+                    l = l - 360;
+
                 return l;
             }
             set
             {
-                if (value >= 360)
-                    throw new ASCOM.InvalidValueException("Longitude cannot be greater than or equal to 360 degrees.");
+                if (value > 180)
+                    throw new ASCOM.InvalidValueException("Longitude cannot be greater than 180 degrees.");
 
-                if (value < 0)
-                    throw new ASCOM.InvalidValueException("Longitude cannot be lower than 0 degrees.");
+                if (value < -180)
+                    throw new ASCOM.InvalidValueException("Longitude cannot be lower than -180 degrees.");
 
                 int d = Convert.ToInt32(Math.Floor(value));
                 int m = Convert.ToInt32(60 * (value - d));
