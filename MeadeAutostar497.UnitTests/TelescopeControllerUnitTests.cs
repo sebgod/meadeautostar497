@@ -32,6 +32,7 @@ namespace MeadeAutostar497.UnitTests
             serialMock.Setup(x => x.IsOpen).Returns(() => _isConnected);
 
             _telescopeController = TelescopeController.Instance;
+            _telescopeController.Connected = false;
             _telescopeController.SerialPort = serialMock.Object;
         }
 
@@ -195,7 +196,7 @@ namespace MeadeAutostar497.UnitTests
         [Test]
         public void utcDate_Get_ReturnsExpectedValue()
         {
-            DateTime expectedDate = new DateTime(2019, 04, 30, 12, 32, 24, DateTimeKind.Utc);
+            DateTime expectedDate = new DateTime(2019, 04, 30, 11, 32, 24, DateTimeKind.Local);
 
             var dateString = "04/30/19";
             var timeString = "12:32:24";
@@ -204,6 +205,7 @@ namespace MeadeAutostar497.UnitTests
 
             _telescopeController.Connected = true;
 
+            serialMock.Setup(x => x.CommandTerminated(":GG#", "#")).Returns("-01");
             serialMock.Setup(x => x.CommandTerminated(":GC#", "#")).Returns(dateString);
             serialMock.Setup(x => x.CommandTerminated(":GL#", "#")).Returns(timeString);
 
@@ -216,7 +218,9 @@ namespace MeadeAutostar497.UnitTests
         public void utcDate_Set_SetsTelescopeDateAndTime()
         {
             DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
-            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
+
+            serialMock.Setup(x => x.CommandTerminated(":GG#", "#")).Returns("-01");
+            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour+1:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
             serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
 
             _isConnected = true;
@@ -230,6 +234,8 @@ namespace MeadeAutostar497.UnitTests
         public void utcDate_Set_ThrowsExceptionWhenTimeInvalid()
         {
             DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
+
+            serialMock.Setup(x => x.CommandTerminated(":GG#", "#")).Returns("-01");
             //serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
             serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
 
@@ -245,8 +251,10 @@ namespace MeadeAutostar497.UnitTests
         [Test]
         public void utcDate_Set_ThrowsExceptionWhenDateInvalid()
         {
-            DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
-            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
+            DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Local);
+
+            serialMock.Setup(x => x.CommandTerminated(":GG#", "#")).Returns("-01");
+            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour+1:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
             //serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
 
             _isConnected = true;

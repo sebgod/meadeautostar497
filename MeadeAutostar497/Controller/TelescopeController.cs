@@ -131,15 +131,20 @@ namespace ASCOM.MeadeAutostar497.Controller
                 int minute = telescopeTime.Substring(3, 2).ToInteger();
                 int second = telescopeTime.Substring(6, 2).ToInteger();
 
+                var utcCorrection = GetUtcCorrection();
+
                 //Todo is this telescope local time, or real utc?
-                var newDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
+                var newDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) + utcCorrection;
 
                 return newDate;
             }
             set
             {
+                var utcCorrection = GetUtcCorrection();
+                var localDateTime = value - utcCorrection;
+
                 //Todo is this telescope local time, or real utc?
-                var timeResult = SerialPort.CommandChar($":SL{value:HH:mm:ss}#");
+                var timeResult = SerialPort.CommandChar($":SL{localDateTime:HH:mm:ss}#");
                 if (timeResult != '1')
                 {
                     throw new InvalidOperationException("Failed to set local time");
@@ -148,7 +153,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 SerialPort.Lock();
                 try
                 {
-                    var dateResult = SerialPort.CommandChar($":SC{value:MM/dd/yy}#");
+                    var dateResult = SerialPort.CommandChar($":SC{localDateTime:MM/dd/yy}#");
                     if (dateResult != '1')
                     {
                         throw new InvalidOperationException("Failed to set local date");
@@ -164,6 +169,14 @@ namespace ASCOM.MeadeAutostar497.Controller
                 }
             }
 
+        }
+
+        private TimeSpan GetUtcCorrection()
+        {
+            string utcOffSet = SerialPort.CommandTerminated(":GG#", "#");
+            double utcOffsetHours = double.Parse(utcOffSet);
+            TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
+            return utcCorrection;
         }
 
         public double SiteLatitude
