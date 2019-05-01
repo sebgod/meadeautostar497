@@ -869,6 +869,7 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
+                //todo implementing this, it exists.
                 bool tracking = true;
                 tl.LogMessage("Tracking", "Get - " + tracking.ToString());
                 return tracking;

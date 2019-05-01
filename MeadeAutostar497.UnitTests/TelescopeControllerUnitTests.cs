@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
-using ASCOM;
 using ASCOM.MeadeAutostar497.Controller;
-using ASCOM.Utilities;
 using Moq;
 using NUnit.Framework;
+using InvalidOperationException = ASCOM.InvalidOperationException;
 
 namespace MeadeAutostar497.UnitTests
 {
@@ -38,7 +38,7 @@ namespace MeadeAutostar497.UnitTests
         [TearDown]
         public void TearDown()
         {
-            _telescopeController.Port = "COM1";            
+            _telescopeController.Port = "COM1";
         }
 
         [Test]
@@ -162,6 +162,100 @@ namespace MeadeAutostar497.UnitTests
             _telescopeController.AbortSlew();
 
             serialMock.Verify(x => x.Command("#:Q#"), Times.Once);
+        }
+
+        [Test]
+        public void SlewingReturnTrueAsExpected()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            serialMock.Setup(x => x.CommandTerminated(":D#", "#")).Returns("|");
+
+            var slewing = _telescopeController.Slewing;
+
+            Assert.That(slewing, Is.True);
+        }
+
+        [Test]
+        public void SlewingReturnFalseAsExpected()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            serialMock.Setup(x => x.CommandTerminated(":D#", "#")).Returns(string.Empty);
+
+            var slewing = _telescopeController.Slewing;
+
+            Assert.That(slewing, Is.False);
+        }
+
+        [Test]
+        public void utcDate_Get_ReturnsExpectedValue()
+        {
+            DateTime expectedDate = new DateTime(2019, 04, 30, 12, 32, 24, DateTimeKind.Utc);
+
+            var dateString = "04/30/19";
+            var timeString = "12:32:24";
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            serialMock.Setup(x => x.CommandTerminated(":GC#", "#")).Returns(dateString);
+            serialMock.Setup(x => x.CommandTerminated(":GL#", "#")).Returns(timeString);
+
+            var result = _telescopeController.utcDate;
+
+            Assert.That(result, Is.EqualTo(expectedDate));
+        }
+
+        [Test]
+        public void utcDate_Set_SetsTelescopeDateAndTime()
+        {
+            DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
+            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
+            serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.utcDate = testDateTime;
+        }
+
+        [Test]
+        public void utcDate_Set_ThrowsExceptionWhenTimeInvalid()
+        {
+            DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
+            //serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
+            serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>( () => {_telescopeController.utcDate = testDateTime; });
+
+            Assert.That( exception.Message, Is.EqualTo("Failed to set local time"));
+        }
+
+        [Test]
+        public void utcDate_Set_ThrowsExceptionWhenDateInvalid()
+        {
+            DateTime testDateTime = new DateTime(2019, 04, 30, 19, 53, 32, DateTimeKind.Utc);
+            serialMock.Setup(x => x.CommandChar($":SL{testDateTime.Hour:00}:{testDateTime.Minute:00}:{testDateTime.Second:00}#")).Returns('1');
+            //serialMock.Setup(x => x.CommandChar($":SC{testDateTime.Month:00}/{testDateTime.Day:00}/{testDateTime:yy}#")).Returns('1');
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescopeController.utcDate = testDateTime; });
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
         }
     }
 }

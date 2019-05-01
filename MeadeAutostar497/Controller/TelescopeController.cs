@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Linq;
-using ASCOM.Utilities;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -123,7 +122,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 int day = telescopeDate.Substring(3, 2).ToInteger();
                 int year = telescopeDate.Substring(6, 2).ToInteger();
 
-                if (year < 2000) //This is a hack that will work until the end of the century
+                if (year < 2000) //todo fix this hack that will create a Y2K100 bug
                 {
                     year = year + 2000;
                 }
@@ -132,14 +131,15 @@ namespace ASCOM.MeadeAutostar497.Controller
                 int minute = telescopeTime.Substring(3, 2).ToInteger();
                 int second = telescopeTime.Substring(6, 2).ToInteger();
 
+                //Todo is this telescope local time, or real utc?
                 var newDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
 
                 return newDate;
             }
             set
             {
-                //var result = SerialCommand(":SLHH:MM:SS#", true);
-                var timeResult = SerialPort.CommandChar($":SL{value:hh:mm:ss}#");
+                //Todo is this telescope local time, or real utc?
+                var timeResult = SerialPort.CommandChar($":SL{value:HH:mm:ss}#");
                 if (timeResult != '1')
                 {
                     throw new InvalidOperationException("Failed to set local time");
@@ -151,7 +151,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                     var dateResult = SerialPort.CommandChar($":SC{value:MM/dd/yy}#");
                     if (dateResult != '1')
                     {
-                        throw new InvalidOperationException("Failed to set local time");
+                        throw new InvalidOperationException("Failed to set local date");
                     }
 
                     //throwing away these two strings which represent 
@@ -190,10 +190,10 @@ namespace ASCOM.MeadeAutostar497.Controller
                 if (value < -90)
                     throw new ASCOM.InvalidValueException("Latitude cannot be less than -90 degrees.");
 
-                int dd =  Convert.ToInt32(Math.Floor(value));
-                int mm = Convert.ToInt32(60 * (value - dd));
+                int d =  Convert.ToInt32(Math.Floor(value));
+                int m = Convert.ToInt32(60 * (value - d));
 
-                var result = SerialPort.CommandChar($":Sts{dd:00}*{mm:00}#");
+                var result = SerialPort.CommandChar($":Sts{d:00}*{m:00}#");
                 if (result != '1')
                     throw new InvalidOperationException("Failed to set site latitude.");
             }
@@ -214,7 +214,18 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
             set
             {
-                throw new ASCOM.PropertyNotImplementedException("not done yet.");
+                if (value >= 360)
+                    throw new ASCOM.InvalidValueException("Longitude cannot be greater than or equal to 360 degrees.");
+
+                if (value < 0)
+                    throw new ASCOM.InvalidValueException("Longitude cannot be lower than 0 degrees.");
+
+                int d = Convert.ToInt32(Math.Floor(value));
+                int m = Convert.ToInt32(60 * (value - d));
+
+                var result = SerialPort.CommandChar($":Sg{d:000}*{m:00}#");
+                if (result != '1')
+                    throw new InvalidOperationException("Failed to set site Longitude.");
             }
 
         }
