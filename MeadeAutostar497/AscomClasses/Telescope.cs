@@ -620,8 +620,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("IsPulseGuiding Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
+                tl.LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
+                //throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
+                return false;
             }
         }
 
@@ -639,8 +640,8 @@ namespace ASCOM.MeadeAutostar497
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
-            tl.LogMessage("PulseGuide", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+            tl.LogMessage("PulseGuide", $"pulse guide direction {Direction} duration {Duration}");
+            _telescopeController.PulseGuide(Direction, Duration);
         }
 
         public double RightAscension

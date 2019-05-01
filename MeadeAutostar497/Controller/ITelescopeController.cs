@@ -1,4 +1,5 @@
 ﻿using System;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -12,5 +13,6 @@ namespace ASCOM.MeadeAutostar497.Controller
         double SiteLatitude { get; set; }
         double SiteLongitude { get; set; }
         void AbortSlew();
+        void PulseGuide(GuideDirections direction, int duration);
     }
 }

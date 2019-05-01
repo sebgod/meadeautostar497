@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Linq;
+using System.Threading;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
@@ -250,5 +252,44 @@ namespace ASCOM.MeadeAutostar497.Controller
         {
             SerialPort.Command("#:Q#");
         }
+
+        public void PulseGuide(GuideDirections direction, int duration)
+        {
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+            }
+
+            if (UserNewerPulseGuiding)
+            {
+                _serialPort.Command($":Mg{d}{duration:0000}#");
+                Thread.Sleep(duration);
+            }
+            else
+            {
+                _serialPort.Command(":RG#"); //Make sure we are at guide rate
+                _serialPort.Command($":M{d}#");
+                Thread.Sleep(duration);
+                _serialPort.Command($":Q{d}#");
+
+                //classic only !!!, this is needed since once in a while one is not enough
+                Thread.Sleep(200);
+                _serialPort.Command($":Q{d}#");
+            }
+        }
+
+        public bool UserNewerPulseGuiding { get; set; } = true; //todo make this a device setting
     }
 }
