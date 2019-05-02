@@ -293,6 +293,10 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        private bool _parked = false;
+
+        public bool AtPark => _parked;
+
         public void AbortSlew()
         {
             SerialPort.Command("#:Q#");
@@ -333,6 +337,15 @@ namespace ASCOM.MeadeAutostar497.Controller
                 Thread.Sleep(200);
                 _serialPort.Command($":Q{d}#");
             }
+        }
+
+        public void Park()
+        {
+            if (_parked)
+                return;
+
+            _parked = true;
+            _serialPort.Command(":hP#");
         }
 
         public bool UserNewerPulseGuiding { get; set; } = true; //todo make this a device setting

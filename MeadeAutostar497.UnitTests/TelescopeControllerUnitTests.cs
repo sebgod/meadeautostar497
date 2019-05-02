@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO.Ports;
 using ASCOM;
 using ASCOM.DeviceInterface;
@@ -32,6 +33,8 @@ namespace MeadeAutostar497.UnitTests
             serialMock.Setup(x => x.GetPortNames()).Returns( () => _availableComPorts.ToArray());
             serialMock.Setup(x => x.CommandTerminated(It.IsAny<string>(), It.IsAny<string>())).Returns(() => _stringToRecieve);
             serialMock.Setup(x => x.IsOpen).Returns(() => _isConnected);
+
+            //Todo inject the serialMock instead of using a singleton to increase code stability.
 
             _telescopeController = TelescopeController.Instance;
             _telescopeController.Connected = false;
@@ -473,6 +476,51 @@ namespace MeadeAutostar497.UnitTests
             _telescopeController.AlignmentMode = mode;
 
             serialMock.Verify( x => x.Command(command), Times.Once);
+        }
+
+        [Test]
+        public void AtParkIsFalseByDefault()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            Assert.That( _telescopeController.AtPark, Is.False );
+        }
+
+        [Test]
+        public void AtParkIsTrueAfterParkingScope()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+            _telescopeController.Park();
+
+            Assert.That(_telescopeController.AtPark, Is.True);
+        }
+
+        [Test]
+        public void Park_CallingParkSendsTheParkCommand()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+            _telescopeController.Park();
+
+            serialMock.Verify( x => x.Command(":hP#"), Times.Once);
+        }
+
+        [Test]
+        public void Park_ParkingSecondTimeDoesNothing()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+            _telescopeController.Park();
+
+            _telescopeController.Park();
+
+            serialMock.Verify(x => x.Command(":hP#"), Times.Once);
         }
     }
 }

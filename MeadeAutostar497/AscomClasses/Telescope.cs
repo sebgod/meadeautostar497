@@ -342,8 +342,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("AtPark", "Get - " + false.ToString());
-                return false;
+                var atPatk = _telescopeController.AtPark;
+                tl.LogMessage("AtPark", "Get - " + atPatk.ToString());
+                return atPatk;
             }
         }
 
@@ -634,8 +635,8 @@ namespace ASCOM.MeadeAutostar497
 
         public void Park()
         {
-            tl.LogMessage("Park", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Park");
+            tl.LogMessage("Park", "Parking telescope");
+            _telescopeController.Park();
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
