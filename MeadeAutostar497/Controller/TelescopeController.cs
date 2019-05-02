@@ -243,7 +243,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
                 var result = SerialPort.CommandChar($":Sg{d:000}*{m:00}#");
                 if (result != '1')
-                    throw new InvalidOperationException("Failed to set site Longitude.");
+                    throw new InvalidOperationException("Failed to set site longitude.");
             }
 
         }

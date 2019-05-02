@@ -267,9 +267,9 @@ namespace MeadeAutostar497.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
         }
 
-        [TestCase("+12:34", 12.566666666666666)]
-        [TestCase("+12:34.56", 12.582222222222223)]
-        [TestCase("-67:34.56", -67.582222222222214)]
+        [TestCase("+12*34", 12.566666666666666)]
+        [TestCase("+12*34.56", 12.582222222222223)]
+        [TestCase("-67*34.56", -67.582222222222214)]
         public void SiteLatitude_Get_ReturnsExpectedDouble( string latitude, double expectedResult)
         {
             serialMock.Setup(x => x.CommandTerminated(":Gt#", "#")).Returns(latitude);
@@ -329,6 +329,73 @@ namespace MeadeAutostar497.UnitTests
             _telescopeController.Connected = true;
 
             _telescopeController.SiteLatitude = 10;
+        }
+
+
+        [TestCase("012*34", 12.566666666666666)]
+        [TestCase("012:34.56", 12.582222222222223)]
+        [TestCase("350:34.56", -9.4177777777777578)]
+        public void SiteLongitude_Get_ReturnsExpectedDouble(string longitude, double expectedResult)
+        {
+            serialMock.Setup(x => x.CommandTerminated(":Gg#", "#")).Returns(longitude);
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var result = _telescopeController.SiteLongitude;
+
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_ThrowsExeptionWhenValueTooSmall()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescopeController.SiteLongitude = -181; });
+
+            Assert.That(exception.Message, Is.EqualTo("Longitude cannot be lower than -180 degrees."));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_ThrowsExeptionWhenValueTooLarge()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescopeController.SiteLongitude = 181; });
+
+            Assert.That(exception.Message, Is.EqualTo("Longitude cannot be greater than 180 degrees."));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_ThrowsExeptionWhenTelescopeReportsFail()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescopeController.SiteLongitude = 10; });
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
+        }
+
+
+
+        [Test]
+        public void SiteLongitude_Set_NoErrorWhenValidValueSentSuccessfully()
+        {
+            serialMock.Setup(x => x.CommandChar(":Sg010*00#")).Returns('1');
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.SiteLongitude = 10;
         }
     }
 }
