@@ -262,7 +262,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         {
             get
             {
-                char ack = (char)6;
+                const char ack = (char)6;
                 //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
                 var alignmentString = SerialPort.CommandChar(ack.ToString());
                 //:GW# Get Scope Alignment Status

@@ -448,12 +448,13 @@ namespace MeadeAutostar497.UnitTests
             serialMock.Verify(x => x.Command(":Mgs1024#"), Times.Once);
         }
 
-        [TestCase("AT0", AlignmentModes.algAltAz)]
-        [TestCase("PT0", AlignmentModes.algPolar)]
-        [TestCase("GT0", AlignmentModes.algGermanPolar)]
-        public void AlignmentMode_Get_ReturnsExpectedValue(string commandResponse, AlignmentModes mode)
+        [TestCase('A', AlignmentModes.algAltAz)]
+        [TestCase('P', AlignmentModes.algPolar)]
+        public void AlignmentMode_Get_ReturnsExpectedValue(char commandResponse, AlignmentModes mode)
         {
-            serialMock.Setup(x => x.CommandTerminated(":GW#", "#")).Returns(commandResponse);
+            const char ack = (char)6;
+
+            serialMock.Setup(x => x.CommandChar(ack.ToString())).Returns(commandResponse);
 
             _isConnected = true;
 
