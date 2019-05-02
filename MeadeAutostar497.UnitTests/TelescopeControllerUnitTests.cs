@@ -7,7 +7,6 @@ using ASCOM.DeviceInterface;
 using ASCOM.MeadeAutostar497.Controller;
 using Moq;
 using NUnit.Framework;
-using InvalidOperationException = ASCOM.InvalidOperationException;
 
 namespace MeadeAutostar497.UnitTests
 {
@@ -30,20 +29,21 @@ namespace MeadeAutostar497.UnitTests
 
             serialMock = new Mock<ISerialProcessor>();
             serialMock.SetupAllProperties();
-            serialMock.Setup(x => x.GetPortNames()).Returns( () => _availableComPorts.ToArray());
-            serialMock.Setup(x => x.CommandTerminated(It.IsAny<string>(), It.IsAny<string>())).Returns(() => _stringToRecieve);
+            serialMock.Setup(x => x.GetPortNames()).Returns(() => _availableComPorts.ToArray());
+            serialMock.Setup(x => x.CommandTerminated(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(() => _stringToRecieve);
             serialMock.Setup(x => x.IsOpen).Returns(() => _isConnected);
 
             //Todo inject the serialMock instead of using a singleton to increase code stability.
-
             _telescopeController = TelescopeController.Instance;
-            _telescopeController.Connected = false;
             _telescopeController.SerialPort = serialMock.Object;
         }
 
         [TearDown]
         public void TearDown()
         {
+            _isConnected = false;
+            _telescopeController.Connected = false;
             _telescopeController.Port = "COM1";
         }
 
@@ -97,7 +97,7 @@ namespace MeadeAutostar497.UnitTests
         public void WhenOpensComPortToNonAutostarThrowException()
         {
             Assert.That(serialMock.Object.IsOpen, Is.False);
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescopeController.Connected = true; });
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescopeController.Connected = true; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to communicate with telescope."));
 
@@ -114,7 +114,7 @@ namespace MeadeAutostar497.UnitTests
 
             Mock<ISerialProcessor> newSerialMock = new Mock<ISerialProcessor>();
 
-            var exception = Assert.Throws<InvalidOperationException>( () => { _telescopeController.SerialPort = newSerialMock.Object; });
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>( () => { _telescopeController.SerialPort = newSerialMock.Object; });
 
             Assert.That(exception, Is.Not.Null);
             Assert.That(exception.Message, Is.EqualTo("Please disconnect before changing the serial engine."));
@@ -141,7 +141,7 @@ namespace MeadeAutostar497.UnitTests
             _isConnected = true;
 
             _telescopeController.Connected = true;
-            var exception = Assert.Throws<InvalidOperationException>( () => _telescopeController.Port = "COM2");
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>( () => _telescopeController.Port = "COM2");
 
             Assert.That(exception.Message, Is.EqualTo("Please disconnect from the scope before changing port."));
 
@@ -151,7 +151,7 @@ namespace MeadeAutostar497.UnitTests
         [Test]
         public void SettingPortToInvalidPortFails()
         {
-            var exception = Assert.Throws<InvalidOperationException>(() => _telescopeController.Port = "COM5");
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => _telescopeController.Port = "COM5");
 
             Assert.That(exception.Message, Is.EqualTo("Unable to select port COM5 as it does not exist."));
 
@@ -318,7 +318,7 @@ namespace MeadeAutostar497.UnitTests
 
             _telescopeController.Connected = true;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescopeController.SiteLatitude = 10; });
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescopeController.SiteLatitude = 10; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
         }
@@ -383,7 +383,7 @@ namespace MeadeAutostar497.UnitTests
 
             _telescopeController.Connected = true;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescopeController.SiteLongitude = 10; });
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescopeController.SiteLongitude = 10; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
         }
@@ -482,7 +482,6 @@ namespace MeadeAutostar497.UnitTests
         public void AtParkIsFalseByDefault()
         {
             _isConnected = true;
-
             _telescopeController.Connected = true;
 
             Assert.That( _telescopeController.AtPark, Is.False );
@@ -521,6 +520,21 @@ namespace MeadeAutostar497.UnitTests
             _telescopeController.Park();
 
             serialMock.Verify(x => x.Command(":hP#"), Times.Once);
+        }
+
+        [TestCase("356*13",356.21666666666664)]
+        [TestCase("356*13'21", 356.22249999999997)]
+        public void Azimuth_CanGetValue( string response, double expectedResult )
+        {
+            serialMock.Setup(x => x.CommandTerminated(":GZ#", "#")).Returns(response);
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var az = _telescopeController.Azimuth;
+
+            Assert.That( az, Is.EqualTo(expectedResult));
         }
     }
 }

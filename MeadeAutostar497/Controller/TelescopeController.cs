@@ -13,6 +13,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public static TelescopeController Instance => lazy.Value;
 
+        //todo remove this as it can cause problems in production
         private ISerialProcessor _serialPort;
         public ISerialProcessor SerialPort
         {
@@ -68,6 +69,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                     //Connecting
                     try
                     {
+                        _parked = false;
                         SerialPort.DtrEnable = false;
                         SerialPort.RtsEnable = false;
                         SerialPort.BaudRate = 9600;
@@ -90,6 +92,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 {
                     //Disconnecting
                     SerialPort.Close();
+                    _parked = false;
                 }
             }
         }
@@ -215,16 +218,22 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        private double DMSToDouble(string DMS)
+        {
+            double l = int.Parse(DMS.Substring(0, 3));
+            l = l + double.Parse(DMS.Substring(4, 2)) / 60;
+            if (DMS.Length == 9)
+                l = l + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
+
+            return l;
+        }
+
         public double SiteLongitude
         {
             get
             {
                 var longitude = SerialPort.CommandTerminated(":Gg#", "#");
-
-                double l = int.Parse(longitude.Substring(0, 3));
-                l = l + double.Parse(longitude.Substring(4, 2)) / 60;
-                if (longitude.Length == 9)
-                    l = l + double.Parse(longitude.Substring(7, 2)) / 60 / 60;
+                double l = DMSToDouble(longitude);
 
                 if (l > 180)
                     l = l - 360;
@@ -254,6 +263,12 @@ namespace ASCOM.MeadeAutostar497.Controller
             get
             {
                 var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
+                //:GW# Get Scope Alignment Status
+                //Returns: <mount><tracking><alignment>#
+                //    where:
+                //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
+                //tracking: T - tracking, N - not tracking
+                //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
 
                 switch (alignmentString[0])
                 {
@@ -263,22 +278,21 @@ namespace ASCOM.MeadeAutostar497.Controller
                     default:
                         throw new ASCOM.InvalidValueException($"unknown alignment returned from telescope: {alignmentString[0]}");
                 }
-                //:GW# Get Scope Alignment Status
-                //Returns: <mount><tracking><alignment>#
-                //    where:
-                //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
-                //tracking: T - tracking, N - not tracking
-                //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
             }
             set
             {
                 switch (value)
                 {
-                    case AlignmentModes.algAltAz: SerialPort.Command(":AA#");
+                    case AlignmentModes.algAltAz:
+                        SerialPort.Command(":AA#");
+                        //:AA# Sets telescope the AltAz alignment mode
+                        //Returns: nothing
                         break;
                     case AlignmentModes.algPolar:
                     case AlignmentModes.algGermanPolar:
                         SerialPort.Command(":AP#");
+                        //:AP# Sets telescope to Polar alignment mode
+                        //Returns: nothing
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, null);
@@ -286,16 +300,27 @@ namespace ASCOM.MeadeAutostar497.Controller
 
                 //:AL# Sets telescope to Land alignment mode
                 //Returns: nothing
-                //:AP# Sets telescope to Polar alignment mode
-                //Returns: nothing
-                //:AA# Sets telescope the AltAz alignment mode
-                //Returns: nothing
             }
         }
 
         private bool _parked = false;
 
         public bool AtPark => _parked;
+
+        public double Azimuth
+        {
+            get
+            {
+                var result = SerialPort.CommandTerminated(":GZ#", "#");
+                //:GZ# Get telescope azimuth
+                //Returns: DDD*MM#T or DDD*MM’SS#
+                //The current telescope Azimuth depending on the selected precision.
+
+                double az = DMSToDouble(result);
+                
+                return az;
+            }
+        }       
 
         public void AbortSlew()
         {

@@ -358,8 +358,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Azimuth Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Azimuth", false);
+                var az = _telescopeController.Azimuth;
+                tl.LogMessage("Azimuth Get", $"{az}");
+                return az;
             }
         }
 

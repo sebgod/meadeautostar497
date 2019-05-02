@@ -14,6 +14,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         double SiteLongitude { get; set; }
         AlignmentModes AlignmentMode { get; set; }
         bool AtPark { get; }
+        double Azimuth { get; }
         void AbortSlew();
         void PulseGuide(GuideDirections direction, int duration);
         void Park();
