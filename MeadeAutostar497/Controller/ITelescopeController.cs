@@ -12,6 +12,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         DateTime utcDate { get; set; }
         double SiteLatitude { get; set; }
         double SiteLongitude { get; set; }
+        AlignmentModes AlignmentMode { get; set; }
         void AbortSlew();
         void PulseGuide(GuideDirections direction, int duration);
     }

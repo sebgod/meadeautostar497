@@ -444,5 +444,35 @@ namespace MeadeAutostar497.UnitTests
 
             serialMock.Verify(x => x.Command(":Mgs1024#"), Times.Once);
         }
+
+        [TestCase("AT0", AlignmentModes.algAltAz)]
+        [TestCase("PT0", AlignmentModes.algPolar)]
+        [TestCase("GT0", AlignmentModes.algGermanPolar)]
+        public void AlignmentMode_Get_ReturnsExpectedValue(string commandResponse, AlignmentModes mode)
+        {
+            serialMock.Setup(x => x.CommandTerminated(":GW#", "#")).Returns(commandResponse);
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var result = _telescopeController.AlignmentMode;
+
+            Assert.That(result, Is.EqualTo(mode));
+        }
+
+        [TestCase(AlignmentModes.algAltAz, ":AA#")]
+        [TestCase(AlignmentModes.algPolar, ":AP#")]
+        [TestCase(AlignmentModes.algGermanPolar, ":AP#")]
+        public void AligmentMode_Set_WorksAsExpected(AlignmentModes mode, string command)
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.AlignmentMode = mode;
+
+            serialMock.Verify( x => x.Command(command), Times.Once);
+        }
     }
 }

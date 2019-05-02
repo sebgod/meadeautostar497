@@ -298,7 +298,7 @@ namespace ASCOM.MeadeAutostar497
             get
             {
                 tl.LogMessage("AlignmentMode Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("AlignmentMode", false);
+                return _telescopeController.AlignmentMode;
             }
         }
 

@@ -6,6 +6,7 @@ using ASCOM.DeviceInterface;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
+    //todo stop this being a singleton, and instead use a server to make only a single instance.
     public sealed class TelescopeController : ITelescopeController
     {
         private static readonly Lazy<TelescopeController> lazy = new Lazy<TelescopeController>();
@@ -246,6 +247,50 @@ namespace ASCOM.MeadeAutostar497.Controller
                     throw new InvalidOperationException("Failed to set site longitude.");
             }
 
+        }
+
+        public AlignmentModes AlignmentMode
+        {
+            get
+            {
+                var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
+
+                switch (alignmentString[0])
+                {
+                    case 'A': return AlignmentModes.algAltAz;
+                    case 'P': return AlignmentModes.algPolar;
+                    case 'G': return AlignmentModes.algGermanPolar;
+                    default:
+                        throw new ASCOM.InvalidValueException($"unknown alignment returned from telescope: {alignmentString[0]}");
+                }
+                //:GW# Get Scope Alignment Status
+                //Returns: <mount><tracking><alignment>#
+                //    where:
+                //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
+                //tracking: T - tracking, N - not tracking
+                //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
+            }
+            set
+            {
+                switch (value)
+                {
+                    case AlignmentModes.algAltAz: SerialPort.Command(":AA#");
+                        break;
+                    case AlignmentModes.algPolar:
+                    case AlignmentModes.algGermanPolar:
+                        SerialPort.Command(":AP#");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
+
+                //:AL# Sets telescope to Land alignment mode
+                //Returns: nothing
+                //:AP# Sets telescope to Polar alignment mode
+                //Returns: nothing
+                //:AA# Sets telescope the AltAz alignment mode
+                //Returns: nothing
+            }
         }
 
         public void AbortSlew()
