@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using ASCOM;
 using ASCOM.MeadeAutostar497.Controller;
 using Moq;
 using NUnit.Framework;
@@ -264,6 +265,70 @@ namespace MeadeAutostar497.UnitTests
             var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescopeController.utcDate = testDateTime; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
+        }
+
+        [TestCase("+12:34", 12.566666666666666)]
+        [TestCase("+12:34.56", 12.582222222222223)]
+        [TestCase("-67:34.56", -67.582222222222214)]
+        public void SiteLatitude_Get_ReturnsExpectedDouble( string latitude, double expectedResult)
+        {
+            serialMock.Setup(x => x.CommandTerminated(":Gt#", "#")).Returns(latitude);
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var result = _telescopeController.SiteLatitude;
+
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_ThrowsExeptionWhenValueTooSmall()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>( () => { _telescopeController.SiteLatitude = -91;});
+
+            Assert.That(exception.Message, Is.EqualTo("Latitude cannot be less than -90 degrees."));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_ThrowsExeptionWhenValueTooLarge()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescopeController.SiteLatitude = 91; });
+
+            Assert.That(exception.Message, Is.EqualTo("Latitude cannot be greater than 90 degrees."));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_ThrowsExeptionWhenTelescopeReportsFail()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescopeController.SiteLatitude = 10; });
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_NoErrorWhenValidValueSentSuccessfully()
+        {
+            serialMock.Setup(x => x.CommandChar(":Sts10*00#")).Returns('1');
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.SiteLatitude = 10;
         }
     }
 }
