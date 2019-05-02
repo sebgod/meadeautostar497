@@ -524,7 +524,7 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                double declination = 0.0;
+                double declination = _telescopeController.Declination;
                 tl.LogMessage("Declination", "Get - " + utilities.DegreesToDMS(declination, ":", ":"));
                 return declination;
             }

@@ -320,7 +320,22 @@ namespace ASCOM.MeadeAutostar497.Controller
                 
                 return az;
             }
-        }       
+        }
+
+        public double Declination
+        {
+            get
+            {
+                var result = SerialPort.CommandTerminated(":GD#", "#");
+                //:GD# Get Telescope Declination.
+                //Returns: sDD* MM# or sDD*MM’SS#
+                //Depending upon the current precision setting for the telescope.
+
+                double az = DMSToDouble(result);
+
+                return az;
+            }
+        }
 
         public void AbortSlew()
         {

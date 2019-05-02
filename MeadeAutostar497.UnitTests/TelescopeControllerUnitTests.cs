@@ -536,5 +536,20 @@ namespace MeadeAutostar497.UnitTests
 
             Assert.That( az, Is.EqualTo(expectedResult));
         }
+
+        [TestCase("+75*13", 75.2166666666666654)]
+        [TestCase("+65*13'21", 65.222499999999997)]
+        public void Declination_CanGetValue(string response, double expectedResult)
+        {
+            serialMock.Setup(x => x.CommandTerminated(":GD#", "#")).Returns(response);
+
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            var result = _telescopeController.Declination;
+
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
     }
 }
