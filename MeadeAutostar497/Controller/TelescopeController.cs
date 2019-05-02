@@ -275,7 +275,7 @@ namespace ASCOM.MeadeAutostar497.Controller
             if (UserNewerPulseGuiding)
             {
                 _serialPort.Command($":Mg{d}{duration:0000}#");
-                Thread.Sleep(duration);
+                Thread.Sleep(duration); //todo figure out if this is really needed
             }
             else
             {

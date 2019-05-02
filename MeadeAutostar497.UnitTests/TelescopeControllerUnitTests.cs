@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using ASCOM;
+using ASCOM.DeviceInterface;
 using ASCOM.MeadeAutostar497.Controller;
 using Moq;
 using NUnit.Framework;
@@ -384,8 +385,6 @@ namespace MeadeAutostar497.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
         }
 
-
-
         [Test]
         public void SiteLongitude_Set_NoErrorWhenValidValueSentSuccessfully()
         {
@@ -396,6 +395,54 @@ namespace MeadeAutostar497.UnitTests
             _telescopeController.Connected = true;
 
             _telescopeController.SiteLongitude = 10;
+        }
+
+        [Test]
+        public void PulseGuideEast()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.PulseGuide(GuideDirections.guideEast,100);
+
+            serialMock.Verify( x => x.Command(":Mge0100#"), Times.Once);
+        }
+
+        [Test]
+        public void PulseGuideWest()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.PulseGuide(GuideDirections.guideWest, 1200);
+
+            serialMock.Verify(x => x.Command(":Mgw1200#"), Times.Once);
+        }
+
+        [Test]
+        public void PulseGuideNorth()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.PulseGuide(GuideDirections.guideNorth, 256);
+
+            serialMock.Verify(x => x.Command(":Mgn0256#"), Times.Once);
+        }
+
+        [Test]
+        public void PulseGuideSouth()
+        {
+            _isConnected = true;
+
+            _telescopeController.Connected = true;
+
+            _telescopeController.PulseGuide(GuideDirections.guideSouth, 1024);
+
+            serialMock.Verify(x => x.Command(":Mgs1024#"), Times.Once);
         }
     }
 }
