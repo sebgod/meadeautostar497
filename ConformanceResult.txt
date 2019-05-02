@@ -1,6 +1,3 @@
-Start-up ASCOM Device Conformance Checker - 64bit mode
-Start-up ASCOM Platform 6.4 SP1 6.4.1.2695
- 
  
 ConformanceCheck ASCOM Device Conformance Checker Version 6.4.63.0, Build time: 18/12/2018 08:58:34
 ConformanceCheck Running on: ASCOM Platform 6.4 SP1 6.4.1.2695
@@ -15,191 +12,188 @@ Error number for "Value Not Set 1" is: 80040402
 Error number for "Value Not Set 2" is: 80040403
 Error messages will not be interpreted to infer state.
  
-00:25:26.447 Driver Access Checks              OK       
-00:25:27.090 AccessChecks                      OK       Successfully created driver using late binding
-00:25:27.323 AccessChecks                      OK       Successfully connected using late binding
-00:25:27.327 AccessChecks                      INFO     The driver is a .NET object
-00:25:27.332 AccessChecks                      INFO     The AssemblyQualifiedName is: ASCOM.MeadeAutostar497.Telescope, ASCOM.MeadeAutostar497.Telescope, Version=
-00:25:27.336 AccessChecks                      INFO     The driver implements interface: ASCOM.DeviceInterface.ITelescopeV3
-00:25:28.025 AccessChecks                      INFO     Device does not expose interface ITelescopeV2
-00:25:28.830 AccessChecks                      INFO     Device exposes interface ITelescopeV3
-00:25:30.141 AccessChecks                      OK       Successfully created driver using driver access toolkit
-00:25:30.312 AccessChecks                      OK       Successfully connected using driver access toolkit
+18:42:13.212 Driver Access Checks              OK       
+18:42:13.853 AccessChecks                      OK       Successfully created driver using late binding
+18:42:14.078 AccessChecks                      OK       Successfully connected using late binding
+18:42:14.098 AccessChecks                      INFO     The driver is a .NET object
+18:42:14.101 AccessChecks                      INFO     The AssemblyQualifiedName is: ASCOM.MeadeAutostar497.Telescope, ASCOM.MeadeAutostar497.Telescope, Version=
+18:42:14.106 AccessChecks                      INFO     The driver implements interface: ASCOM.DeviceInterface.ITelescopeV3
+18:42:14.796 AccessChecks                      INFO     Device does not expose interface ITelescopeV2
+18:42:15.597 AccessChecks                      INFO     Device exposes interface ITelescopeV3
+18:42:16.909 AccessChecks                      OK       Successfully created driver using driver access toolkit
+18:42:17.080 AccessChecks                      OK       Successfully connected using driver access toolkit
  
 Conform is using ASCOM.DriverAccess.Telescope to get a Telescope object
-00:25:31.632 ConformanceCheck                  OK       Driver instance created successfully
-00:25:31.848 ConformanceCheck                  OK       Connected OK
+18:42:18.395 ConformanceCheck                  OK       Driver instance created successfully
+18:42:18.611 ConformanceCheck                  OK       Connected OK
  
 Common Driver Methods 
-00:25:31.890 InterfaceVersion                  OK       3
-00:25:31.917 Connected                         OK       True
-00:25:31.945 Description                       OK       Meade Autostar 497 .net
-00:25:31.974 DriverInfo                        OK       Information about the driver itself. Version: 0.0
-00:25:32.004 DriverVersion                     OK       0.0
-00:25:32.032 Name                              OK       Meade Autostar 497 .net
-00:25:32.060 CommandString                     INFO     Conform cannot test the CommandString method
-00:25:32.066 CommandBlind                      INFO     Conform cannot test the CommandBlind method
-00:25:32.072 CommandBool                       INFO     Conform cannot test the CommandBool method
-00:25:32.078 Action                            INFO     Conform cannot test the Action method
-00:25:32.085 SupportedActions                  OK       Driver returned an empty action list
+18:42:18.652 InterfaceVersion                  OK       3
+18:42:18.680 Connected                         OK       True
+18:42:18.708 Description                       OK       Meade Autostar 497 .net
+18:42:18.736 DriverInfo                        OK       Information about the driver itself. Version: 0.0
+18:42:18.765 DriverVersion                     OK       0.0
+18:42:18.794 Name                              OK       Meade Autostar 497 .net
+18:42:18.823 CommandString                     INFO     Conform cannot test the CommandString method
+18:42:18.829 CommandBlind                      INFO     Conform cannot test the CommandBlind method
+18:42:18.835 CommandBool                       INFO     Conform cannot test the CommandBool method
+18:42:18.842 Action                            INFO     Conform cannot test the Action method
+18:42:18.849 SupportedActions                  OK       Driver returned an empty action list
  
 Can Properties 
-00:25:32.153 CanFindHome                       OK       False
-00:25:32.161 CanPark                           OK       True
-00:25:32.169 CanPulseGuide                     OK       True
-00:25:32.177 CanSetDeclinationRate             OK       False
-00:25:32.185 CanSetGuideRates                  OK       False
-00:25:32.193 CanSetPark                        OK       False
-00:25:32.204 CanSetPierSide                    OK       False
-00:25:32.218 CanSetRightAscensionRate          OK       False
-00:25:32.227 CanSetTracking                    OK       False
-00:25:32.237 CanSlew                           OK       True
-00:25:32.247 CanSlewltAz                       OK       True
-00:25:32.256 CanSlewAltAzAsync                 OK       True
-00:25:32.266 CanSlewAsync                      OK       True
-00:25:32.275 CanSync                           OK       True
-00:25:32.284 CanSyncAltAz                      OK       False
-00:25:32.293 CanUnPark                         OK       False
+18:42:18.914 CanFindHome                       OK       False
+18:42:18.921 CanPark                           OK       True
+18:42:18.928 CanPulseGuide                     OK       True
+18:42:18.935 CanSetDeclinationRate             OK       False
+18:42:18.942 CanSetGuideRates                  OK       False
+18:42:18.950 CanSetPark                        OK       False
+18:42:18.959 CanSetPierSide                    OK       False
+18:42:18.971 CanSetRightAscensionRate          OK       False
+18:42:18.978 CanSetTracking                    OK       False
+18:42:18.985 CanSlew                           OK       True
+18:42:18.992 CanSlewltAz                       OK       True
+18:42:19.000 CanSlewAltAzAsync                 OK       True
+18:42:19.010 CanSlewAsync                      OK       True
+18:42:19.019 CanSync                           OK       True
+18:42:19.027 CanSyncAltAz                      OK       False
+18:42:19.036 CanUnPark                         OK       False
  
 Pre-run Checks 
-00:25:32.342 Mount Safety                      INFO     Scope is not parked, continuing testing
-00:25:32.393 TimeCheck                         INFO     PC Time Zone:  GMT Summer Time, offset -1 hours.
-00:25:32.401 TimeCheck                         INFO     PC UTCDate:    01-May-2019 23:25:32.401
-00:25:32.579 TimeCheck                         INFO     Mount UTCDate: 01-May-2019 19:00:43.000
+18:42:19.083 Mount Safety                      INFO     Scope is not parked, continuing testing
+18:42:19.139 TimeCheck                         INFO     PC Time Zone:  GMT Summer Time, offset -1 hours.
+18:42:19.147 TimeCheck                         INFO     PC UTCDate:    02-May-2019 17:42:19.147
+18:42:19.274 TimeCheck                         INFO     Mount UTCDate: 02-May-2019 17:42:17.000
  
 Properties 
-00:25:32.654 AlignmentMode                     OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:32.688 Altitude                          OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:32.720 ApertureArea                      OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:32.752 ApertureDiameter                  OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:32.784 AtHome                            OK       False
-00:25:32.831 AtPark                            OK       False
-00:25:32.862 Azimuth                           OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:32.895 Declination                       OK        00:00:00.00
-00:25:32.926 DeclinationRate Read              OK       0.00
-00:25:32.958 DeclinationRate Write             OK       CanSetDeclinationRate is False and a PropertyNotImplementedException exception was generated as expected
-00:25:32.990 DoesRefraction Read               OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.022 DoesRefraction Write              OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.055 EquatorialSystem                  OK       equLocalTopocentric
-00:25:33.087 FocalLength                       OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.120 GuideRateDeclination Read         OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.132 GuideRateDeclination Write        OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
-00:25:33.165 GuideRateRightAscension Read      OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.176 GuideRateRightAscension Write     OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
-00:25:33.209 IsPulseGuiding                    OK       False
-00:25:33.242 RightAscension                    OK       00:00:00.00
-00:25:33.277 RightAscensionRate Read           OK       0.00
-00:25:33.311 RightAscensionRate Write          OK       CanSetRightAscensionRate is False and a PropertyNotImplementedException exception was generated as expected
-00:25:33.345 SiteElevation Read                OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.380 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.391 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.403 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.461 SiteLatitude Read                 OK        00:00:00.00
-00:25:33.499 SiteLatitude Write                OK       Invalid Value exception generated as expected on set site latitude < -90 degrees
-00:25:33.511 SiteLatitude Write                OK       Invalid Value exception generated as expected on set site latitude > 90 degrees
-00:25:33.545 SiteLatitude Write                OK       Legal value  00:00:00.00 degrees written successfully
-00:25:33.600 SiteLongitude Read                OK       -03:48:00.00
-00:25:33.635 SiteLongitude Write               OK       Invalid Value exception generated as expected on set site longitude < -180 degrees
-00:25:33.647 SiteLongitude Write               OK       Invalid Value exception generated as expected on set site longitude > 180 degrees
-00:25:33.737 SiteLongitude Write               OK       Legal value -03:48:00.00 degrees written successfully
-00:25:33.778 Slewing                           OK       False
-00:25:33.812 SlewSettleTime Read               OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.847 SlewSettleTime Write              OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.859 SlewSettleTime Write              OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.894 SideOfPier Read                   OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:33.944 SiderealTime                      OK       13:47:08.92
-00:25:33.966 SiderealTime                      OK       Scope and ASCOM sidereal times agree to better than 5 minutes, Scope: 13:47:08.92, ASCOM: 13:48:46.01
-00:25:34.000 TargetDeclination Read            OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:34.035 TargetDeclination Write           INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
-00:25:34.052 TargetRightAscension Read         OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:34.089 TargetRightAscension Write        INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
-00:25:34.101 Tracking Read                     OK       True
-00:25:34.135 Tracking Write                    OK       CanSetTracking is False and a PropertyNotImplementedException exception was generated as expected
-00:25:34.180 TrackingRates                              Found drive rate: driveSidereal
-00:25:34.192 TrackingRates                     OK       Drive rates read OK
-00:25:34.205 TrackingRates                     OK       Disposed tracking rates OK
-00:25:34.241 TrackingRates                     OK       Successfully obtained a TrackingRates object after the previous TrackingRates object was disposed
-00:25:34.257 TrackingRate Read                 ISSUE    This member is mandatory but threw a PropertyNotImplementedException exception, it must function per the ASCOM specification.
-00:25:34.347 UTCDate Read                      OK       01-May-2019 19:00:45.000
-00:25:34.586 UTCDate Write                     OK       New UTCDate written successfully: 01/05/2019 20:00:45
+18:42:19.348 AlignmentMode                     OK       algPolar
+18:42:19.385 Altitude                          OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.418 ApertureArea                      OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.450 ApertureDiameter                  OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.482 AtHome                            OK       False
+18:42:19.513 AtPark                            OK       False
+18:42:19.573 Azimuth                           OK       323.76
+18:42:19.644 Declination                       OK        25:33:02.00
+18:42:19.676 DeclinationRate Read              OK       0.00
+18:42:19.709 DeclinationRate Write             OK       CanSetDeclinationRate is False and a PropertyNotImplementedException exception was generated as expected
+18:42:19.741 DoesRefraction Read               OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.773 DoesRefraction Write              OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.805 EquatorialSystem                  OK       equLocalTopocentric
+18:42:19.837 FocalLength                       OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.870 GuideRateDeclination Read         OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.880 GuideRateDeclination Write        OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
+18:42:19.914 GuideRateRightAscension Read      OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:19.924 GuideRateRightAscension Write     OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
+18:42:19.958 IsPulseGuiding                    OK       False
+18:42:19.990 RightAscension                    OK       00:00:00.00
+18:42:20.022 RightAscensionRate Read           OK       0.00
+18:42:20.055 RightAscensionRate Write          OK       CanSetRightAscensionRate is False and a PropertyNotImplementedException exception was generated as expected
+18:42:20.088 SiteElevation Read                OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.122 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.132 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.145 SiteElevation Write               OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.205 SiteLatitude Read                 OK        00:00:00.00
+18:42:20.242 SiteLatitude Write                OK       Invalid Value exception generated as expected on set site latitude < -90 degrees
+18:42:20.254 SiteLatitude Write                OK       Invalid Value exception generated as expected on set site latitude > 90 degrees
+18:42:20.290 SiteLatitude Write                OK       Legal value  00:00:00.00 degrees written successfully
+18:42:20.347 SiteLongitude Read                OK       -06:12:00.00
+18:42:20.382 SiteLongitude Write               OK       Invalid Value exception generated as expected on set site longitude < -180 degrees
+18:42:20.393 SiteLongitude Write               OK       Invalid Value exception generated as expected on set site longitude > 180 degrees
+18:42:20.486 SiteLongitude Write               OK       Legal value -06:12:00.00 degrees written successfully
+18:42:20.526 Slewing                           OK       False
+18:42:20.560 SlewSettleTime Read               OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.599 SlewSettleTime Write              OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.611 SlewSettleTime Write              OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.650 SideOfPier Read                   OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.699 SiderealTime                      OK       07:52:31.84
+18:42:20.710 SiderealTime                      INFO     Scope and ASCOM sidereal times are up to 0.5 hour different, Scope: 07:52:31.84, ASCOM: 07:58:56.94
+18:42:20.749 TargetDeclination Read            OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.794 TargetDeclination Write           INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
+18:42:20.811 TargetRightAscension Read         OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:20.849 TargetRightAscension Write        INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
+18:42:20.861 Tracking Read                     OK       True
+18:42:20.899 Tracking Write                    OK       CanSetTracking is False and a PropertyNotImplementedException exception was generated as expected
+18:42:20.940 TrackingRates                              Found drive rate: driveSidereal
+18:42:20.951 TrackingRates                     OK       Drive rates read OK
+18:42:20.965 TrackingRates                     OK       Disposed tracking rates OK
+18:42:21.001 TrackingRates                     OK       Successfully obtained a TrackingRates object after the previous TrackingRates object was disposed
+18:42:21.013 TrackingRate Read                 ISSUE    This member is mandatory but threw a PropertyNotImplementedException exception, it must function per the ASCOM specification.
+18:42:21.105 UTCDate Read                      OK       02-May-2019 17:42:18.000
+18:42:21.272 UTCDate Write                     OK       New UTCDate written successfully: 02/05/2019 18:42:18
  
 Methods 
-00:25:34.827 CanMoveAxis:Primary               OK       CanMoveAxis:Primary True
-00:25:34.863 CanMoveAxis:Secondary             OK       CanMoveAxis:Secondary True
-00:25:34.899 CanMoveAxis:Tertiary              OK       CanMoveAxis:Tertiary False
-00:25:34.934 Park/Unpark                       INFO     Tests skipped
-00:25:34.956 AbortSlew                         OK       AbortSlew OK when not slewing
-00:25:35.021 AxisRate:Primary                  OK       Empty axis rate returned
-00:25:35.033 AxisRate:Primary                  OK       Disposed axis rates OK
-00:25:35.045 AxisRate:Secondary                OK       Empty axis rate returned
-00:25:35.059 AxisRate:Secondary                OK       Disposed axis rates OK
-00:25:35.072 AxisRate:Tertiary                 OK       Empty axis rate returned
-00:25:35.084 AxisRate:Tertiary                 OK       Disposed axis rates OK
-00:25:35.099 FindHome                          OK       CanFindHome is False and a MethodNotImplementedException exception was generated as expected
-00:25:35.150 MoveAxis Primary                  WARNING  MoveAxis tests skipped because there are no AxisRate values
-00:25:35.163 MoveAxis Primary                  OK       AxisRates object successfully disposed
-00:25:35.221 MoveAxis Secondary                WARNING  MoveAxis tests skipped because there are no AxisRate values
-00:25:35.234 MoveAxis Secondary                OK       AxisRates object successfully disposed
-00:25:35.293 MoveAxis Tertiary                 OK       CanMoveAxis Tertiary is False and a MethodNotImplementedException exception was generated as expected
-00:25:37.331 PulseGuide                        OK       Synchronous pulse guide found OK
-00:25:37.428 SlewToCoordinates                 ISSUE    CanSlew is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:37.477 SlewToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.521 SlewToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.581 SlewToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.626 SlewToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.713 SlewToCoordinatesAsync            ISSUE    CanSlewAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:37.751 SlewToCoordinatesAsync (Bad L)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.795 SlewToCoordinatesAsync (Bad L)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.855 SlewToCoordinatesAsync (Bad H)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.898 SlewToCoordinatesAsync (Bad H)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:37.999 SyncToCoordinates                 ISSUE    CanSync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.037 SyncToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:38.079 SyncToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:38.139 SyncToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:38.185 SyncToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:38.243 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.259 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.300 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.341 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.357 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.373 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
-00:25:38.497 SlewToTarget                      ISSUE    CanSlew is True but can't set TargetRightAscension and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.513 SlewToTarget                      ISSUE    CanSlew is True but can't set TargetDeclination and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.531 SlewToTarget                      ISSUE    CanSlew is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.569 SlewToTarget (Bad L)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.611 SlewToTarget (Bad L)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.670 SlewToTarget (Bad H)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.716 SlewToTarget (Bad H)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.809 SlewToTargetAsync                 ISSUE    CanSlewAsync is True but can't set TargetRightAscension and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.823 SlewToTargetAsync                 ISSUE    CanSlewAsync is True but can't set TargetDeclination and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.843 SlewToTargetAsync                 ISSUE    CanSlewAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.883 SlewToTargetAsync (Bad L)         ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.930 SlewToTargetAsync (Bad L)         ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:38.990 SlewToTargetAsync (Bad H)         ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.031 SlewToTargetAsync (Bad H)         ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.091 DestinationSideOfPier                      Test skipped as AligmentMode is not German Polar
-00:25:39.110 SlewToAltAz                       ISSUE    CanSlewAltAz is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.151 SlewToAltAz (Bad L)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.172 SlewToAltAz (Bad L)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.234 SlewToAltAz (Bad H)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.254 SlewToAltAz (Bad H)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.316 SlewToAltAzAsync                  ISSUE    CanSlewAltAzAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.357 SlewToAltAzAsync (Bad L)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.375 SlewToAltAzAsync (Bad L)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.439 SlewToAltAzAsync (Bad H)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.456 SlewToAltAzAsync (Bad H)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
-00:25:39.545 SyncToTarget                      ISSUE    CanSync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.585 SyncToTarget (Bad L)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.630 SyncToTarget (Bad L)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.690 SyncToTarget (Bad H)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.734 SyncToTarget (Bad H)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
-00:25:39.796 SyncToAltAz                       OK       CanSyncAltAz is False and a MethodNotImplementedException exception was generated as expected
- 
-SideOfPier Model Tests 
-00:25:39.866 SideOfPier Model Tests            INFO     Tests skipped because this driver does Not support SideOfPier Read
+18:42:21.516 CanMoveAxis:Primary               OK       CanMoveAxis:Primary True
+18:42:21.551 CanMoveAxis:Secondary             OK       CanMoveAxis:Secondary True
+18:42:21.587 CanMoveAxis:Tertiary              OK       CanMoveAxis:Tertiary False
+18:42:21.623 Park/Unpark                       INFO     Tests skipped
+18:42:21.645 AbortSlew                         OK       AbortSlew OK when not slewing
+18:42:21.714 AxisRate:Primary                  OK       Empty axis rate returned
+18:42:21.726 AxisRate:Primary                  OK       Disposed axis rates OK
+18:42:21.739 AxisRate:Secondary                OK       Empty axis rate returned
+18:42:21.754 AxisRate:Secondary                OK       Disposed axis rates OK
+18:42:21.769 AxisRate:Tertiary                 OK       Empty axis rate returned
+18:42:21.782 AxisRate:Tertiary                 OK       Disposed axis rates OK
+18:42:21.797 FindHome                          OK       CanFindHome is False and a MethodNotImplementedException exception was generated as expected
+18:42:21.845 MoveAxis Primary                  WARNING  MoveAxis tests skipped because there are no AxisRate values
+18:42:21.860 MoveAxis Primary                  OK       AxisRates object successfully disposed
+18:42:21.922 MoveAxis Secondary                WARNING  MoveAxis tests skipped because there are no AxisRate values
+18:42:21.934 MoveAxis Secondary                OK       AxisRates object successfully disposed
+18:42:21.992 MoveAxis Tertiary                 OK       CanMoveAxis Tertiary is False and a MethodNotImplementedException exception was generated as expected
+18:42:24.032 PulseGuide                        OK       Synchronous pulse guide found OK
+18:42:24.128 SlewToCoordinates                 ISSUE    CanSlew is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:24.178 SlewToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.224 SlewToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.283 SlewToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.326 SlewToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.412 SlewToCoordinatesAsync            ISSUE    CanSlewAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:24.451 SlewToCoordinatesAsync (Bad L)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.494 SlewToCoordinatesAsync (Bad L)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.554 SlewToCoordinatesAsync (Bad H)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.614 SlewToCoordinatesAsync (Bad H)    ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.738 SyncToCoordinates                 ISSUE    CanSync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:24.777 SyncToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.824 SyncToCoordinates (Bad L)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.885 SyncToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.929 SyncToCoordinates (Bad H)         ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:24.988 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.003 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.043 TargetRightAscension Write        OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.079 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.094 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.109 TargetDeclination Write           OK       Optional member threw a PropertyNotImplementedException exception.
+18:42:25.174 SlewToTarget                      ISSUE    CanSlew is True but can't set TargetRightAscension and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.188 SlewToTarget                      ISSUE    CanSlew is True but can't set TargetDeclination and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.204 SlewToTarget                      ISSUE    CanSlew is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.243 SlewToTarget (Bad L)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.287 SlewToTarget (Bad L)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.347 SlewToTarget (Bad H)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.392 SlewToTarget (Bad H)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.479 SlewToTargetAsync                 ISSUE    CanSlewAsync is True but can't set TargetRightAscension and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.494 SlewToTargetAsync                 ISSUE    CanSlewAsync is True but can't set TargetDeclination and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.513 SlewToTargetAsync                 ISSUE    CanSlewAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.552 SlewToTargetAsync (Bad L)         ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.596 SlewToTargetAsync (Bad L)         ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.655 SlewToTargetAsync (Bad H)         ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.699 SlewToTargetAsync (Bad H)         ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.760 DestinationSideOfPier                      Test skipped as AligmentMode is not German Polar
+18:42:25.778 SlewToAltAz                       ISSUE    CanSlewAltAz is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:25.820 SlewToAltAz (Bad L)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:25.837 SlewToAltAz (Bad L)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:25.899 SlewToAltAz (Bad H)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:25.920 SlewToAltAz (Bad H)               ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:25.984 SlewToAltAzAsync                  ISSUE    CanSlewAltAzAsync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.025 SlewToAltAzAsync (Bad L)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:26.042 SlewToAltAzAsync (Bad L)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:26.104 SlewToAltAzAsync (Bad H)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:26.123 SlewToAltAzAsync (Bad H)          ISSUE    This member is mandatory but threw a MethodNotImplementedException exception, it must function per the ASCOM specification.
+18:42:26.239 SyncToTarget                      ISSUE    CanSync is True and a MethodNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.278 SyncToTarget (Bad L)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.321 SyncToTarget (Bad L)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.382 SyncToTarget (Bad H)              ISSUE    Exception setting bad RA coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.427 SyncToTarget (Bad H)              ISSUE    Exception setting bad Dec coordinate and a PropertyNotImplementedException exception was thrown, this method must function per the ASCOM specification.
+18:42:26.538 SyncToAltAz                       OK       CanSyncAltAz is False and a MethodNotImplementedException exception was generated as expected
  
 Post-run Checks 
-00:25:39.960 Mount Safety                      INFO     Tracking can't be turned off for this mount, please switch off manually.
+18:42:26.651 Mount Safety                      INFO     Tracking can't be turned off for this mount, please switch off manually.
  
 Conformance test complete 
  

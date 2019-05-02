@@ -43,8 +43,11 @@ namespace ASCOM
 
             //Console.WriteLine(device.Slewing);
 
-            Console.WriteLine(device.UTCDate);
-            device.UTCDate = DateTime.UtcNow;
+            //device.UTCDate = DateTime.UtcNow;
+            //Console.WriteLine(device.UTCDate.ToLocalTime());
+
+
+            Console.WriteLine(device.AlignmentMode);
 
             double l = device.SiteLatitude;
             device.SiteLatitude = l;

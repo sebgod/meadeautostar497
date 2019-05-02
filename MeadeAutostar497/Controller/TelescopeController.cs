@@ -262,7 +262,9 @@ namespace ASCOM.MeadeAutostar497.Controller
         {
             get
             {
-                var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
+                char ack = (char)6;
+                //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
+                var alignmentString = SerialPort.CommandChar(ack.ToString());
                 //:GW# Get Scope Alignment Status
                 //Returns: <mount><tracking><alignment>#
                 //    where:
@@ -270,13 +272,13 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //tracking: T - tracking, N - not tracking
                 //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
 
-                switch (alignmentString[0])
+                switch (alignmentString)
                 {
                     case 'A': return AlignmentModes.algAltAz;
                     case 'P': return AlignmentModes.algPolar;
                     case 'G': return AlignmentModes.algGermanPolar;
                     default:
-                        throw new ASCOM.InvalidValueException($"unknown alignment returned from telescope: {alignmentString[0]}");
+                        throw new ASCOM.InvalidValueException($"unknown alignment returned from telescope: {alignmentString}");
                 }
             }
             set

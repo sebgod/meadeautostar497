@@ -62,6 +62,8 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public void Open()
         {
+            _serialPort.ReadTimeout = 5000;
+            _serialPort.WriteTimeout = 5000;
             _serialPort.Open();
         }
 
