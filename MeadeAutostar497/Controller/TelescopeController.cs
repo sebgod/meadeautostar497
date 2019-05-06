@@ -190,16 +190,8 @@ namespace ASCOM.MeadeAutostar497.Controller
             get
             {
                 var latitude = SerialPort.CommandTerminated( ":Gt#", "#");
-                
-                double lat = int.Parse(latitude.Substring(1, 2));
-                lat = lat + double.Parse(latitude.Substring(4, 2)) / 60;
-                if (latitude.Length == 9)
-                    lat = lat + double.Parse(latitude.Substring(7, 2)) / 60 / 60;
 
-                if (latitude[0] == '-')
-                    lat = -lat;
-
-                return lat;
+                return DMSToDouble(latitude);
             }
             set
             {
@@ -220,12 +212,31 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         private double DMSToDouble(string DMS)
         {
-            double l = int.Parse(DMS.Substring(0, 3));
-            l = l + double.Parse(DMS.Substring(4, 2)) / 60;
-            if (DMS.Length == 9)
-                l = l + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
+            if (IsNumeric(DMS[0]))
+            {
+                double l = int.Parse(DMS.Substring(0, 3));
+                l = l + double.Parse(DMS.Substring(4, 2)) / 60;
+                if (DMS.Length == 9)
+                    l = l + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
 
-            return l;
+                return l;
+            }
+
+            double lat = int.Parse(DMS.Substring(1, 2));
+            lat = lat + double.Parse(DMS.Substring(4, 2)) / 60;
+            if (DMS.Length == 9)
+                lat = lat + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
+
+            if (DMS[0] == '-')
+                lat = -lat;
+
+            return lat;
+        }
+
+        private bool IsNumeric(char c)
+        {
+            char[] nums = new[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+            return nums.Contains(c);
         }
 
         public double SiteLongitude
@@ -336,6 +347,17 @@ namespace ASCOM.MeadeAutostar497.Controller
                 double az = DMSToDouble(result);
 
                 return az;
+            }
+        }
+
+        public double Altitude {
+            get
+            {
+                var result = SerialPort.CommandTerminated(":GA#", "#");
+                //:GA# Get Telescope Altitude
+                //Returns: sDD* MM# or sDD*MM’SS#
+                //The current scope altitude. The returned format depending on the current precision setting.
+                return DMSToDouble(result);
             }
         }
 

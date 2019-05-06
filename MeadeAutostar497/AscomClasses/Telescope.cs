@@ -306,8 +306,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Altitude", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                var alt = _telescopeController.Altitude;
+                tl.LogMessage("Altitude", $"{alt}");
+                return alt;
             }
         }
 
