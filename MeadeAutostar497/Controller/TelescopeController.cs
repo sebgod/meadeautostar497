@@ -633,6 +633,24 @@ namespace ASCOM.MeadeAutostar497.Controller
                 throw new ASCOM.InvalidOperationException("Unable to perform sync");
         }
 
+        public void SlewToTarget()
+        {
+            SlewToTargetAsync();
+
+            while (Slewing)
+            {
+                Util.WaitForMilliseconds(200);
+            }
+        }
+
+        public void SlewToTargetAsync()
+        {
+            if (TargetDeclination == INVALID_PARAMETER || TargetRightAscension == INVALID_PARAMETER )
+                throw new ASCOM.InvalidOperationException("No target selected to slew to.");
+
+            DoSlewAsync(true);
+        }
+
         //todo remove the polar parameter and split method into two.
         private void DoSlewAsync( bool polar) 
         {

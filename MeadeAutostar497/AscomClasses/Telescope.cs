@@ -804,14 +804,14 @@ namespace ASCOM.MeadeAutostar497
 
         public void SlewToTarget()
         {
-            tl.LogMessage("SlewToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTarget");
+            tl.LogMessage("SlewToTarget", "Executing");
+            _telescopeController.SlewToTarget();
         }
 
         public void SlewToTargetAsync()
         {
-            tl.LogMessage("SlewToTargetAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTargetAsync");
+            tl.LogMessage("SlewToTargetAsync", "Executing");
+            _telescopeController.SlewToTargetAsync();
         }
 
         public bool Slewing
