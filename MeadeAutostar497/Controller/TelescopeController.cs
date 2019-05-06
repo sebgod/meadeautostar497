@@ -9,9 +9,9 @@ namespace ASCOM.MeadeAutostar497.Controller
     //todo stop this being a singleton, and instead use a server to make only a single instance.
     public sealed class TelescopeController : ITelescopeController
     {
-        private static readonly Lazy<TelescopeController> lazy = new Lazy<TelescopeController>();
+        private static readonly Lazy<TelescopeController> Lazy = new Lazy<TelescopeController>();
 
-        public static TelescopeController Instance => lazy.Value;
+        public static TelescopeController Instance => Lazy.Value;
 
         //todo remove this as it can cause problems in production
         private ISerialProcessor _serialPort;
@@ -69,7 +69,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                     //Connecting
                     try
                     {
-                        _parked = false;
+                        AtPark = false;
                         SerialPort.DtrEnable = false;
                         SerialPort.RtsEnable = false;
                         SerialPort.BaudRate = 9600;
@@ -92,7 +92,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 {
                     //Disconnecting
                     SerialPort.Close();
-                    _parked = false;
+                    AtPark = false;
                 }
             }
         }
@@ -191,15 +191,15 @@ namespace ASCOM.MeadeAutostar497.Controller
             {
                 var latitude = SerialPort.CommandTerminated( ":Gt#", "#");
 
-                return DMSToDouble(latitude);
+                return DmsToDouble(latitude);
             }
             set
             {
                 if (value > 90)
-                    throw new  ASCOM.InvalidValueException("Latitude cannot be greater than 90 degrees.");
+                    throw new  InvalidValueException("Latitude cannot be greater than 90 degrees.");
 
                 if (value < -90)
-                    throw new ASCOM.InvalidValueException("Latitude cannot be less than -90 degrees.");
+                    throw new InvalidValueException("Latitude cannot be less than -90 degrees.");
 
                 int d =  Convert.ToInt32(Math.Floor(value));
                 int m = Convert.ToInt32(60 * (value - d));
@@ -210,24 +210,24 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
-        private double DMSToDouble(string DMS)
+        private double DmsToDouble(string dms)
         {
-            if (IsNumeric(DMS[0]))
+            if (IsNumeric(dms[0]))
             {
-                double l = int.Parse(DMS.Substring(0, 3));
-                l = l + double.Parse(DMS.Substring(4, 2)) / 60;
-                if (DMS.Length == 9)
-                    l = l + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
+                double l = int.Parse(dms.Substring(0, 3));
+                l = l + double.Parse(dms.Substring(4, 2)) / 60;
+                if (dms.Length == 9)
+                    l = l + double.Parse(dms.Substring(7, 2)) / 60 / 60;
 
                 return l;
             }
 
-            double lat = int.Parse(DMS.Substring(1, 2));
-            lat = lat + double.Parse(DMS.Substring(4, 2)) / 60;
-            if (DMS.Length == 9)
-                lat = lat + double.Parse(DMS.Substring(7, 2)) / 60 / 60;
+            double lat = int.Parse(dms.Substring(1, 2));
+            lat = lat + double.Parse(dms.Substring(4, 2)) / 60;
+            if (dms.Length == 9)
+                lat = lat + double.Parse(dms.Substring(7, 2)) / 60 / 60;
 
-            if (DMS[0] == '-')
+            if (dms[0] == '-')
                 lat = -lat;
 
             return lat;
@@ -244,7 +244,7 @@ namespace ASCOM.MeadeAutostar497.Controller
             get
             {
                 var longitude = SerialPort.CommandTerminated(":Gg#", "#");
-                double l = DMSToDouble(longitude);
+                double l = DmsToDouble(longitude);
 
                 if (l > 180)
                     l = l - 360;
@@ -254,10 +254,10 @@ namespace ASCOM.MeadeAutostar497.Controller
             set
             {
                 if (value > 180)
-                    throw new ASCOM.InvalidValueException("Longitude cannot be greater than 180 degrees.");
+                    throw new InvalidValueException("Longitude cannot be greater than 180 degrees.");
 
                 if (value < -180)
-                    throw new ASCOM.InvalidValueException("Longitude cannot be lower than -180 degrees.");
+                    throw new InvalidValueException("Longitude cannot be lower than -180 degrees.");
 
                 int d = Convert.ToInt32(Math.Floor(value));
                 int m = Convert.ToInt32(60 * (value - d));
@@ -289,7 +289,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                     case 'P': return AlignmentModes.algPolar;
                     case 'G': return AlignmentModes.algGermanPolar;
                     default:
-                        throw new ASCOM.InvalidValueException($"unknown alignment returned from telescope: {alignmentString}");
+                        throw new InvalidValueException($"unknown alignment returned from telescope: {alignmentString}");
                 }
             }
             set
@@ -316,9 +316,7 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
-        private bool _parked = false;
-
-        public bool AtPark => _parked;
+        public bool AtPark { get; private set; }
 
         public double Azimuth
         {
@@ -329,7 +327,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //Returns: DDD*MM#T or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
 
-                double az = DMSToDouble(result);
+                double az = DmsToDouble(result);
                 
                 return az;
             }
@@ -344,7 +342,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //Returns: sDD* MM# or sDD*MM’SS#
                 //Depending upon the current precision setting for the telescope.
 
-                double az = DMSToDouble(result);
+                double az = DmsToDouble(result);
 
                 return az;
             }
@@ -357,7 +355,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //:GA# Get Telescope Altitude
                 //Returns: sDD* MM# or sDD*MM’SS#
                 //The current scope altitude. The returned format depending on the current precision setting.
-                return DMSToDouble(result);
+                return DmsToDouble(result);
             }
         }
 
@@ -405,10 +403,10 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public void Park()
         {
-            if (_parked)
+            if (AtPark)
                 return;
 
-            _parked = true;
+            AtPark = true;
             _serialPort.Command(":hP#");
         }
 
