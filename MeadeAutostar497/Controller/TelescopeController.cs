@@ -3,12 +3,16 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using ASCOM.DeviceInterface;
+using ASCOM.Utilities;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.MeadeAutostar497.Controller
 {
     //todo stop this being a singleton, and instead use a server to make only a single instance.
     public sealed class TelescopeController : ITelescopeController
     {
+        private const double INVALID_PARAMETER = -1000;
+
         private static readonly Lazy<TelescopeController> Lazy = new Lazy<TelescopeController>();
 
         public static TelescopeController Instance => Lazy.Value;
@@ -30,6 +34,19 @@ namespace ASCOM.MeadeAutostar497.Controller
                 }
 
                 _serialPort = value;
+            }
+        }
+
+        private IUtil _util;
+        public IUtil Util
+        {
+            get => _util ?? (_util = new Util());
+            set
+            {
+                if (Equals(_util, value))
+                    return;
+
+                _util = value;
             }
         }
 
@@ -333,6 +350,25 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        public double RightAscension {
+            get
+            {
+                var result = SerialPort.CommandTerminated(":GR#", "#");
+                //:GR# Get Telescope RA
+                //Returns: HH: MM.T# or HH:MM:SS#
+                //Depending which precision is set for the telescope
+
+                double ra = HmsToDouble(result);
+
+                return ra;
+            }
+        }
+
+        private double HmsToDouble(string hms)
+        {
+            return Util.HMSToHours(hms);
+        }
+
         public double Declination
         {
             get
@@ -345,6 +381,89 @@ namespace ASCOM.MeadeAutostar497.Controller
                 double az = DmsToDouble(result);
 
                 return az;
+            }
+        }
+
+        private double _targetRightAscension = INVALID_PARAMETER;
+        public double TargetRightAscension {
+            get
+            {
+                if (_targetRightAscension == INVALID_PARAMETER)
+                    throw new ASCOM.InvalidOperationException("Target not set");
+
+                var result = SerialPort.CommandTerminated(":Gr#", "#");
+                //:Gr# Get current/target object RA
+                //Returns: HH: MM.T# or HH:MM:SS
+                //Depending upon which precision is set for the telescope
+
+                double targetDec = HmsToDouble(result);
+
+                return targetDec;
+            }
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException("Right ascension value cannot be below 0");
+
+                if (value >= 24)
+                    throw new ArgumentOutOfRangeException("Right ascension value cannot be greater than 23:59:59");
+
+
+                //todo implement the low precision version
+
+                var hms = _util.HoursToHMS(value, ":", ":", ":", 2);
+                var response = SerialPort.CommandChar($":Sr{hms}#");
+                //:SrHH:MM.T#
+                //:SrHH:MM:SS#
+                //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
+                //    Returns:
+                //0 – Invalid
+                //1 - Valid
+
+                if (response == '0')
+                    throw new InvalidOperationException("Failed to set TargetRightAscension.");
+
+                _targetRightAscension = value;
+            }
+        }
+
+        private double _targetDeclination = INVALID_PARAMETER;
+        public double TargetDeclination {
+            get
+            {
+                if (_targetDeclination == INVALID_PARAMETER)
+                    throw new ASCOM.InvalidOperationException("Target not set");
+
+                var result = SerialPort.CommandTerminated(":Gd#", "#");
+                //:Gd# Get Currently Selected Object/Target Declination
+                //Returns: sDD* MM# or sDD*MM’SS#
+                //Depending upon the current precision setting for the telescope.
+
+                double targetDec = DmsToDouble(result);
+
+                return targetDec;
+
+            }
+            set
+            {
+                //todo implement low precision version of this.
+
+                var dms = _util.DegreesToDMS(value, "*", ":", ":", 2);
+                var s = value < 0 ? '-' : '+';
+
+                var result = SerialPort.CommandChar($":Sd{s}{dms}#");
+                //:SdsDD*MM#
+                //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
+                //Returns:
+                //1 - Dec Accepted
+                //0 – Dec invalid
+
+                if (result == '0')
+                {
+                    throw new ASCOM.InvalidOperationException("Target declination invalid");
+                }
+
+                _targetDeclination = value;
             }
         }
 
@@ -408,6 +527,62 @@ namespace ASCOM.MeadeAutostar497.Controller
 
             AtPark = true;
             _serialPort.Command(":hP#");
+        }
+
+        public void SlewToCoordinates(double rightAscension, double declination)
+        {
+            SlewToCoordinatesAsync(rightAscension, declination);
+
+            while (Slewing) //wait for slew to complete
+            {
+                _util.WaitForMilliseconds(200); //be responsive to AbortSlew();
+            }
+        }
+
+        public void SlewToCoordinatesAsync(double rightAscension, double declination)
+        {
+            TargetRightAscension = rightAscension;
+            TargetDeclination = declination;
+
+            DoSlewAsync();
+        }
+
+        private void DoSlewAsync()
+        {
+            char response = Char.MinValue;
+            switch (AlignmentMode)
+            {
+                case AlignmentModes.algPolar:
+                    response = SerialPort.CommandChar(":MS#");
+                    //:MS# Slew to Target Object
+                    //Returns:
+                    //0 Slew is Possible
+                    //1<string># Object Below Horizon w/string message
+                    //2<string># Object Below Higher w/string message
+                    break;
+                case AlignmentModes.algAltAz:
+                    break;
+                default:
+                    throw new ASCOM.NotImplementedException("Not implemented");
+            }
+
+            switch (response)
+            {
+                case '0':
+                    //We're slewing everything should be working just fine.
+                    break;
+                case '1':
+                    //Below Horizon 
+                    string belowHorizonMessage = SerialPort.ReadTerminated("#");
+                    throw new ASCOM.InvalidOperationException(belowHorizonMessage);
+                case '2':
+                    //Below Horizon 
+                    string belowMinimumElevationMessage = SerialPort.ReadTerminated("#");
+                    throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
+                default:
+                    throw new ASCOM.DriverException("This error should not happen");
+
+            }
         }
 
         public bool UserNewerPulseGuiding { get; set; } = true; //todo make this a device setting

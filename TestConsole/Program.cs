@@ -47,14 +47,18 @@ namespace ASCOM
             //Console.WriteLine(device.UTCDate.ToLocalTime());
 
 
-            Console.WriteLine(device.AlignmentMode);
+            //Console.WriteLine(device.AlignmentMode);
 
-            double l = device.SiteLatitude;
-            device.SiteLatitude = l;
+
+
+            //double l = device.SiteLatitude;
+            //device.SiteLatitude = l;
 
             //double l = device.SiteLongitude;
             //device.SiteLongitude = l;
             //Console.WriteLine(device.SiteLongitude);
+
+            Console.WriteLine(device.RightAscension);
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");

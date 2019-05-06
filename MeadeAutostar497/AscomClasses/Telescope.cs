@@ -651,7 +651,7 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                double rightAscension = 0.0;
+                double rightAscension = _telescopeController.RightAscension;
                 tl.LogMessage("RightAscension", "Get - " + utilities.HoursToHMS(rightAscension));
                 return rightAscension;
             }
@@ -790,14 +790,14 @@ namespace ASCOM.MeadeAutostar497
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinates", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinates");
+            tl.LogMessage("SlewToCoordinates", $"Ra={RightAscension}, Dec={Declination}");
+            _telescopeController.SlewToCoordinates(RightAscension, Declination);
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinatesAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinatesAsync");
+            tl.LogMessage("SlewToCoordinatesAsync", $"Ra={RightAscension}, Dec={Declination}");
+            _telescopeController.SlewToCoordinatesAsync(RightAscension, Declination);
         }
 
         public void SlewToTarget()
@@ -845,13 +845,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("TargetDeclination Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", false);
+                var targetDec = _telescopeController.TargetDeclination;
+                tl.LogMessage("TargetDeclination Get", $"{targetDec}");
+                return targetDec;
             }
             set
-            {
-                tl.LogMessage("TargetDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", true);
+            {    
+                tl.LogMessage("TargetDeclination Set", $"{value}");
+                _telescopeController.TargetDeclination = value;
             }
         }
 
@@ -859,13 +860,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("TargetRightAscension Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", false);
+                var targetRa = _telescopeController.TargetRightAscension;
+                tl.LogMessage("TargetRightAscension Get", $"{targetRa}");
+                return targetRa;
             }
             set
             {
-                tl.LogMessage("TargetRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", true);
+                tl.LogMessage("TargetRightAscension Set", $"{value}");
+                _telescopeController.TargetRightAscension = value;
             }
         }
 
