@@ -27,5 +27,6 @@ namespace ASCOM.MeadeAutostar497.Controller
         void SlewToCoordinatesAsync(double rightAscension, double declination);
         void SlewToAltAz(double azimuth, double altitude);
         void SlewToAltAzAsync(double azimuth, double altitude);
+        void SyncToTarget();
     }
 }

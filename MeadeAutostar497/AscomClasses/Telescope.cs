@@ -297,8 +297,10 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("AlignmentMode Get", "Not implemented");
-                return _telescopeController.AlignmentMode;
+                tl.LogMessage("AlignmentMode Get", "Getting alignmode");
+                var alignmode = _telescopeController.AlignmentMode;
+                tl.LogMessage("AlignmentMode Get", $"alignmode = {alignmode}");
+                return alignmode;
             }
         }
 
@@ -831,14 +833,17 @@ namespace ASCOM.MeadeAutostar497
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SyncToCoordinates", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToCoordinates");
+            tl.LogMessage("SyncToCoordinates", $"RA={RightAscension} Dec={Declination}");
+            _telescopeController.TargetRightAscension = RightAscension;
+            _telescopeController.TargetDeclination = Declination;
+
+            SyncToTarget();
         }
 
         public void SyncToTarget()
         {
-            tl.LogMessage("SyncToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToTarget");
+            tl.LogMessage("SyncToTarget", "Executing");
+            _telescopeController.SyncToTarget();
         }
 
         public double TargetDeclination

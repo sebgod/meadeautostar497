@@ -621,6 +621,18 @@ namespace ASCOM.MeadeAutostar497.Controller
             DoSlewAsync(false);
         }
 
+        public void SyncToTarget()
+        {
+            var result = SerialPort.CommandTerminated(":CM#", "#");
+            //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
+            //Returns:
+            //LX200's - a "#" terminated string with the name of the object that was synced.
+            //    Autostars & Autostar II - At static string: " M31 EX GAL MAG 3.5 SZ178.0'#"
+
+            if (result == string.Empty)
+                throw new ASCOM.InvalidOperationException("Unable to perform sync");
+        }
+
         //todo remove the polar parameter and split method into two.
         private void DoSlewAsync( bool polar) 
         {
