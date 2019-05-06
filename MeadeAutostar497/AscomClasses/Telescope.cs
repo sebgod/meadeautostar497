@@ -778,14 +778,14 @@ namespace ASCOM.MeadeAutostar497
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAz", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+            tl.LogMessage("SlewToAltAz", $"Az=~{Azimuth} Alt={Altitude}");
+            _telescopeController.SlewToAltAz(Azimuth, Altitude);
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAzAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+            tl.LogMessage("SlewToAltAzAsync", $"Az=~{Azimuth} Alt={Altitude}");
+            _telescopeController.SlewToAltAzAsync(Azimuth, Altitude);
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)

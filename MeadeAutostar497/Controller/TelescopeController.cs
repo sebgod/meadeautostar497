@@ -410,7 +410,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
                 //todo implement the low precision version
 
-                var hms = _util.HoursToHMS(value, ":", ":", ":", 2);
+                var hms = Util.HoursToHMS(value, ":", ":", ":", 2);
                 var response = SerialPort.CommandChar($":Sr{hms}#");
                 //:SrHH:MM.T#
                 //:SrHH:MM:SS#
@@ -453,7 +453,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                     throw new ASCOM.InvalidValueException("Declination cannot be less than -90.");
 
 
-                var dms = _util.DegreesToDMS(value, "*", ":", ":", 2);
+                var dms = Util.DegreesToDMS(value, "*", ":", ":", 2);
                 var s = value < 0 ? '-' : '+';
 
                 var result = SerialPort.CommandChar($":Sd{s}{dms}#");
@@ -540,7 +540,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
             while (Slewing) //wait for slew to complete
             {
-                _util.WaitForMilliseconds(200); //be responsive to AbortSlew();
+                Util.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
         }
 
@@ -549,45 +549,123 @@ namespace ASCOM.MeadeAutostar497.Controller
             TargetRightAscension = rightAscension;
             TargetDeclination = declination;
 
-            DoSlewAsync();
+            DoSlewAsync(true);
         }
 
-        private void DoSlewAsync()
+        public void SlewToAltAz(double azimuth, double altitude)
         {
-            char response = Char.MinValue;
-            switch (AlignmentMode)
+            SlewToAltAzAsync(azimuth, altitude);
+
+            while (Slewing) //wait for slew to complete
             {
-                case AlignmentModes.algPolar:
-                    response = SerialPort.CommandChar(":MS#");
+                Util.WaitForMilliseconds(200); //be responsive to AbortSlew();
+            }
+        }
+
+        private double TargetAltitude
+        {
+            set
+            {
+                if (value > 90)
+                    throw new ASCOM.InvalidValueException("Altitude cannot be greater than 90.");
+
+                if (value < 0)
+                    throw new ASCOM.InvalidValueException("Altitide cannot be less than 0.");
+
+
+                var dms = Util.DegreesToDMS(value, "*", "'", ".", 2);
+                var s = value < 0 ? '-' : '+';
+
+                var result = SerialPort.CommandChar($":Sa{s}{dms}#");
+                //:SasDD*MM#
+                //Set target object altitude to sDD*MM# or sDD*MM’SS# [LX 16”, Autostar, Autostar II]
+                //Returns:
+                //1 Object within slew range
+                //0 Object out of slew range
+
+                if (result == '0')
+                    throw new ASCOM.InvalidOperationException("Target altitude out of slew range");
+            }
+        }
+
+        private double TargetAzimuth
+        {
+            set
+            {
+                if (value >= 360)
+                    throw new ASCOM.InvalidValueException("Azimuth cannot be 360 or higher.");
+
+                if (value < 0)
+                    throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
+
+                var dms = Util.DegreesToDM(value, "*", ":", 2);
+
+                var result = SerialPort.CommandChar($":Sd{dms}#");
+                //:SzDDD*MM#
+                //Sets the target Object Azimuth[LX 16” and Autostar II only]
+                //Returns:
+                //0 – Invalid
+                //1 - Valid
+
+                if (result == '0')
+                    throw new ASCOM.InvalidOperationException("Target Azimuth out of slew range");
+
+            }
+        }
+
+        public void SlewToAltAzAsync(double azimuth, double altitude)
+        {
+            TargetAltitude = altitude;
+            TargetAzimuth = azimuth;
+
+            DoSlewAsync(false);
+        }
+
+        //todo remove the polar parameter and split method into two.
+        private void DoSlewAsync( bool polar) 
+        {
+            switch (polar)
+            {
+                case true:
+                    var response = SerialPort.CommandChar(":MS#");
                     //:MS# Slew to Target Object
                     //Returns:
                     //0 Slew is Possible
                     //1<string># Object Below Horizon w/string message
                     //2<string># Object Below Higher w/string message
-                    break;
-                case AlignmentModes.algAltAz:
-                    break;
-                default:
-                    throw new ASCOM.NotImplementedException("Not implemented");
-            }
 
-            switch (response)
-            {
-                case '0':
-                    //We're slewing everything should be working just fine.
-                    break;
-                case '1':
-                    //Below Horizon 
-                    string belowHorizonMessage = SerialPort.ReadTerminated("#");
-                    throw new ASCOM.InvalidOperationException(belowHorizonMessage);
-                case '2':
-                    //Below Horizon 
-                    string belowMinimumElevationMessage = SerialPort.ReadTerminated("#");
-                    throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
-                default:
-                    throw new ASCOM.DriverException("This error should not happen");
+                    switch (response)
+                    {
+                        case '0':
+                            //We're slewing everything should be working just fine.
+                            break;
+                        case '1':
+                            //Below Horizon 
+                            string belowHorizonMessage = SerialPort.ReadTerminated("#");
+                            throw new ASCOM.InvalidOperationException(belowHorizonMessage);
+                        case '2':
+                            //Below Horizon 
+                            string belowMinimumElevationMessage = SerialPort.ReadTerminated("#");
+                            throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
+                        default:
+                            throw new ASCOM.DriverException("This error should not happen");
 
-            }
+                    }
+                    break;
+                case false:
+                    var maResponse = SerialPort.CommandChar(":MA#");
+                    //:MA# Autostar, LX 16”, Autostar II – Slew to target Alt and Az
+                    //Returns:
+                    //0 - No fault
+                    //1 – Fault
+                    //    LX200 – Not supported
+
+                    if (maResponse == '1')
+                    {
+                        throw new ASCOM.InvalidOperationException("fault");
+                    }
+                    break;
+            }            
         }
 
         public bool UserNewerPulseGuiding { get; set; } = true; //todo make this a device setting

@@ -25,5 +25,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         void Park();
         void SlewToCoordinates(double rightAscension, double declination);
         void SlewToCoordinatesAsync(double rightAscension, double declination);
+        void SlewToAltAz(double azimuth, double altitude);
+        void SlewToAltAzAsync(double azimuth, double altitude);
     }
 }

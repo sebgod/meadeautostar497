@@ -58,7 +58,9 @@ namespace ASCOM
             //device.SiteLongitude = l;
             //Console.WriteLine(device.SiteLongitude);
 
-            Console.WriteLine(device.RightAscension);
+            //Console.WriteLine(device.RightAscension);
+
+            device.SlewToAltAz(0,0);
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");
