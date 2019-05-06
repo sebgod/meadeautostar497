@@ -396,17 +396,16 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //Returns: HH: MM.T# or HH:MM:SS
                 //Depending upon which precision is set for the telescope
 
-                double targetDec = HmsToDouble(result);
-
-                return targetDec;
+                double targetRa = HmsToDouble(result);
+                return targetRa;
             }
             set
             {
                 if (value < 0)
-                    throw new ArgumentOutOfRangeException("Right ascension value cannot be below 0");
+                    throw new InvalidValueException("Right ascension value cannot be below 0");
 
                 if (value >= 24)
-                    throw new ArgumentOutOfRangeException("Right ascension value cannot be greater than 23:59:59");
+                    throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
 
                 //todo implement the low precision version
@@ -447,6 +446,12 @@ namespace ASCOM.MeadeAutostar497.Controller
             set
             {
                 //todo implement low precision version of this.
+                if (value > 90)
+                    throw new ASCOM.InvalidValueException("Declination cannot be greater than 90.");
+
+                if (value < -90)
+                    throw new ASCOM.InvalidValueException("Declination cannot be less than -90.");
+
 
                 var dms = _util.DegreesToDMS(value, "*", ":", ":", 2);
                 var s = value < 0 ? '-' : '+';
