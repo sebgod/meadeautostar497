@@ -129,6 +129,10 @@ namespace ASCOM.MeadeAutostar497.Controller
             {
                 if (!Connected) return false;
 
+
+                if (movingAxis())
+                    return true;
+
                 var result = SerialPort.CommandTerminated(":D#", "#");
                 return result != string.Empty;
             }
@@ -649,6 +653,107 @@ namespace ASCOM.MeadeAutostar497.Controller
                 throw new ASCOM.InvalidOperationException("No target selected to slew to.");
 
             DoSlewAsync(true);
+        }
+
+        private bool movingAxis()
+        {
+            return _movingPrimary || _movingSecondary;
+        }
+
+        private bool _movingPrimary;
+        private bool _movingSecondary;
+        public void MoveAxis(TelescopeAxes axis, double rate)
+        {
+            var absrate = Math.Abs(rate);
+
+            switch(absrate)
+            {
+                case 0:
+                    //do nothing, it's ok this time as we're halting the slew.
+                    break;
+                case 1:
+                    SerialPort.Command(":RG#");
+                    //:RG# Set Slew rate to Guiding Rate (slowest)
+                    //Returns: Nothing
+                    break;                   
+                case 2:
+                    SerialPort.Command(":RC#");
+                    //:RC# Set Slew rate to Centering rate (2nd slowest)
+                    //Returns: Nothing
+                    break;
+                case 3:
+                    SerialPort.Command(":RM#");
+                    //:RM# Set Slew rate to Find Rate (2nd Fastest)
+                    //Returns: Nothing
+                    break;
+                case 4:
+                    SerialPort.Command(":RS#");
+                    //:RS# Set Slew rate to max (fastest)
+                    //Returns: Nothing
+                    break;
+                default:
+                    throw new ASCOM.InvalidValueException($"Rate {rate} not supported");
+                    
+            }
+
+            switch (axis)
+            {
+                case TelescopeAxes.axisPrimary:
+                    if (rate == 0)
+                    {
+                        _movingPrimary = false;
+                        SerialPort.Command(":Qe#");
+                        //:Qe# Halt eastward Slews
+                        //Returns: Nothing
+                        SerialPort.Command(":Qw#");
+                        //:Qw# Halt westward Slews
+                        //Returns: Nothing
+                    }
+                    else if (rate > 0)
+                    {
+                        SerialPort.Command(":Me#");
+                        //:Me# Move Telescope East at current slew rate
+                        //Returns: Nothing
+                        _movingPrimary = true;
+                    }
+                    else
+                    {
+                        SerialPort.Command(":Mw#");
+                        //:Mw# Move Telescope West at current slew rate
+                        //Returns: Nothing
+                        _movingPrimary = true;
+                    }
+                    break;
+                case TelescopeAxes.axisSecondary:
+                    if (rate == 0)
+                    {
+                        _movingSecondary = false;
+                        SerialPort.Command(":Qn#");
+                        //:Qn# Halt northward Slews
+                        //Returns: Nothing
+                        SerialPort.Command(":Qs#");
+                        //:Qs# Halt southward Slews
+                        //Returns: Nothing
+                    }
+                    else if (rate > 0)
+                    {
+                        SerialPort.Command(":Mn#");
+                        //:Mn# Move Telescope North at current slew rate
+                        //Returns: Nothing
+                        _movingSecondary = true;
+                    }
+                    else
+                    {
+                        SerialPort.Command(":Ms#");
+                        //:Ms# Move Telescope South at current slew rate
+                        //Returns: Nothing
+                        _movingSecondary = true;
+                    }
+
+                    break;
+                default:
+                    throw new ASCOM.MethodNotImplementedException("Can not move this axis.");
+            }
         }
 
         //todo remove the polar parameter and split method into two.

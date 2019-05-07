@@ -30,5 +30,6 @@ namespace ASCOM.MeadeAutostar497.Controller
         void SyncToTarget();
         void SlewToTarget();
         void SlewToTargetAsync();
+        void MoveAxis(TelescopeAxes axis, double rate);
     }
 }

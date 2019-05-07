@@ -633,8 +633,8 @@ namespace ASCOM.MeadeAutostar497
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            tl.LogMessage("MoveAxis", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("MoveAxis");
+            tl.LogMessage("MoveAxis", $"Axis={Axis} rate={Rate}");
+            _telescopeController.MoveAxis(Axis, Rate);
         }
 
         public void Park()
