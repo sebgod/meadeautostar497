@@ -56,7 +56,7 @@ namespace ASCOM.MeadeAutostar497
     /// </summary>
     [Guid("58e4fe97-1760-4e22-8ecd-2225876aeefc")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Telescope : ITelescopeV3
+    public class Telescope : ITelescopeV3, IFocuserV3
     {
         private ITelescopeController _telescopeController;
 
@@ -947,6 +947,124 @@ namespace ASCOM.MeadeAutostar497
 
         #endregion
 
+        #region IFocuser Implementation
+
+        private int focuserPosition = 0; // Class level variable to hold the current focuser position
+        private const int focuserSteps = 10000;
+
+        public bool Absolute
+        {
+            get
+            {
+                tl.LogMessage("Absolute Get", true.ToString());
+                return true; // This is an absolute focuser
+            }
+        }
+
+        public void Halt()
+        {
+            tl.LogMessage("Halt", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("Halt");
+        }
+
+        public bool IsMoving
+        {
+            get
+            {
+                tl.LogMessage("IsMoving Get", false.ToString());
+                return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
+            }
+        }
+
+        public bool Link
+        {
+            get
+            {
+                tl.LogMessage("Link Get", this.Connected.ToString());
+                return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
+            }
+            set
+            {
+                tl.LogMessage("Link Set", value.ToString());
+                this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
+            }
+        }
+
+        public int MaxIncrement
+        {
+            get
+            {
+                tl.LogMessage("MaxIncrement Get", focuserSteps.ToString());
+                return focuserSteps; // Maximum change in one move
+            }
+        }
+
+        public int MaxStep
+        {
+            get
+            {
+                tl.LogMessage("MaxStep Get", focuserSteps.ToString());
+                return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
+            }
+        }
+
+        public void Move(int Position)
+        {
+            tl.LogMessage("Move", Position.ToString());
+            focuserPosition = Position; // Set the focuser position
+        }
+
+        public int Position
+        {
+            get
+            {
+                return focuserPosition; // Return the focuser position
+            }
+        }
+
+        public double StepSize
+        {
+            get
+            {
+                tl.LogMessage("StepSize Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+            }
+        }
+
+        public bool TempComp
+        {
+            get
+            {
+                tl.LogMessage("TempComp Get", false.ToString());
+                return false;
+            }
+            set
+            {
+                tl.LogMessage("TempComp Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("TempComp", false);
+            }
+        }
+
+        public bool TempCompAvailable
+        {
+            get
+            {
+                tl.LogMessage("TempCompAvailable Get", false.ToString());
+                return false; // Temperature compensation is not available in this driver
+            }
+        }
+
+        public double Temperature
+        {
+            get
+            {
+                tl.LogMessage("Temperature Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("Temperature", false);
+            }
+        }
+
+        #endregion
+
         #region Private properties and methods
         // here are some useful properties and methods that can be used as required
         // to help with driver development
@@ -963,16 +1081,29 @@ namespace ASCOM.MeadeAutostar497
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            using (var P = new ASCOM.Utilities.Profile())
+            using (var p = new ASCOM.Utilities.Profile())
             {
-                P.DeviceType = "Telescope";
+                p.DeviceType = "Telescope";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    p.Register(driverID, driverDescription);
                 }
                 else
                 {
-                    P.Unregister(driverID);
+                    p.Unregister(driverID);
+                }
+            }
+
+            using (var p = new ASCOM.Utilities.Profile())
+            {
+                p.DeviceType = "Focuser";
+                if (bRegister)
+                {
+                    p.Register(driverID, driverDescription);
+                }
+                else
+                {
+                    p.Unregister(driverID);
                 }
             }
         }
