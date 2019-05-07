@@ -20,6 +20,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         double Declination { get; }
         double TargetRightAscension { get; set; }
         double TargetDeclination { get; set; }
+        DriveRates TrackingRate { get; }
         void AbortSlew();
         void PulseGuide(GuideDirections direction, int duration);
         void Park();

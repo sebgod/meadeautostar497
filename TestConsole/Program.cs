@@ -60,7 +60,10 @@ namespace ASCOM
 
             //Console.WriteLine(device.RightAscension);
 
-            device.SlewToAltAz(0,0);
+            //device.SlewToAltAz(0,0);
+
+
+            Console.WriteLine(device.TrackingRate);
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");

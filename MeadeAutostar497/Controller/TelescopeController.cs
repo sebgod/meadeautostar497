@@ -476,6 +476,49 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        public DriveRates TrackingRate
+        {
+            get
+            {
+                var result = SerialPort.CommandTerminated(":GT#", "#");
+
+                double rate = double.Parse(result);
+
+
+                if (rate == 60.1)
+                    return DriveRates.driveLunar;
+                else if (rate == 60.1)
+                    return DriveRates.driveSidereal;
+
+                return DriveRates.driveKing;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case DriveRates.driveSidereal:
+                        SerialPort.Command(":TQ#");
+                        //:TQ# Selects sidereal tracking rate
+                        //Returns: Nothing
+                        break;
+                    case DriveRates.driveLunar:
+                        SerialPort.Command(":TL#");
+                        //:TL# Set Lunar Tracking Rage
+                        //Returns: Nothing
+                        break;
+                    case DriveRates.driveSolar:
+                        SerialPort.Command(":TS#");
+                        //:TS# Select Solar tracking rate. [LS Only]
+                        //Returns: Nothing
+                        break;
+                    case DriveRates.driveKing:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
+            }
+        }
+
         public double Altitude {
             get
             {

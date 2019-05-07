@@ -896,8 +896,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("TrackingRate Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TrackingRate", false);
+                var tr = _telescopeController.TrackingRate;
+                tl.LogMessage("TrackingRate Get", $"{tr}");
+                return tr;
             }
             set
             {
