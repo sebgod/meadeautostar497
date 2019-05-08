@@ -800,6 +800,13 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        public void FocuserHalt()
+        {
+            SerialPort.Command(":FQ#");
+            //:FQ# Halt Focuser Motion
+            //Returns: Nothing
+        }
+
         //todo remove the polar parameter and split method into two.
         private void DoSlewAsync( bool polar) 
         {

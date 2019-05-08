@@ -956,15 +956,15 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Absolute Get", true.ToString());
-                return true; // This is an absolute focuser
+                tl.LogMessage("Absolute Get", false.ToString());
+                return false; // This is an absolute focuser
             }
         }
 
         public void Halt()
         {
-            tl.LogMessage("Halt", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Halt");
+            tl.LogMessage("Halt", "Halting");
+            _telescopeController.FocuserHalt();
         }
 
         public bool IsMoving
