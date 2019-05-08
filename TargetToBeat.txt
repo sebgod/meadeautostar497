@@ -1,0 +1,249 @@
+ 
+ConformanceCheck ASCOM Device Conformance Checker Version 6.4.63.0, Build time: 18/12/2018 08:58:34
+ConformanceCheck Running on: ASCOM Platform 6.4 SP1 6.4.1.2695
+ 
+ConformanceCheck Driver ProgID: MeadeEx.Telescope
+ 
+Error handling 
+Error number for "Not Implemented" is: 80040400
+Error number for "Invalid Value 1" is: 80040401
+Error number for "Invalid Value 2" is: 80040405
+Error number for "Value Not Set 1" is: 80040402
+Error number for "Value Not Set 2" is: 80040403
+Error messages will not be interpreted to infer state.
+ 
+21:04:42.255 Driver Access Checks              OK       
+21:04:42.997 AccessChecks                      OK       Successfully created driver using late binding
+21:04:50.059 AccessChecks                      OK       Successfully connected using late binding
+21:04:50.063 AccessChecks                      INFO     The driver is a COM object
+21:04:57.769 AccessChecks                      INFO     Device exposes interface ITelescopeV2
+21:04:58.546 AccessChecks                      INFO     Device does not expose interface ITelescopeV3
+21:04:59.881 AccessChecks                      OK       Successfully created driver using driver access toolkit
+21:05:06.873 AccessChecks                      OK       Successfully connected using driver access toolkit
+ 
+Conform is using ASCOM.DriverAccess.Telescope to get a Telescope object
+21:05:08.261 ConformanceCheck                  OK       Driver instance created successfully
+21:05:15.293 ConformanceCheck                  OK       Connected OK
+ 
+Common Driver Methods 
+21:05:15.333 InterfaceVersion                  OK       2
+21:05:15.362 Connected                         OK       True
+21:05:15.448 Description                       OK       Meade Autostar 497: ETX Autostar|A|43Ea|Jun 02 2006@10:09:40
+21:05:15.480 DriverInfo                        OK       ASCOM Meade Telescope/Focuser driver for classic and Autostar I 5.0.4
+                                                    ASCOM Iniative
+                                                    http://ascom-standards.org/
+                                                    Last Modified 10/06/2013 19:06:54
+21:05:15.509 DriverVersion                     OK       5.0
+21:05:15.539 Name                              OK       Autostar 497
+21:05:15.568 CommandString                     INFO     Conform cannot test the CommandString method
+21:05:15.572 CommandBlind                      INFO     Conform cannot test the CommandBlind method
+21:05:15.582 CommandBool                       INFO     Conform cannot test the CommandBool method
+21:05:15.588 Action                            INFO     Conform cannot test the Action method
+21:05:15.595 SupportedActions                  OK       Driver returned an empty action list
+ 
+Can Properties 
+21:05:15.663 CanFindHome                       OK       False
+21:05:15.671 CanPark                           OK       True
+21:05:15.679 CanPulseGuide                     OK       True
+21:05:15.687 CanSetDeclinationRate             OK       False
+21:05:15.695 CanSetGuideRates                  OK       False
+21:05:15.703 CanSetPark                        OK       False
+21:05:15.711 CanSetPierSide                    OK       False
+21:05:15.719 CanSetRightAscensionRate          OK       False
+21:05:15.727 CanSetTracking                    OK       False
+21:05:15.735 CanSlew                           OK       True
+21:05:15.743 CanSlewltAz                       OK       True
+21:05:15.752 CanSlewAltAzAsync                 OK       True
+21:05:15.761 CanSlewAsync                      OK       True
+21:05:15.769 CanSync                           OK       True
+21:05:15.777 CanSyncAltAz                      OK       False
+21:05:15.785 CanUnPark                         OK       False
+ 
+Pre-run Checks 
+21:05:15.834 Mount Safety                      INFO     Scope is not parked, continuing testing
+21:05:15.887 TimeCheck                         INFO     PC Time Zone:  GMT Summer Time, offset -1 hours.
+21:05:15.894 TimeCheck                         INFO     PC UTCDate:    30-Apr-2019 20:05:15.894
+21:05:16.013 TimeCheck                         INFO     Mount UTCDate: 30-Apr-2019 20:04:15.000
+ 
+Properties 
+21:05:16.063 AlignmentMode                     OK       algPolar
+21:05:16.117 Altitude                          OK       90.00
+21:05:16.149 ApertureArea                      ERROR    Unexpected DriverAccessCOMException, : Property ApertureAreaThe supplied value is out of range for this property.
+21:05:16.182 ApertureDiameter                  ERROR    Unexpected DriverAccessCOMException, : Property ApertureDiameterThe supplied value is out of range for this property.
+21:05:16.214 AtHome                            OK       False
+21:05:16.245 AtPark                            OK       False
+21:05:16.310 Azimuth                           OK       0.57
+21:05:16.369 Declination                       OK        89:59:59.00
+21:05:16.402 DeclinationRate Read              OK       0.00
+21:05:16.434 DeclinationRate Write             OK       CanSetDeclinationRate is False and a PropertyNotImplementedException exception was generated as expected
+21:05:16.469 DoesRefraction Read               OK       True
+21:05:16.501 DoesRefraction Write              ERROR    Unexpected DriverAccessCOMException, : Property DoesRefractionThe supplied value is out of range for this property.
+21:05:16.534 EquatorialSystem                  OK       equLocalTopocentric
+21:05:16.568 FocalLength                       ERROR    Unexpected DriverAccessCOMException, : Property FocalLengthThe supplied value is out of range for this property.
+21:05:16.602 GuideRateDeclination Read         OK       0.00
+21:05:16.613 GuideRateDeclination Write        OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
+21:05:16.646 GuideRateRightAscension Read      OK       0.00
+21:05:16.661 GuideRateRightAscension Write     OK       CanSetGuideRates is False and a PropertyNotImplementedException exception was generated as expected
+21:05:16.694 IsPulseGuiding                    OK       False
+21:05:16.748 RightAscension                    OK       22:28:48.00
+21:05:16.781 RightAscensionRate Read           OK       0.00
+21:05:16.814 RightAscensionRate Write          OK       CanSetRightAscensionRate is False and a PropertyNotImplementedException exception was generated as expected
+21:05:16.848 SiteElevation Read                OK       0
+21:05:16.884 SiteElevation Write               ERROR    Unexpected DriverAccessCOMException, : Property SiteElevation The supplied value is out of range for this property.
+21:05:16.896 SiteElevation Write               ERROR    Unexpected DriverAccessCOMException, : Property SiteElevation The supplied value is out of range for this property.
+21:05:16.908 SiteElevation Write               OK       Legal value 0m written successfully
+21:05:16.965 SiteLatitude Read                 OK        53:50:00.00
+21:05:16.999 SiteLatitude Write                OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.012 SiteLatitude Write                OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.025 SiteLatitude Write                OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.096 SiteLongitude Read                OK       -01:46:00.00
+21:05:17.130 SiteLongitude Write               OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.144 SiteLongitude Write               OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.156 SiteLongitude Write               OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.192 Slewing                           OK       False
+21:05:17.226 SlewSettleTime Read               OK       0
+21:05:17.262 SlewSettleTime Write              ERROR    Unexpected DriverAccessCOMException, : Property SlewSettleTime The supplied value is out of range for this property.
+21:05:17.277 SlewSettleTime Write              OK       Legal value 0 seconds written successfully
+21:05:17.313 SideOfPier Read                   OK       Optional member threw a PropertyNotImplementedException exception.
+21:05:17.356 SiderealTime                      OK       10:31:06.00
+21:05:17.368 SiderealTime                      OK       Scope and ASCOM sidereal times agree to better than 5 minutes, Scope: 10:31:06.00, ASCOM: 10:32:07.97
+21:05:17.405 TargetDeclination Read            ERROR    Unexpected DriverAccessCOMException, : The target value is not set.
+21:05:17.440 TargetDeclination Write           INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
+21:05:17.454 TargetRightAscension Read         ERROR    Unexpected DriverAccessCOMException, : The target value is not set.
+21:05:17.489 TargetRightAscension Write        INFO     Tests moved after the SlewToCoordinates tests so that Conform can check they properly set target coordinates.
+21:05:17.502 Tracking Read                     OK       True
+21:05:17.537 Tracking Write                    OK       CanSetTracking is False and a PropertyNotImplementedException exception was generated as expected
+21:05:17.575 TrackingRates                     ERROR    Unexpected System.Reflection.TargetInvocationException exception, : Exception has been thrown by the target of an invocation.
+21:05:17.590 TrackingRates                     ERROR    Unexpected System.Reflection.TargetInvocationException exception, : Exception has been thrown by the target of an invocation.
+21:05:17.603 TrackingRates                     OK       Dispose member not present
+21:05:17.638 TrackingRates                     OK       Successfully obtained a TrackingRates object after the previous TrackingRates object was disposed
+21:05:17.651 TrackingRate Read                 OK       driveSidereal
+21:05:17.665 TrackingRate Write                ERROR    Unexpected System.Reflection.TargetInvocationException exception, : Exception has been thrown by the target of an invocation.
+21:05:17.760 UTCDate Read                      OK       30-Apr-2019 20:04:16.000
+21:05:17.774 UTCDate Write                     OK       Optional member threw a PropertyNotImplementedException exception.
+ 
+Methods 
+21:05:17.858 CanMoveAxis:Primary               OK       CanMoveAxis:Primary False
+21:05:17.894 CanMoveAxis:Secondary             OK       CanMoveAxis:Secondary False
+21:05:17.931 CanMoveAxis:Tertiary              OK       CanMoveAxis:Tertiary False
+21:05:17.967 Park/Unpark                       INFO     Tests skipped
+21:05:18.981 AbortSlew                         OK       AbortSlew OK when not slewing
+21:05:19.040 AxisRate:Primary Enum             ERROR    .NET - Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.Runtime.InteropServices.COMException: Member not found. (Exception from HRESULT: 0x80020003 (DISP_E_MEMBERNOTFOUND))
+                                                       --- End of inner exception stack trace ---
+                                                       at Microsoft.VisualBasic.CompilerServices.Symbols.Container.InvokeMethod(Method TargetProcedure, Object[] Arguments, Boolean[] CopyBack, BindingFlags Flags)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.ObjectLateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.LateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Conform.TelescopeTester.TelescopeAxisRateTest(String p_Name, TelescopeAxes p_Axis) in J:\Conform\Conform\Devices\TelescopeTester.vb:line 3022
+21:05:19.055 AxisRate:Primary                  OK       Empty axis rate returned
+21:05:19.069 AxisRate:Primary                  OK       AxisRates.Dispose() member not present for axis axisPrimary
+21:05:19.085 AxisRate:Secondary Enum           ERROR    .NET - Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.Runtime.InteropServices.COMException: Member not found. (Exception from HRESULT: 0x80020003 (DISP_E_MEMBERNOTFOUND))
+                                                       --- End of inner exception stack trace ---
+                                                       at Microsoft.VisualBasic.CompilerServices.Symbols.Container.InvokeMethod(Method TargetProcedure, Object[] Arguments, Boolean[] CopyBack, BindingFlags Flags)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.ObjectLateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.LateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Conform.TelescopeTester.TelescopeAxisRateTest(String p_Name, TelescopeAxes p_Axis) in J:\Conform\Conform\Devices\TelescopeTester.vb:line 3022
+21:05:19.100 AxisRate:Secondary                OK       Empty axis rate returned
+21:05:19.117 AxisRate:Secondary                OK       AxisRates.Dispose() member not present for axis axisSecondary
+21:05:19.132 AxisRate:Tertiary Enum            ERROR    .NET - Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.Runtime.InteropServices.COMException: Member not found. (Exception from HRESULT: 0x80020003 (DISP_E_MEMBERNOTFOUND))
+                                                       --- End of inner exception stack trace ---
+                                                       at Microsoft.VisualBasic.CompilerServices.Symbols.Container.InvokeMethod(Method TargetProcedure, Object[] Arguments, Boolean[] CopyBack, BindingFlags Flags)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.ObjectLateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Microsoft.VisualBasic.CompilerServices.NewLateBinding.LateGet(Object Instance, Type Type, String MemberName, Object[] Arguments, String[] ArgumentNames, Type[] TypeArguments, Boolean[] CopyBack)
+                                                       at Conform.TelescopeTester.TelescopeAxisRateTest(String p_Name, TelescopeAxes p_Axis) in J:\Conform\Conform\Devices\TelescopeTester.vb:line 3022
+21:05:19.149 AxisRate:Tertiary                 OK       Empty axis rate returned
+21:05:19.178 AxisRate:Tertiary                 OK       AxisRates.Dispose() member not present for axis axisTertiary
+21:05:19.195 FindHome                          OK       CanFindHome is False and a MethodNotImplementedException exception was generated as expected
+21:05:19.234 MoveAxis Primary                  OK       CanMoveAxis Primary is False and a MethodNotImplementedException exception was generated as expected
+21:05:19.273 MoveAxis Secondary                OK       CanMoveAxis Secondary is False and a MethodNotImplementedException exception was generated as expected
+21:05:19.314 MoveAxis Tertiary                 OK       CanMoveAxis Tertiary is False and a MethodNotImplementedException exception was generated as expected
+21:05:21.349 PulseGuide                        OK       Synchronous pulse guide found OK
+21:06:13.942 SlewToCoordinates                 INFO     Slewed within 15.0 arc seconds of expected RA: 09:31:10.00, actual RA: 09:31:09.00
+21:06:13.956 SlewToCoordinates                 OK       Slewed OK. DEC:  01:00:00.00
+21:06:13.971 SlewToCoordinates                 OK       The TargetRightAscension property 09:31:10.00 matches the expected RA OK. 
+21:06:13.987 SlewToCoordinates                 OK       The TargetDeclination property  01:00:00.00 matches the expected Declination OK. 
+21:06:14.028 SlewToCoordinates (Bad L)         ERROR    Unexpected DriverAccessCOMException, slewing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:06:14.102 SlewToCoordinates (Bad L)         ERROR    Unexpected DriverAccessCOMException, slewing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:06:14.164 SlewToCoordinates (Bad H)         ERROR    Unexpected DriverAccessCOMException, slewing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:06:14.262 SlewToCoordinates (Bad H)         ERROR    Unexpected DriverAccessCOMException, slewing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:06:48.075 SlewToCoordinatesAsync            INFO     Slewed within 45.0 arc seconds of expected RA: 08:32:03.00, actual RA: 08:32:00.00
+21:06:48.090 SlewToCoordinatesAsync            OK       Slewed OK. DEC:  02:00:00.00
+21:06:48.106 SlewToCoordinatesAsync            OK       The TargetRightAscension property 08:32:03.00 matches the expected RA OK. 
+21:06:48.122 SlewToCoordinatesAsync            OK       The TargetDeclination property  02:00:00.00 matches the expected Declination OK. 
+21:06:48.164 SlewToCoordinatesAsync (Bad L)    ERROR    Unexpected DriverAccessCOMException, slewing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:06:48.239 SlewToCoordinatesAsync (Bad L)    ERROR    Unexpected DriverAccessCOMException, slewing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:06:48.302 SlewToCoordinatesAsync (Bad H)    ERROR    Unexpected DriverAccessCOMException, slewing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:06:48.436 SlewToCoordinatesAsync (Bad H)    ERROR    Unexpected DriverAccessCOMException, slewing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:07:22.044 SyncToCoordinates                 INFO     Slewed to start position within 15.0 arc seconds of expected RA: 07:32:37.00, actual RA: 07:32:36.00
+21:07:22.061 SyncToCoordinates                 OK       Slewed to start position OK. DEC:  26:55:00.00
+21:07:22.782 SyncToCoordinates                 INFO     Synced to sync position within 15.0 arc seconds of expected RA: 07:28:37.00, actual RA: 07:28:36.00
+21:07:22.796 SyncToCoordinates                 OK       Synced to sync position OK. DEC:  25:55:00.00
+21:07:22.812 SyncToCoordinates                 OK       The TargetRightAscension property 07:28:37.00 matches the expected RA OK. 
+21:07:22.828 SyncToCoordinates                 OK       The TargetDeclination property  25:55:00.00 matches the expected Declination OK. 
+21:07:53.961 SyncToCoordinates                 INFO     Slewed back to start position within 15.0 arc seconds of expected RA: 07:32:37.00, actual RA: 07:32:36.00
+21:07:53.976 SyncToCoordinates                 OK       Slewed back to start position OK. DEC:  26:55:00.00
+21:07:54.692 SyncToCoordinates                 INFO     Synced to reversed sync position within 30.0 arc seconds of expected RA: 07:36:37.00, actual RA: 07:36:35.00
+21:07:54.708 SyncToCoordinates                 OK       Synced to reversed sync position OK. DEC:  27:55:00.00
+21:08:25.954 SyncToCoordinates                 INFO     Slewed back to start position within 15.0 arc seconds of expected RA: 07:32:37.00, actual RA: 07:32:36.00
+21:08:25.969 SyncToCoordinates                 OK       Slewed back to start position OK. DEC:  26:55:00.00
+21:08:26.009 SyncToCoordinates (Bad L)         ERROR    Unexpected DriverAccessCOMException, syncing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:08:26.087 SyncToCoordinates (Bad L)         ERROR    Unexpected DriverAccessCOMException, syncing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:08:26.150 SyncToCoordinates (Bad H)         ERROR    Unexpected DriverAccessCOMException, syncing to bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:08:26.229 SyncToCoordinates (Bad H)         ERROR    Unexpected DriverAccessCOMException, syncing to bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:08:26.292 TargetRightAscension Write        ERROR    Unexpected DriverAccessCOMException, : Property TargetRightAscension The supplied value is out of range for this property.
+21:08:26.311 TargetRightAscension Write        ERROR    Unexpected DriverAccessCOMException, : Property TargetRightAscension The supplied value is out of range for this property.
+21:08:26.395 TargetRightAscension Write        OK       Legal value 06:34:15.00 HH:MM:SS written successfully
+21:08:26.435 TargetDeclination Write           ERROR    Unexpected DriverAccessCOMException, : Property TargetDeclination The supplied value is out of range for this property.
+21:08:26.454 TargetDeclination Write           ERROR    Unexpected DriverAccessCOMException, : Property TargetDeclination The supplied value is out of range for this property.
+21:08:26.506 TargetDeclination Write           OK       Legal value  01:00:00.00 DD:MM:SS written successfully
+21:08:57.865 SlewToTarget                      INFO     Slewed within 45.0 arc seconds of expected RA: 07:34:15.00, actual RA: 07:34:12.00
+21:08:57.880 SlewToTarget                      OK       Slewed OK. DEC:  03:00:00.00
+21:08:57.897 SlewToTarget                      OK       The TargetRightAscension property 07:34:15.00 matches the expected RA OK. 
+21:08:57.915 SlewToTarget                      OK       The TargetDeclination property  03:00:00.00 matches the expected Declination OK. 
+21:08:57.959 SlewToTarget (Bad L)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:08:58.003 SlewToTarget (Bad L)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:08:58.064 SlewToTarget (Bad H)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:08:58.114 SlewToTarget (Bad H)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:09:29.948 SlewToTargetAsync                 INFO     Slewed within 45.0 arc seconds of expected RA: 06:34:47.00, actual RA: 06:34:44.00
+21:09:29.964 SlewToTargetAsync                 OK       Slewed OK. DEC:  04:00:00.00
+21:09:29.979 SlewToTargetAsync                 OK       The TargetRightAscension property 06:34:47.00 matches the expected RA OK. 
+21:09:29.996 SlewToTargetAsync                 OK       The TargetDeclination property  04:00:00.00 matches the expected Declination OK. 
+21:09:30.038 SlewToTargetAsync (Bad L)         ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:09:30.085 SlewToTargetAsync (Bad L)         ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:09:30.150 SlewToTargetAsync (Bad H)         ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:09:30.196 SlewToTargetAsync (Bad H)         ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:09:30.257 DestinationSideOfPier                      Test skipped as AligmentMode is not German Polar
+21:09:30.278 SlewToAltAz                       ERROR    Unexpected DriverAccessCOMException, CanSlewAltAz is True: Wrong tracking state
+21:09:30.322 SlewToAltAz (Bad L)               ERROR    Unexpected DriverAccessCOMException, slewing to bad Altitude coordinate: Wrong tracking state
+21:09:30.343 SlewToAltAz (Bad L)               ERROR    Unexpected DriverAccessCOMException, slewing to bad Azimuth coordinate: Wrong tracking state
+21:09:30.407 SlewToAltAz (Bad H)               ERROR    Unexpected DriverAccessCOMException, slewing to bad Altitude coordinate: Wrong tracking state
+21:09:30.426 SlewToAltAz (Bad H)               ERROR    Unexpected DriverAccessCOMException, slewing to bad Azimuth coordinate: Wrong tracking state
+21:09:30.492 SlewToAltAzAsync                  ERROR    Unexpected DriverAccessCOMException, CanSlewAltAzAsync is True: Wrong tracking state
+21:09:30.534 SlewToAltAzAsync (Bad L)          ERROR    Unexpected DriverAccessCOMException, slewing to bad Altitude coordinate: Wrong tracking state
+21:09:30.552 SlewToAltAzAsync (Bad L)          ERROR    Unexpected DriverAccessCOMException, slewing to bad Azimuth coordinate: Wrong tracking state
+21:09:30.617 SlewToAltAzAsync (Bad H)          ERROR    Unexpected DriverAccessCOMException, slewing to bad Altitude coordinate: Wrong tracking state
+21:09:30.637 SlewToAltAzAsync (Bad H)          ERROR    Unexpected DriverAccessCOMException, slewing to bad Azimuth coordinate: Wrong tracking state
+21:10:05.974 SyncToTarget                      OK       Slewed to start position OK. RA:   07:35:20.00
+21:10:05.993 SyncToTarget                      OK       Slewed to start position OK. DEC:  26:55:00.00
+21:10:06.721 SyncToTarget                      OK       Synced to sync position OK. RA:   07:31:20.00
+21:10:06.736 SyncToTarget                      OK       Synced to sync position OK. DEC:  25:55:00.00
+21:10:37.626 SyncToTarget                      OK       Slewed back to start position OK. RA:   07:35:20.00
+21:10:37.641 SyncToTarget                      OK       Slewed back to start position OK. DEC:  26:55:00.00
+21:10:38.363 SyncToTarget                      OK       Synced to reversed sync position OK. RA:   07:39:20.00
+21:10:38.381 SyncToTarget                      OK       Synced to reversed sync position OK. DEC:  27:55:00.00
+21:11:09.639 SyncToTarget                      OK       Slewed back to start position OK. RA:   07:35:20.00
+21:11:09.657 SyncToTarget                      OK       Slewed back to start position OK. DEC:  26:55:00.00
+21:11:09.697 SyncToTarget (Bad L)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:11:09.741 SyncToTarget (Bad L)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:11:09.803 SyncToTarget (Bad H)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad RA coordinate: Property TargetRightAscension The supplied value is out of range for this property.
+21:11:09.847 SyncToTarget (Bad H)              ERROR    Unexpected DriverAccessCOMException, Exception setting bad Dec coordinate: Property TargetDeclination The supplied value is out of range for this property.
+21:11:10.010 SyncToAltAz                       OK       CanSyncAltAz is False and a MethodNotImplementedException exception was generated as expected
+ 
+SideOfPier Model Tests 
+21:11:10.080 SideOfPier Model Tests            INFO     Tests skipped because this driver does Not support SideOfPier Read
+ 
+Post-run Checks 
+21:11:10.180 Mount Safety                      INFO     Tracking can't be turned off for this mount, please switch off manually.
+ 
+Conformance test complete 
+ 
+Your driver had 53 errors, 0 warnings and 0 issues 

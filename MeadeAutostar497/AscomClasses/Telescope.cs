@@ -27,11 +27,7 @@
 #define Telescope
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Runtime.InteropServices;
-
 using ASCOM;
 using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
@@ -60,7 +56,7 @@ namespace ASCOM.MeadeAutostar497
     /// </summary>
     [Guid("58e4fe97-1760-4e22-8ecd-2225876aeefc")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Telescope : ITelescopeV3
+    public class Telescope : ITelescopeV3, IFocuserV3
     {
         private ITelescopeController _telescopeController;
 
@@ -73,7 +69,7 @@ namespace ASCOM.MeadeAutostar497
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Telescope Driver for Meade Autostar 497 based telescopes.";
+        private static string driverDescription = "Meade Autostar 497 .net";
 
         internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
         internal static string comPortDefault = "COM1";
@@ -169,9 +165,9 @@ namespace ASCOM.MeadeAutostar497
         {
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
+            //this.CommandString(command, raw);
             // or
-            //throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
         }
 
@@ -187,8 +183,11 @@ namespace ASCOM.MeadeAutostar497
 
         public string CommandString(string command, bool raw)
         {
+            // it's a good idea to put all the low level communication with the device here,
+            // then all communication calls this function
+            // you need something to ensure that only one command is in progress at a time
             CheckConnected("CommandString");
-            return _telescopeController.CommandString(command, raw);
+            throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -221,6 +220,7 @@ namespace ASCOM.MeadeAutostar497
                 if (value)
                 {
                     LogMessage("Connected Set", "Connecting to port {0}", comPort);
+                    _telescopeController.Port = comPort;
                     _telescopeController.Connected = true;
                 }
                 else
@@ -289,16 +289,18 @@ namespace ASCOM.MeadeAutostar497
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("AbortSlew");
+            tl.LogMessage("AbortSlew", "Aborting slew");
+            _telescopeController.AbortSlew();
         }
 
         public AlignmentModes AlignmentMode
         {
             get
             {
-                tl.LogMessage("AlignmentMode Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("AlignmentMode", false);
+                tl.LogMessage("AlignmentMode Get", "Getting alignmode");
+                var alignmode = _telescopeController.AlignmentMode;
+                tl.LogMessage("AlignmentMode Get", $"alignmode = {alignmode}");
+                return alignmode;
             }
         }
 
@@ -306,8 +308,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Altitude", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                var alt = _telescopeController.Altitude;
+                tl.LogMessage("Altitude", $"{alt}");
+                return alt;
             }
         }
 
@@ -342,8 +345,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("AtPark", "Get - " + false.ToString());
-                return false;
+                var atPatk = _telescopeController.AtPark;
+                tl.LogMessage("AtPark", "Get - " + atPatk.ToString());
+                return atPatk;
             }
         }
 
@@ -357,8 +361,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("Azimuth Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Azimuth", false);
+                var az = _telescopeController.Azimuth;
+                tl.LogMessage("Azimuth Get", $"{az}");
+                return az;
             }
         }
 
@@ -376,9 +381,9 @@ namespace ASCOM.MeadeAutostar497
             tl.LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
             switch (Axis)
             {
-                case TelescopeAxes.axisPrimary: return false;
-                case TelescopeAxes.axisSecondary: return false;
-                case TelescopeAxes.axisTertiary: return false;
+                case TelescopeAxes.axisPrimary: return true; //RA or AZ
+                case TelescopeAxes.axisSecondary: return true; //Dev or Alt
+                case TelescopeAxes.axisTertiary: return false; //rotator / derotator
                 default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
             }
         }
@@ -387,8 +392,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -396,8 +401,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPulseGuide", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -459,8 +464,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlew", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -468,8 +473,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAltAz", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -477,8 +482,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -486,8 +491,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -495,8 +500,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -522,7 +527,7 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                double declination = 0.0;
+                double declination = _telescopeController.Declination;
                 tl.LogMessage("Declination", "Get - " + utilities.DegreesToDMS(declination, ":", ":"));
                 return declination;
             }
@@ -620,34 +625,35 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("IsPulseGuiding Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
+                tl.LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
+                //throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
+                return false;
             }
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            tl.LogMessage("MoveAxis", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("MoveAxis");
+            tl.LogMessage("MoveAxis", $"Axis={Axis} rate={Rate}");
+            _telescopeController.MoveAxis(Axis, Rate);
         }
 
         public void Park()
         {
-            tl.LogMessage("Park", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Park");
+            tl.LogMessage("Park", "Parking telescope");
+            _telescopeController.Park();
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
-            tl.LogMessage("PulseGuide", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+            tl.LogMessage("PulseGuide", $"pulse guide direction {Direction} duration {Duration}");
+            _telescopeController.PulseGuide(Direction, Duration);
         }
 
         public double RightAscension
         {
             get
             {
-                double rightAscension = 0.0;
+                double rightAscension = _telescopeController.RightAscension;
                 tl.LogMessage("RightAscension", "Get - " + utilities.HoursToHMS(rightAscension));
                 return rightAscension;
             }
@@ -732,13 +738,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("SiteLatitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", false);
+                var siteLatitude = _telescopeController.SiteLatitude;
+                tl.LogMessage("SiteLatitude Get", $"{utilities.DegreesToDMS(siteLatitude)}");
+                return siteLatitude;
             }
             set
             {
-                tl.LogMessage("SiteLatitude Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", true);
+                tl.LogMessage("SiteLatitude Set", $"{utilities.DegreesToDMS(value)}");
+                _telescopeController.SiteLatitude = value;
             }
         }
 
@@ -746,13 +753,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("SiteLongitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", false);
+                var siteLongitude = _telescopeController.SiteLongitude;
+                tl.LogMessage("SiteLongitude Get", $"{utilities.DegreesToDMS(siteLongitude)}");
+                return siteLongitude;
             }
             set
             {
-                tl.LogMessage("SiteLongitude Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", true);
+                tl.LogMessage("SiteLongitude Set", $"{utilities.DegreesToDMS(value)}");
+                _telescopeController.SiteLongitude = value;
             }
         }
 
@@ -772,46 +780,48 @@ namespace ASCOM.MeadeAutostar497
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAz", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+            tl.LogMessage("SlewToAltAz", $"Az=~{Azimuth} Alt={Altitude}");
+            _telescopeController.SlewToAltAz(Azimuth, Altitude);
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAzAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+            tl.LogMessage("SlewToAltAzAsync", $"Az=~{Azimuth} Alt={Altitude}");
+            _telescopeController.SlewToAltAzAsync(Azimuth, Altitude);
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinates", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinates");
+            tl.LogMessage("SlewToCoordinates", $"Ra={RightAscension}, Dec={Declination}");
+            _telescopeController.SlewToCoordinates(RightAscension, Declination);
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinatesAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinatesAsync");
+            tl.LogMessage("SlewToCoordinatesAsync", $"Ra={RightAscension}, Dec={Declination}");
+            _telescopeController.SlewToCoordinatesAsync(RightAscension, Declination);
         }
 
         public void SlewToTarget()
         {
-            tl.LogMessage("SlewToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTarget");
+            tl.LogMessage("SlewToTarget", "Executing");
+            _telescopeController.SlewToTarget();
         }
 
         public void SlewToTargetAsync()
         {
-            tl.LogMessage("SlewToTargetAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTargetAsync");
+            tl.LogMessage("SlewToTargetAsync", "Executing");
+            _telescopeController.SlewToTargetAsync();
         }
 
         public bool Slewing
         {
             get
             {
-                tl.LogMessage("Slewing Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Slewing", false);
+                tl.LogMessage("Slewing Get", "Started");
+                var result = _telescopeController.Slewing;
+                tl.LogMessage("Slewing Get", $"Result = {result}");
+                return result;
             }
         }
 
@@ -823,27 +833,31 @@ namespace ASCOM.MeadeAutostar497
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SyncToCoordinates", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToCoordinates");
+            tl.LogMessage("SyncToCoordinates", $"RA={RightAscension} Dec={Declination}");
+            _telescopeController.TargetRightAscension = RightAscension;
+            _telescopeController.TargetDeclination = Declination;
+
+            SyncToTarget();
         }
 
         public void SyncToTarget()
         {
-            tl.LogMessage("SyncToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToTarget");
+            tl.LogMessage("SyncToTarget", "Executing");
+            _telescopeController.SyncToTarget();
         }
 
         public double TargetDeclination
         {
             get
             {
-                tl.LogMessage("TargetDeclination Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", false);
+                var targetDec = _telescopeController.TargetDeclination;
+                tl.LogMessage("TargetDeclination Get", $"{targetDec}");
+                return targetDec;
             }
             set
-            {
-                tl.LogMessage("TargetDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", true);
+            {    
+                tl.LogMessage("TargetDeclination Set", $"{value}");
+                _telescopeController.TargetDeclination = value;
             }
         }
 
@@ -851,13 +865,14 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("TargetRightAscension Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", false);
+                var targetRa = _telescopeController.TargetRightAscension;
+                tl.LogMessage("TargetRightAscension Get", $"{targetRa}");
+                return targetRa;
             }
             set
             {
-                tl.LogMessage("TargetRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", true);
+                tl.LogMessage("TargetRightAscension Set", $"{value}");
+                _telescopeController.TargetRightAscension = value;
             }
         }
 
@@ -865,6 +880,7 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
+                //todo implementing this, it exists.
                 bool tracking = true;
                 tl.LogMessage("Tracking", "Get - " + tracking.ToString());
                 return tracking;
@@ -880,8 +896,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("TrackingRate Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TrackingRate", false);
+                var tr = _telescopeController.TrackingRate;
+                tl.LogMessage("TrackingRate Get", $"{tr}");
+                return tr;
             }
             set
             {
@@ -908,14 +925,17 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                DateTime utcDate = DateTime.UtcNow;
-                tl.LogMessage("TrackingRates", "Get - " + Format("MM/dd/yy HH:mm:ss", utcDate));
+                tl.LogMessage("UTCDate", "Get started");
+
+                var utcDate = _telescopeController.utcDate;
+                tl.LogMessage("UTCDate", "Get - " + Format("MM/dd/yy HH:mm:ss", utcDate));
                 return utcDate;
             }
             set
             {
-                tl.LogMessage("UTCDate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("UTCDate", true);
+                tl.LogMessage("UTCDate", "Set - " + Format("MM/dd/yy HH:mm:ss", value));
+                _telescopeController.utcDate = value;
+
             }
         }
 
@@ -923,6 +943,124 @@ namespace ASCOM.MeadeAutostar497
         {
             tl.LogMessage("Unpark", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("Unpark");
+        }
+
+        #endregion
+
+        #region IFocuser Implementation
+
+        private int focuserPosition = 0; // Class level variable to hold the current focuser position
+        private const int focuserSteps = 10000;
+
+        public bool Absolute
+        {
+            get
+            {
+                tl.LogMessage("Absolute Get", true.ToString());
+                return true; // This is an absolute focuser
+            }
+        }
+
+        public void Halt()
+        {
+            tl.LogMessage("Halt", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("Halt");
+        }
+
+        public bool IsMoving
+        {
+            get
+            {
+                tl.LogMessage("IsMoving Get", false.ToString());
+                return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
+            }
+        }
+
+        public bool Link
+        {
+            get
+            {
+                tl.LogMessage("Link Get", this.Connected.ToString());
+                return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
+            }
+            set
+            {
+                tl.LogMessage("Link Set", value.ToString());
+                this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
+            }
+        }
+
+        public int MaxIncrement
+        {
+            get
+            {
+                tl.LogMessage("MaxIncrement Get", focuserSteps.ToString());
+                return focuserSteps; // Maximum change in one move
+            }
+        }
+
+        public int MaxStep
+        {
+            get
+            {
+                tl.LogMessage("MaxStep Get", focuserSteps.ToString());
+                return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
+            }
+        }
+
+        public void Move(int Position)
+        {
+            tl.LogMessage("Move", Position.ToString());
+            focuserPosition = Position; // Set the focuser position
+        }
+
+        public int Position
+        {
+            get
+            {
+                return focuserPosition; // Return the focuser position
+            }
+        }
+
+        public double StepSize
+        {
+            get
+            {
+                tl.LogMessage("StepSize Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+            }
+        }
+
+        public bool TempComp
+        {
+            get
+            {
+                tl.LogMessage("TempComp Get", false.ToString());
+                return false;
+            }
+            set
+            {
+                tl.LogMessage("TempComp Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("TempComp", false);
+            }
+        }
+
+        public bool TempCompAvailable
+        {
+            get
+            {
+                tl.LogMessage("TempCompAvailable Get", false.ToString());
+                return false; // Temperature compensation is not available in this driver
+            }
+        }
+
+        public double Temperature
+        {
+            get
+            {
+                tl.LogMessage("Temperature Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("Temperature", false);
+            }
         }
 
         #endregion
@@ -943,16 +1081,29 @@ namespace ASCOM.MeadeAutostar497
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            using (var P = new ASCOM.Utilities.Profile())
+            using (var p = new ASCOM.Utilities.Profile())
             {
-                P.DeviceType = "Telescope";
+                p.DeviceType = "Telescope";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    p.Register(driverID, driverDescription);
                 }
                 else
                 {
-                    P.Unregister(driverID);
+                    p.Unregister(driverID);
+                }
+            }
+
+            using (var p = new ASCOM.Utilities.Profile())
+            {
+                p.DeviceType = "Focuser";
+                if (bRegister)
+                {
+                    p.Register(driverID, driverDescription);
+                }
+                else
+                {
+                    p.Unregister(driverID);
                 }
             }
         }
