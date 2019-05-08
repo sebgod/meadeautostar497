@@ -395,13 +395,14 @@ namespace ASCOM.MeadeAutostar497.Controller
                 if (_targetRightAscension == INVALID_PARAMETER)
                     throw new ASCOM.InvalidOperationException("Target not set");
 
-                var result = SerialPort.CommandTerminated(":Gr#", "#");
-                //:Gr# Get current/target object RA
-                //Returns: HH: MM.T# or HH:MM:SS
-                //Depending upon which precision is set for the telescope
+                //var result = SerialPort.CommandTerminated(":Gr#", "#");
+                ////:Gr# Get current/target object RA
+                ////Returns: HH: MM.T# or HH:MM:SS
+                ////Depending upon which precision is set for the telescope
 
-                double targetRa = HmsToDouble(result);
-                return targetRa;
+                //double targetRa = HmsToDouble(result);
+                //return targetRa;
+                return _targetRightAscension;
             }
             set
             {
@@ -437,15 +438,15 @@ namespace ASCOM.MeadeAutostar497.Controller
                 if (_targetDeclination == INVALID_PARAMETER)
                     throw new ASCOM.InvalidOperationException("Target not set");
 
-                var result = SerialPort.CommandTerminated(":Gd#", "#");
-                //:Gd# Get Currently Selected Object/Target Declination
-                //Returns: sDD* MM# or sDD*MM’SS#
-                //Depending upon the current precision setting for the telescope.
+                //var result = SerialPort.CommandTerminated(":Gd#", "#");
+                ////:Gd# Get Currently Selected Object/Target Declination
+                ////Returns: sDD* MM# or sDD*MM’SS#
+                ////Depending upon the current precision setting for the telescope.
 
-                double targetDec = DmsToDouble(result);
+                //double targetDec = DmsToDouble(result);
 
-                return targetDec;
-
+                //return targetDec;
+                return _targetDeclination;
             }
             set
             {
