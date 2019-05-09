@@ -562,14 +562,22 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
             else
             {
-                _serialPort.Command(":RG#"); //Make sure we are at guide rate
-                _serialPort.Command($":M{d}#");
-                Thread.Sleep(duration);
-                _serialPort.Command($":Q{d}#");
+                SerialPort.Lock();
+                try
+                {
+                    _serialPort.Command(":RG#"); //Make sure we are at guide rate
+                    _serialPort.Command($":M{d}#");
+                    Thread.Sleep(duration);
+                    _serialPort.Command($":Q{d}#");
 
-                //classic only !!!, this is needed since once in a while one is not enough
-                Thread.Sleep(200);
-                _serialPort.Command($":Q{d}#");
+                    //classic only !!!, this is needed since once in a while one is not enough
+                    Thread.Sleep(200);
+                    _serialPort.Command($":Q{d}#");
+                }
+                finally
+                {
+                    SerialPort.Unlock();
+                }
             }
         }
 
@@ -594,10 +602,18 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public void SlewToCoordinatesAsync(double rightAscension, double declination)
         {
-            TargetRightAscension = rightAscension;
-            TargetDeclination = declination;
+            SerialPort.Lock();
+            try
+            {
+                TargetRightAscension = rightAscension;
+                TargetDeclination = declination;
 
-            DoSlewAsync(true);
+                DoSlewAsync(true);
+            }
+            finally
+            {
+                SerialPort.Unlock();
+            }
         }
 
         public void SlewToAltAz(double azimuth, double altitude)
@@ -663,10 +679,18 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
-            TargetAltitude = altitude;
-            TargetAzimuth = azimuth;
+            SerialPort.Lock();
+            try
+            {
+                TargetAltitude = altitude;
+                TargetAzimuth = azimuth;
 
-            DoSlewAsync(false);
+                DoSlewAsync(false);
+            }
+            finally
+            {
+                SerialPort.Unlock();
+            }
         }
 
         public void SyncToTarget()
@@ -708,95 +732,104 @@ namespace ASCOM.MeadeAutostar497.Controller
         private bool _movingSecondary;
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
-            var absrate = Math.Abs(rate);
-
-            switch(absrate)
+            SerialPort.Lock();
+            try
             {
-                case 0:
-                    //do nothing, it's ok this time as we're halting the slew.
-                    break;
-                case 1:
-                    SerialPort.Command(":RG#");
-                    //:RG# Set Slew rate to Guiding Rate (slowest)
-                    //Returns: Nothing
-                    break;                   
-                case 2:
-                    SerialPort.Command(":RC#");
-                    //:RC# Set Slew rate to Centering rate (2nd slowest)
-                    //Returns: Nothing
-                    break;
-                case 3:
-                    SerialPort.Command(":RM#");
-                    //:RM# Set Slew rate to Find Rate (2nd Fastest)
-                    //Returns: Nothing
-                    break;
-                case 4:
-                    SerialPort.Command(":RS#");
-                    //:RS# Set Slew rate to max (fastest)
-                    //Returns: Nothing
-                    break;
-                default:
-                    throw new ASCOM.InvalidValueException($"Rate {rate} not supported");
-                    
+                var absrate = Math.Abs(rate);
+
+                switch (absrate)
+                {
+                    case 0:
+                        //do nothing, it's ok this time as we're halting the slew.
+                        break;
+                    case 1:
+                        SerialPort.Command(":RG#");
+                        //:RG# Set Slew rate to Guiding Rate (slowest)
+                        //Returns: Nothing
+                        break;
+                    case 2:
+                        SerialPort.Command(":RC#");
+                        //:RC# Set Slew rate to Centering rate (2nd slowest)
+                        //Returns: Nothing
+                        break;
+                    case 3:
+                        SerialPort.Command(":RM#");
+                        //:RM# Set Slew rate to Find Rate (2nd Fastest)
+                        //Returns: Nothing
+                        break;
+                    case 4:
+                        SerialPort.Command(":RS#");
+                        //:RS# Set Slew rate to max (fastest)
+                        //Returns: Nothing
+                        break;
+                    default:
+                        throw new ASCOM.InvalidValueException($"Rate {rate} not supported");
+
+                }
+
+                switch (axis)
+                {
+                    case TelescopeAxes.axisPrimary:
+                        if (rate == 0)
+                        {
+                            _movingPrimary = false;
+                            SerialPort.Command(":Qe#");
+                            //:Qe# Halt eastward Slews
+                            //Returns: Nothing
+                            SerialPort.Command(":Qw#");
+                            //:Qw# Halt westward Slews
+                            //Returns: Nothing
+                        }
+                        else if (rate > 0)
+                        {
+                            SerialPort.Command(":Me#");
+                            //:Me# Move Telescope East at current slew rate
+                            //Returns: Nothing
+                            _movingPrimary = true;
+                        }
+                        else
+                        {
+                            SerialPort.Command(":Mw#");
+                            //:Mw# Move Telescope West at current slew rate
+                            //Returns: Nothing
+                            _movingPrimary = true;
+                        }
+
+                        break;
+                    case TelescopeAxes.axisSecondary:
+                        if (rate == 0)
+                        {
+                            _movingSecondary = false;
+                            SerialPort.Command(":Qn#");
+                            //:Qn# Halt northward Slews
+                            //Returns: Nothing
+                            SerialPort.Command(":Qs#");
+                            //:Qs# Halt southward Slews
+                            //Returns: Nothing
+                        }
+                        else if (rate > 0)
+                        {
+                            SerialPort.Command(":Mn#");
+                            //:Mn# Move Telescope North at current slew rate
+                            //Returns: Nothing
+                            _movingSecondary = true;
+                        }
+                        else
+                        {
+                            SerialPort.Command(":Ms#");
+                            //:Ms# Move Telescope South at current slew rate
+                            //Returns: Nothing
+                            _movingSecondary = true;
+                        }
+
+                        break;
+                    default:
+                        throw new ASCOM.MethodNotImplementedException("Can not move this axis.");
+                }
             }
-
-            switch (axis)
+            finally
             {
-                case TelescopeAxes.axisPrimary:
-                    if (rate == 0)
-                    {
-                        _movingPrimary = false;
-                        SerialPort.Command(":Qe#");
-                        //:Qe# Halt eastward Slews
-                        //Returns: Nothing
-                        SerialPort.Command(":Qw#");
-                        //:Qw# Halt westward Slews
-                        //Returns: Nothing
-                    }
-                    else if (rate > 0)
-                    {
-                        SerialPort.Command(":Me#");
-                        //:Me# Move Telescope East at current slew rate
-                        //Returns: Nothing
-                        _movingPrimary = true;
-                    }
-                    else
-                    {
-                        SerialPort.Command(":Mw#");
-                        //:Mw# Move Telescope West at current slew rate
-                        //Returns: Nothing
-                        _movingPrimary = true;
-                    }
-                    break;
-                case TelescopeAxes.axisSecondary:
-                    if (rate == 0)
-                    {
-                        _movingSecondary = false;
-                        SerialPort.Command(":Qn#");
-                        //:Qn# Halt northward Slews
-                        //Returns: Nothing
-                        SerialPort.Command(":Qs#");
-                        //:Qs# Halt southward Slews
-                        //Returns: Nothing
-                    }
-                    else if (rate > 0)
-                    {
-                        SerialPort.Command(":Mn#");
-                        //:Mn# Move Telescope North at current slew rate
-                        //Returns: Nothing
-                        _movingSecondary = true;
-                    }
-                    else
-                    {
-                        SerialPort.Command(":Ms#");
-                        //:Ms# Move Telescope South at current slew rate
-                        //Returns: Nothing
-                        _movingSecondary = true;
-                    }
-
-                    break;
-                default:
-                    throw new ASCOM.MethodNotImplementedException("Can not move this axis.");
+                SerialPort.Unlock();
             }
         }
 
@@ -810,48 +843,58 @@ namespace ASCOM.MeadeAutostar497.Controller
         //todo remove the polar parameter and split method into two.
         private void DoSlewAsync( bool polar) 
         {
-            switch (polar)
+            SerialPort.Lock();
+            try
             {
-                case true:
-                    var response = SerialPort.CommandChar(":MS#");
-                    //:MS# Slew to Target Object
-                    //Returns:
-                    //0 Slew is Possible
-                    //1<string># Object Below Horizon w/string message
-                    //2<string># Object Below Higher w/string message
+                switch (polar)
+                {
+                    case true:
+                        var response = SerialPort.CommandChar(":MS#");
+                        //:MS# Slew to Target Object
+                        //Returns:
+                        //0 Slew is Possible
+                        //1<string># Object Below Horizon w/string message
+                        //2<string># Object Below Higher w/string message
 
-                    switch (response)
-                    {
-                        case '0':
-                            //We're slewing everything should be working just fine.
-                            break;
-                        case '1':
-                            //Below Horizon 
-                            string belowHorizonMessage = SerialPort.ReadTerminated("#");
-                            throw new ASCOM.InvalidOperationException(belowHorizonMessage);
-                        case '2':
-                            //Below Horizon 
-                            string belowMinimumElevationMessage = SerialPort.ReadTerminated("#");
-                            throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
-                        default:
-                            throw new ASCOM.DriverException("This error should not happen");
+                        switch (response)
+                        {
+                            case '0':
+                                //We're slewing everything should be working just fine.
+                                break;
+                            case '1':
+                                //Below Horizon 
+                                string belowHorizonMessage = SerialPort.ReadTerminated("#");
+                                throw new ASCOM.InvalidOperationException(belowHorizonMessage);
+                            case '2':
+                                //Below Horizon 
+                                string belowMinimumElevationMessage = SerialPort.ReadTerminated("#");
+                                throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
+                            default:
+                                throw new ASCOM.DriverException("This error should not happen");
 
-                    }
-                    break;
-                case false:
-                    var maResponse = SerialPort.CommandChar(":MA#");
-                    //:MA# Autostar, LX 16”, Autostar II – Slew to target Alt and Az
-                    //Returns:
-                    //0 - No fault
-                    //1 – Fault
-                    //    LX200 – Not supported
+                        }
 
-                    if (maResponse == '1')
-                    {
-                        throw new ASCOM.InvalidOperationException("fault");
-                    }
-                    break;
-            }            
+                        break;
+                    case false:
+                        var maResponse = SerialPort.CommandChar(":MA#");
+                        //:MA# Autostar, LX 16”, Autostar II – Slew to target Alt and Az
+                        //Returns:
+                        //0 - No fault
+                        //1 – Fault
+                        //    LX200 – Not supported
+
+                        if (maResponse == '1')
+                        {
+                            throw new ASCOM.InvalidOperationException("fault");
+                        }
+
+                        break;
+                }
+            }
+            finally
+            {
+                SerialPort.Unlock();
+            }
         }
 
         public bool UserNewerPulseGuiding { get; set; } = true; //todo make this a device setting
