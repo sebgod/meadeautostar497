@@ -21,6 +21,8 @@ namespace ASCOM.MeadeAutostar497.Controller
         double TargetRightAscension { get; set; }
         double TargetDeclination { get; set; }
         DriveRates TrackingRate { get; }
+        int FocuserMaxIncrement { get; set; }
+        int FocuserMaxStep { get; set; }
         void AbortSlew();
         void PulseGuide(GuideDirections direction, int duration);
         void Park();
@@ -32,5 +34,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         void SlewToTarget();
         void SlewToTargetAsync();
         void MoveAxis(TelescopeAxes axis, double rate);
+        void FocuserHalt();
+        void FocuserMove(int position);
     }
 }

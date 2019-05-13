@@ -949,22 +949,22 @@ namespace ASCOM.MeadeAutostar497
 
         #region IFocuser Implementation
 
-        private int focuserPosition = 0; // Class level variable to hold the current focuser position
-        private const int focuserSteps = 10000;
+        //private int focuserPosition = 0; // Class level variable to hold the current focuser position
+        //private const int focuserSteps = 10000;
 
         public bool Absolute
         {
             get
             {
-                tl.LogMessage("Absolute Get", true.ToString());
-                return true; // This is an absolute focuser
+                tl.LogMessage("Absolute Get", false.ToString());
+                return false; // This is an absolute focuser
             }
         }
 
         public void Halt()
         {
-            tl.LogMessage("Halt", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Halt");
+            tl.LogMessage("Halt", "Halting");
+            _telescopeController.FocuserHalt();
         }
 
         public bool IsMoving
@@ -994,8 +994,9 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("MaxIncrement Get", focuserSteps.ToString());
-                return focuserSteps; // Maximum change in one move
+                var maxIncrement = _telescopeController.FocuserMaxIncrement;
+                tl.LogMessage("MaxIncrement Get", maxIncrement.ToString());
+                return maxIncrement; // Maximum change in one move
             }
         }
 
@@ -1003,22 +1004,25 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("MaxStep Get", focuserSteps.ToString());
-                return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
+                var maxStep = _telescopeController.FocuserMaxStep;
+                tl.LogMessage("MaxStep Get", maxStep.ToString());
+                return maxStep;
             }
         }
 
         public void Move(int Position)
         {
             tl.LogMessage("Move", Position.ToString());
-            focuserPosition = Position; // Set the focuser position
+            _telescopeController.FocuserMove(Position);
+            //focuserPosition = Position; // Set the focuser position
         }
 
         public int Position
         {
             get
             {
-                return focuserPosition; // Return the focuser position
+                throw new ASCOM.PropertyNotImplementedException("Position", false);
+                //return focuserPosition; // Return the focuser position
             }
         }
 
