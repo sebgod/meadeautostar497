@@ -97,6 +97,7 @@ namespace ASCOM.MeadeAutostar497.Controller
                         SerialPort.Open();
 
                         TestConnectionActive();
+                        SetFocuserSpeedFastest();
                     }
                     catch (Exception)
                     {
@@ -520,6 +521,10 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        public int FocuserMaxIncrement { get; set; } = 7000;
+
+        public int FocuserMaxStep { get; set; } = 7000;
+
         public double Altitude {
             get
             {
@@ -730,6 +735,7 @@ namespace ASCOM.MeadeAutostar497.Controller
 
         private bool _movingPrimary;
         private bool _movingSecondary;
+
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
             SerialPort.Lock();
@@ -838,6 +844,74 @@ namespace ASCOM.MeadeAutostar497.Controller
             SerialPort.Command(":FQ#");
             //:FQ# Halt Focuser Motion
             //Returns: Nothing
+        }
+
+        public void FocuserMove(int newPosition)
+        {
+            //todo implement backlash compensation
+            //todo implement direction reverse
+            //todo implement dynamic braking
+
+            if (newPosition < -FocuserMaxIncrement || newPosition > FocuserMaxIncrement)
+            {
+                throw new ASCOM.InvalidValueException($"position out of range {-FocuserMaxIncrement} < {newPosition} < {FocuserMaxIncrement}");
+            }
+
+            if (newPosition == 0)
+                return;
+
+            if (newPosition > 0)
+            {
+                //desired move direction is out
+                MoveFocuser(true, Math.Abs(newPosition));
+            }
+            else
+            {
+                //desired move direction is in
+                MoveFocuser(false, Math.Abs(newPosition));
+            }
+        }
+
+        private void MoveFocuser(bool directionOut, int steps)
+        {
+            SerialPort.Command(directionOut ? ":F+#" : ":F-#");
+            //:F+# Start Focuser moving inward (toward objective)
+            //Returns: None
+
+            //:F-# Start Focuser moving outward (away from objective)
+            //Returns: None
+
+            Util.WaitForMilliseconds(steps);
+
+            FocuserHalt();
+        }
+
+        private void SetFocuserSpeedFastest()
+        {
+            SerialPort.Command(":FF#");
+            //:FF# Set Focus speed to fastest setting
+            //Returns: Nothing
+        }
+
+        private void SetFocuserSpeedSlowest()
+        {
+            SerialPort.Command(":FS#");
+            //:FS# Set Focus speed to slowest setting
+            //Returns: Nothing
+        }
+
+        private void SetFocuserSpeed( int speed)
+        {
+            if (speed < 1)
+                throw new ArgumentOutOfRangeException("speed is too low");
+
+            if (speed > 4)
+                throw new ArgumentOutOfRangeException("speed is too high");
+
+            SerialPort.Command($":F{speed}#");
+            //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+            //Returns: Nothing
+            //All others – Not Supported
         }
 
         //todo remove the polar parameter and split method into two.
