@@ -478,21 +478,23 @@ namespace ASCOM.MeadeAutostar497.Controller
             }
         }
 
+        private DriveRates _trackingRate = DriveRates.driveSidereal;
         public DriveRates TrackingRate
         {
             get
             {
-                var result = SerialPort.CommandTerminated(":GT#", "#");
+                //var result = SerialPort.CommandTerminated(":GT#", "#");
 
-                double rate = double.Parse(result);
+                //double rate = double.Parse(result);
 
 
-                if (rate == 60.1)
-                    return DriveRates.driveLunar;
-                else if (rate == 60.1)
-                    return DriveRates.driveSidereal;
+                //if (rate == 60.1)
+                //    return DriveRates.driveLunar;
+                //else if (rate == 60.1)
+                //    return DriveRates.driveSidereal;
 
-                return DriveRates.driveKing;
+                //return DriveRates.driveKing;
+                return _trackingRate;
             }
             set
             {
@@ -508,16 +510,20 @@ namespace ASCOM.MeadeAutostar497.Controller
                         //:TL# Set Lunar Tracking Rage
                         //Returns: Nothing
                         break;
-                    case DriveRates.driveSolar:
-                        SerialPort.Command(":TS#");
-                        //:TS# Select Solar tracking rate. [LS Only]
-                        //Returns: Nothing
-                        break;
+                    //case DriveRates.driveSolar:
+                    //    SerialPort.Command(":TS#");
+                    //    //:TS# Select Solar tracking rate. [LS Only]
+                    //    //Returns: Nothing
+                    //    break;
                     case DriveRates.driveKing:
+                        //:TM# Select custom tracking rate [ no-op in Autostar II]
+                        //Returns: Nothing
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
+
+                _trackingRate = value;
             }
         }
 
@@ -870,6 +876,16 @@ namespace ASCOM.MeadeAutostar497.Controller
                 //desired move direction is in
                 MoveFocuser(false, Math.Abs(newPosition));
             }
+        }
+
+        public string CommandString(string command, bool raw)
+        {
+            return SerialPort.CommandTerminated(command, "#");
+        }
+
+        public void CommandBlind(string command, bool raw)
+        {
+            SerialPort.Command(command);
         }
 
         private void MoveFocuser(bool directionOut, int steps)

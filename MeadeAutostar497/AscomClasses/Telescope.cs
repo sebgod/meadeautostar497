@@ -163,16 +163,20 @@ namespace ASCOM.MeadeAutostar497
 
         public void CommandBlind(string command, bool raw)
         {
+            tl.LogMessage("CommandBlind", $"command={command} raw={raw}");
+
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
+            _telescopeController.CommandBlind(command, raw);
             // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
         {
+            tl.LogMessage("CommandBool", $"command={command} raw={raw}");
             CheckConnected("CommandBool");
             string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
@@ -183,11 +187,13 @@ namespace ASCOM.MeadeAutostar497
 
         public string CommandString(string command, bool raw)
         {
+            tl.LogMessage("CommandString", $"command={command} raw={raw}");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
             CheckConnected("CommandString");
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            //throw new ASCOM.MethodNotImplementedException("CommandString");
+            return _telescopeController.CommandString(command, raw);
         }
 
         public void Dispose()
@@ -455,8 +461,8 @@ namespace ASCOM.MeadeAutostar497
         {
             get
             {
-                tl.LogMessage("CanSetTracking", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -876,19 +882,20 @@ namespace ASCOM.MeadeAutostar497
             }
         }
 
+        private bool _tracking = true;
         public bool Tracking
         {
             get
             {
                 //todo implementing this, it exists.
-                bool tracking = true;
-                tl.LogMessage("Tracking", "Get - " + tracking.ToString());
-                return tracking;
+                
+                tl.LogMessage("Tracking", $"Get - {_tracking}" );
+                return _tracking;
             }
             set
             {
-                tl.LogMessage("Tracking Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Tracking", true);
+                tl.LogMessage($"Tracking Set", $"{value}");
+                _tracking = value;
             }
         }
 
@@ -902,8 +909,8 @@ namespace ASCOM.MeadeAutostar497
             }
             set
             {
-                tl.LogMessage("TrackingRate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TrackingRate", true);
+                tl.LogMessage("TrackingRate Set", $"{value}");
+                _telescopeController.TrackingRate = value;
             }
         }
 

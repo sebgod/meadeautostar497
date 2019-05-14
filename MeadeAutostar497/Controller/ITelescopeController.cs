@@ -20,7 +20,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         double Declination { get; }
         double TargetRightAscension { get; set; }
         double TargetDeclination { get; set; }
-        DriveRates TrackingRate { get; }
+        DriveRates TrackingRate { get; set; }
         int FocuserMaxIncrement { get; set; }
         int FocuserMaxStep { get; set; }
         void AbortSlew();
@@ -36,5 +36,7 @@ namespace ASCOM.MeadeAutostar497.Controller
         void MoveAxis(TelescopeAxes axis, double rate);
         void FocuserHalt();
         void FocuserMove(int position);
+        string CommandString(string command, bool raw);
+        void CommandBlind(string command, bool raw);
     }
 }
