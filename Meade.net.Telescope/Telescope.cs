@@ -404,17 +404,17 @@ namespace ASCOM.Meade.net
             get
             {
                 //todo firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
-                //var result = SharedResources.SendString(":GA#");
-                ////:GA# Get Telescope Altitude
-                ////Returns: sDD* MM# or sDD*MM’SS#
-                ////The current scope altitude. The returned format depending on the current precision setting.
+                var result = SharedResources.SendString(":GA#");
+                //:GA# Get Telescope Altitude
+                //Returns: sDD* MM# or sDD*MM’SS#
+                //The current scope altitude. The returned format depending on the current precision setting.
 
-                //var alt = utilities.DMSToDegrees(result);
-                //tl.LogMessage("Altitude", $"{alt}");
-                //return alt;
+                var alt = utilities.DMSToDegrees(result);
+                tl.LogMessage("Altitude", $"{alt}");
+                return alt;
 
-                tl.LogMessage("Altitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                //tl.LogMessage("Altitude Get", "Not implemented");
+                //throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
         }
 
