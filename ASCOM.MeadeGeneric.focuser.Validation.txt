@@ -1,0 +1,69 @@
+Conform Report Hash (V1): 67092198F82F435D10580E3B3E3E460EC0B5E438532A7B5D83C09425222F097CA9A23C883D4238654F217FCA9801E46720811B7CDB982868C68843CCDA33E7FB
+
+ 
+ConformanceCheck ASCOM Device Conformance Checker Version 6.4.63.0, Build time: 18/12/2018 08:58:32
+ConformanceCheck Running on: ASCOM Platform 6.4 SP1 6.4.1.2695
+ 
+ConformanceCheck Driver ProgID: ASCOM.MeadeGeneric.focuser
+ 
+Error handling 
+Error number for "Not Implemented" is: 80040400
+Error number for "Invalid Value 1" is: 80040404
+Error number for "Value Not Set 1" is: 80040402
+Error number for "Value Not Set 2" is: 80040403
+Error messages will not be interpreted to infer state.
+ 
+23:25:52.259 Driver Access Checks              OK       
+23:25:52.911 AccessChecks                      OK       Successfully created driver using late binding
+23:25:53.126 AccessChecks                      OK       Successfully connected using late binding
+23:25:53.131 AccessChecks                      INFO     The driver is a .NET object
+23:25:53.137 AccessChecks                      INFO     The AssemblyQualifiedName is: ASCOM.Meade.net.Focuser, ASCOM.Meade.net.Focuser, Version=6.4.0.0, Culture=n
+23:25:53.142 AccessChecks                      INFO     The driver implements interface: ASCOM.DeviceInterface.IFocuserV3
+23:25:53.793 AccessChecks                      INFO     Device does not expose IFocuser interface
+23:25:53.855 AccessChecks                      INFO     Device does not expose IFocuserV2 interface
+23:25:54.068 AccessChecks                      INFO     Device exposes IFocuserV3 interface
+23:25:54.190 AccessChecks                      OK       Successfully created driver using driver access toolkit
+23:25:54.344 AccessChecks                      OK       Successfully connected using driver access toolkit
+23:25:54.407 AccessChecks                      OK       Successfully disconnected using driver access toolkit
+ 
+Conform is using ASCOM.DriverAccess.Focuser to get a Focuser object
+23:25:54.480 ConformanceCheck                  OK       Driver instance created successfully
+23:25:54.679 ConformanceCheck                  OK       Connected OK
+ 
+Common Driver Methods 
+23:25:54.721 InterfaceVersion                  OK       3
+23:25:54.750 Connected                         OK       True
+23:25:54.779 Description                       OK       Meade Generic
+23:25:54.808 DriverInfo                        OK       Information about the driver itself. Version: 6.4
+23:25:54.837 DriverVersion                     OK       6.4
+23:25:54.866 Name                              OK       Meade Generic
+23:25:54.895 CommandString                     INFO     Conform cannot test the CommandString method
+23:25:54.901 CommandBlind                      INFO     Conform cannot test the CommandBlind method
+23:25:54.908 CommandBool                       INFO     Conform cannot test the CommandBool method
+23:25:54.916 Action                            INFO     Conform cannot test the Action method
+23:25:54.924 SupportedActions                  OK       Driver returned an empty action list
+ 
+Properties 
+23:25:55.035 Absolute                          OK       False
+23:25:55.043 IsMoving                          OK       False
+23:25:55.051 MaxStep                           OK       7000
+23:25:55.059 MaxIncrement                      OK       7000
+23:25:55.073 Position                          OK       Position must not be implemented for a relative focuser and a PropertyNotImplementedException exception was generated as expected
+23:25:55.084 StepSize                          OK       Optional member threw a PropertyNotImplementedException exception.
+23:25:55.091 TempCompAvailable                 OK       False
+23:25:55.100 TempComp Read                     OK       False
+23:25:55.108 TempComp Write                    OK       Temperature compensation is not available and a PropertyNotImplementedException exception was generated as expected
+23:25:55.120 Temperature                       OK       Optional member threw a PropertyNotImplementedException exception.
+ 
+Methods 
+23:25:55.170 Halt                              OK       Focuser halted OK
+23:25:55.183 Move - TempComp False                      Moving by: 700
+23:25:55.895 Move - TempComp False                      Asynchronous move found
+23:25:55.904 Move - TempComp False             OK       Relative move OK
+23:25:55.915 Move - TempComp False             INFO     Returning to original position: 0
+ 
+Conformance test complete 
+ 
+No errors, warnings or issues found: your driver passes ASCOM validation!! 
+ 
+Driver Hash Value: DE237CD97B3A95A514A5D7FD9B265F5F98174E67A28B44FF5CA2FC9A1CF355DA2C4DFB9416F3C40A8056334CC5339F0D8F8A39026A4BB5E3AE1FFC2BD8F55FBD
