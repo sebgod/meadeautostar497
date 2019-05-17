@@ -231,6 +231,8 @@ namespace ASCOM.Meade.net
                     LogMessage("Connected Set", "Connecting to port {0}", comPort);
                     SharedResources.Connect("Serial");
                     connectedState = true;
+
+                    SelectSite(1);
                 }
                 else
                 {
@@ -239,6 +241,14 @@ namespace ASCOM.Meade.net
                     connectedState = false;
                 }
             }
+        }
+
+        private void SelectSite(int site)
+        {
+            SharedResources.SendBlind($":W{site}#");
+            //:W<n>#
+            //Set current site to<n>, an ASCII digit in the range 1..4
+            //Returns: Nothing
         }
 
         public string Description
@@ -311,11 +321,13 @@ namespace ASCOM.Meade.net
         #endregion
 
         #region ITelescope Implementation
-
+        
         public void AbortSlew()
         {
             tl.LogMessage("AbortSlew", "Aborting slew");
             SharedResources.SendBlind(":Q#");
+            //:Q# Halt all current slewing
+            //Returns:Nothing
         }
 
         public AlignmentModes AlignmentMode
@@ -327,6 +339,12 @@ namespace ASCOM.Meade.net
                 const char ack = (char) 6;
 
                 var alignmentString = SharedResources.SendChar(ack.ToString());
+                //ACK <0x06> Query of alignment mounting mode.
+                //Returns:
+                //A If scope in AltAz Mode
+                //D If scope is currently in the Downloader[Autostar II & Autostar]
+                //L If scope in Land Mode
+                //P If scope in Polar Mode
 
                 //todo implement GW Command
                 //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
@@ -838,6 +856,8 @@ namespace ASCOM.Meade.net
                 return;
 
             SharedResources.SendBlind(":hP#");
+            //:hP# Autostar, Autostar II and LX 16”Slew to Park Position
+            //Returns: Nothing
             AtPark = true;
         }
 
@@ -867,16 +887,43 @@ namespace ASCOM.Meade.net
             if (_userNewerPulseGuiding)
             {
                 SharedResources.SendBlind($":Mg{d}{duration:0000}#");
-                utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
+                //:MgnDDDD#
+                //:MgsDDDD#
+                //:MgeDDDD#
+                //:MgwDDDD#
+                //Guide telescope in the commanded direction(nsew) for the number of milliseconds indicated by the unsigned number
+                //passed in the command.These commands support serial port driven guiding.
+                //Returns – Nothing
+                //LX200 – Not Supported
+
+               utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
             }
             else
             {
                 SharedResources.Lock(() =>
                 {
                     SharedResources.SendBlind(":RG#"); //Make sure we are at guide rate
+                    //:RG# Set Slew rate to Guiding Rate (slowest)
+                    //Returns: Nothing
                     SharedResources.SendBlind($":M{d}#");
+                    //:Me# Move Telescope East at current slew rate
+                    //Returns: Nothing
+                    //:Mn# Move Telescope North at current slew rate
+                    //Returns: Nothing
+                    //:Ms# Move Telescope South at current slew rate
+                    //Returns: Nothing
+                    //:Mw# Move Telescope West at current slew rate
+                    //Returns: Nothing
                     utilities.WaitForMilliseconds(duration);
                     SharedResources.SendBlind($":Q{d}#");
+                    //:Qe# Halt eastward Slews
+                    //Returns: Nothing
+                    //:Qn# Halt northward Slews
+                    //Returns: Nothing
+                    //:Qs# Halt southward Slews
+                    //Returns: Nothing
+                    //:Qw# Halt westward Slews
+                    //Returns: Nothing
                 });
             }
         }
@@ -977,6 +1024,9 @@ namespace ASCOM.Meade.net
             get
             {
                 var latitude = SharedResources.SendString(":Gt#");
+                //:Gt# Get Current Site Latitude
+                //Returns: sDD* MM#
+                //The latitude of the current site. Positive inplies North latitude.
 
                 var siteLatitude = utilities.DMSToDegrees(latitude);
                 tl.LogMessage("SiteLatitude Get", $"{utilities.DegreesToDMS(siteLatitude)}");
@@ -992,10 +1042,16 @@ namespace ASCOM.Meade.net
                 if (value < -90)
                     throw new InvalidValueException("Latitude cannot be less than -90 degrees.");
 
+                string sign = value > 0 ? "+" : "-";
                 int d = Convert.ToInt32(Math.Floor(value));
                 int m = Convert.ToInt32(60 * (value - d));
 
-                var result = SharedResources.SendChar($":Sts{d:00}*{m:00}#");
+                var result = SharedResources.SendChar($":St{sign}{d:00}*{m:00}#");
+                //:StsDD*MM#
+                //Sets the current site latitude to sDD* MM#
+                //Returns:
+                //0 – Invalid
+                //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site latitude.");
             }
@@ -1006,27 +1062,44 @@ namespace ASCOM.Meade.net
             get
             {
                 var longitude = SharedResources.SendString(":Gg#");
+                //:Gg# Get Current Site Longitude
+                //Returns: sDDD* MM#
+                //The current site Longitude. East Longitudes are expressed as negative
                 double siteLongitude = utilities.DMSToDegrees(longitude);
 
                 if (siteLongitude > 180)
                     siteLongitude = siteLongitude - 360;
+
+                siteLongitude = -siteLongitude;
 
                 tl.LogMessage("SiteLongitude Get", $"{utilities.DegreesToDMS(siteLongitude)}");
                 return siteLongitude;
             }
             set
             {
-                tl.LogMessage("SiteLongitude Set", $"{utilities.DegreesToDMS(value)}");
-                if (value > 180)
+                var newLongitude = value;
+
+                tl.LogMessage("SiteLongitude Set", $"{utilities.DegreesToDMS(newLongitude)}");
+                if (newLongitude > 180)
                     throw new InvalidValueException("Longitude cannot be greater than 180 degrees.");
 
-                if (value < -180)
+                if (newLongitude < -180)
                     throw new InvalidValueException("Longitude cannot be lower than -180 degrees.");
 
-                int d = Convert.ToInt32(Math.Floor(value));
-                int m = Convert.ToInt32(60 * (value - d));
+                if (newLongitude > 0)
+                    newLongitude = 360 - newLongitude;
+
+                newLongitude = Math.Abs(newLongitude);
+
+                int d = Convert.ToInt32(Math.Floor(newLongitude));
+                int m = Convert.ToInt32(60 * (newLongitude - d));
 
                 var result = SharedResources.SendChar($":Sg{d:000}*{m:00}#");
+                //:SgDDD*MM#
+                //Set current site’s longitude to DDD*MM an ASCII position string
+                //Returns:
+                //0 – Invalid
+                //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site longitude.");
             }
@@ -1235,6 +1308,10 @@ namespace ASCOM.Meade.net
                     return true;
 
                 var result = SharedResources.SendString(":D#");
+                //:D# Requests a string of bars indicating the distance to the current target location.
+                //Returns:
+                //LX200's – a string of bar characters indicating the distance.
+                //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
                 bool isSlewing = result != string.Empty;
 
                 tl.LogMessage("Slewing Get", $"Result = {isSlewing}");
@@ -1458,6 +1535,10 @@ namespace ASCOM.Meade.net
         private TimeSpan GetUtcCorrection()
         {
             string utcOffSet = SharedResources.SendString(":GG#");
+            //:GG# Get UTC offset time
+            //Returns: sHH# or sHH.H#
+            //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
+            //sHH# form is returned, otherwise the longer form is returned.
             double utcOffsetHours = double.Parse(utcOffSet);
             TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
             return utcCorrection;
@@ -1480,7 +1561,13 @@ namespace ASCOM.Meade.net
                 {
                     TelescopeDateDetails tdd = new TelescopeDateDetails();
                     tdd.telescopeDate = SharedResources.SendString(":GC#");
+                    //:GC# Get current date.
+                    //Returns: MM / DD / YY#
+                    //The current local calendar date for the telescope.
                     tdd.telescopeTime = SharedResources.SendString(":GL#");
+                    //:GL# Get Local Time in 24 hour format
+                    //Returns: HH: MM: SS#
+                    //The Local Time in 24 - hour Format
                     tdd.utcCorrection = GetUtcCorrection();
 
                     return tdd;
@@ -1499,7 +1586,6 @@ namespace ASCOM.Meade.net
                 int minute = telescopeDateDetails.telescopeTime.Substring(3, 2).ToInteger();
                 int second = telescopeDateDetails.telescopeTime.Substring(6, 2).ToInteger();
 
-                //Todo is this telescope local time, or real utc?
                 var utcDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) +
                               telescopeDateDetails.utcCorrection;
 
@@ -1516,14 +1602,24 @@ namespace ASCOM.Meade.net
                     var utcCorrection = GetUtcCorrection();
                     var localDateTime = value - utcCorrection;
 
-                    //Todo is this telescope local time, or real utc?
                     var timeResult = SharedResources.SendChar($":SL{localDateTime:HH:mm:ss}#");
+                    //:SLHH:MM:SS#
+                    //Set the local Time
+                    //Returns:
+                    //0 – Invalid
+                    //1 - Valid
                     if (timeResult != "1")
                     {
                         throw new InvalidOperationException("Failed to set local time");
                     }
 
                     var dateResult = SharedResources.SendChar($":SC{localDateTime:MM/dd/yy}#");
+                    //:SCMM/DD/YY#
+                    //Change Handbox Date to MM/DD/YY
+                    //Returns: <D><string>
+                    //D = ‘0’ if the date is invalid.The string is the null string.
+                    //D = ‘1’ for valid dates and the string is “Updating Planetary Data#                       #”
+                    //Note: For Autostar II this is the UTC data!
                     if (dateResult != "1")
                     {
                         throw new InvalidOperationException("Failed to set local date");
