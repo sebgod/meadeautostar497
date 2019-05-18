@@ -111,15 +111,12 @@ namespace AstroMath.UnitTests
         [Test]
         public void ConvertEqToHoz_book()
         {
-            DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
-            var longitude = -1.7833333333333332;
             var latitude = 52.0;
 
             EquatorialCoordinates equatorialCoordinates = new EquatorialCoordinates();
             equatorialCoordinates.RightAscension = 5.862222222222222;//5 51' 44"
             equatorialCoordinates.Declination = 23.21944444444444;//23 13' 10"
 
-            //var hourAngle = _astroMath.RightAscensionToHourAngle(dateTime, longitude, equatorialCoordinates.RightAscension);
             var hourAngle = 5.682222;
 
             var altAz = _astroMath.ConvertEqToHoz(hourAngle, latitude, equatorialCoordinates);

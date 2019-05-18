@@ -237,6 +237,7 @@ namespace ASCOM.Meade.net
                     connectedState = true;
 
                     SelectSite(1);
+                    SetLongFormat(true);
                 }
                 else
                 {
@@ -245,6 +246,29 @@ namespace ASCOM.Meade.net
                     connectedState = false;
                 }
             }
+        }
+
+        private void SetLongFormat(bool setLongFormat)
+        {
+            SharedResources.Lock(() =>
+            {
+                var result = SharedResources.SendString(":GZ#");
+                //:GZ# Get telescope azimuth
+                //Returns: DDD*MM#T or DDD*MM’SS#
+                //The current telescope Azimuth depending on the selected precision.
+
+                bool isLongFormat = result.Length > 6;
+
+                if (isLongFormat != setLongFormat)
+                {
+                    utilities.WaitForMilliseconds(500);
+                    SharedResources.SendBlind(":U#");
+                    //:U# Toggle between low/hi precision positions
+                    //Low - RA displays and messages HH:MM.T sDD*MM
+                    //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
+                    //    Returns Nothing
+                }
+            });
         }
 
         private void SelectSite(int site)
@@ -1173,9 +1197,10 @@ namespace ASCOM.Meade.net
                 if (value < 0)
                     throw new ASCOM.InvalidValueException("Altitide cannot be less than 0.");
 
+                //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var dms = utilities.DegreesToDMS(value, "*", "'", ".", 2);
-                var s = value < 0 ? '-' : '+';
+                var dms = utilities.DegreesToDMS(value, "*", "'", "",0);
+                var s = value < 0 ? "-" : "+";
 
                 var result = SharedResources.SendChar($":Sa{s}{dms}#");
                 //:SasDD*MM#
@@ -1199,9 +1224,11 @@ namespace ASCOM.Meade.net
                 if (value < 0)
                     throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
 
-                var dms = utilities.DegreesToDM(value, "*", ":", 2);
+                //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var result = SharedResources.SendChar($":Sd{dms}#");
+                var dms = utilities.DegreesToDM(value, "*" );
+
+                var result = SharedResources.SendChar($":Sz{dms}#");
                 //:SzDDD*MM#
                 //Sets the target Object Azimuth[LX 16” and Autostar II only]
                 //Returns:
