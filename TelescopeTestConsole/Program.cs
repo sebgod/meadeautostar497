@@ -43,12 +43,12 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
-            //Console.WriteLine($"Altitute {device.Altitude}");
+            Console.WriteLine($"Ra {device.RightAscension}");
+            Console.WriteLine($"Dec {device.Declination}");
 
-            //Console.WriteLine($"Dec {device.Declination}");
-
-            device.SlewToAltAz(30, 45);
-
+            Console.WriteLine($"Altitude {device.Altitude}");
+            Console.WriteLine($"Azimuth {device.Azimuth}");
+            
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");
             Console.ReadLine();

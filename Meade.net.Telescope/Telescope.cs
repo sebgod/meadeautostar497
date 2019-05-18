@@ -98,6 +98,8 @@ namespace ASCOM.Meade.net
         /// </summary>
         private AstroUtils astroUtilities;
 
+        private AstroMaths astroMaths;
+
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
@@ -117,7 +119,9 @@ namespace ASCOM.Meade.net
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
+
             //TODO: Implement your additional construction here
+            astroMaths = new AstroMaths();
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
@@ -403,19 +407,43 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                //todo firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
-                var result = SharedResources.SendString(":GA#");
-                //:GA# Get Telescope Altitude
-                //Returns: sDD* MM# or sDD*MM’SS#
-                //The current scope altitude. The returned format depending on the current precision setting.
+                var altAz = CalcAltAzFromTelescopeEqData();
+                tl.LogMessage("Altitude", $"{altAz.Altitude}");
+                return altAz.Altitude;
 
-                var alt = utilities.DMSToDegrees(result);
-                tl.LogMessage("Altitude", $"{alt}");
-                return alt;
+                ////todo firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
+                //var result = SharedResources.SendString(":GA#");
+                ////:GA# Get Telescope Altitude
+                ////Returns: sDD* MM# or sDD*MM’SS#
+                ////The current scope altitude. The returned format depending on the current precision setting.
+
+                //var alt = utilities.DMSToDegrees(result);
+                //tl.LogMessage("Altitude", $"{alt}");
+                //return alt;
 
                 //tl.LogMessage("Altitude Get", "Not implemented");
                 //throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
+        }
+
+        private HorizonCoordinates CalcAltAzFromTelescopeEqData()
+        {
+            var altitudeData = SharedResources.Lock(() => new AltitudeData
+            {
+                UtcDateTime = this.UTCDate,
+                SiteLongitude = this.SiteLongitude,
+                SiteLatitude = this.SiteLatitude,
+                equatorialCoordinates = new EquatorialCoordinates()
+                {
+                    RightAscension = this.RightAscension,
+                    Declination = this.Declination
+                }
+            });
+
+            double hourAngle = astroMaths.RightAscensionToHourAngle(altitudeData.UtcDateTime, altitudeData.SiteLongitude,
+                altitudeData.equatorialCoordinates.RightAscension);
+            var altAz = astroMaths.ConvertEqToHoz(hourAngle, altitudeData.SiteLatitude, altitudeData.equatorialCoordinates);
+            return altAz;
         }
 
         public double ApertureArea
@@ -467,15 +495,19 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var result = SharedResources.SendString(":GZ#");
+                //var result = SharedResources.SendString(":GZ#");
                 //:GZ# Get telescope azimuth
                 //Returns: DDD*MM#T or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
 
-                double az = utilities.DMSToDegrees(result);
+                //double az = utilities.DMSToDegrees(result);
 
-                tl.LogMessage("Azimuth Get", $"{az}");
-                return az;
+                //tl.LogMessage("Azimuth Get", $"{az}");
+                //return az;
+
+                var altAz = CalcAltAzFromTelescopeEqData();
+                tl.LogMessage("Azimuth Get", $"{altAz.Azimuth}");
+                return altAz.Azimuth;
             }
         }
 
