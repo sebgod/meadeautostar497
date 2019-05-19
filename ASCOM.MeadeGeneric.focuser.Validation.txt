@@ -1,4 +1,4 @@
-Conform Report Hash (V1): BCDD202E20EC71628DFE60620D4E1F9A119F72953DCC4F8107039D0C9872C4A2B2EC2A759AF57819C2A53FA56A4643B552778C53924B743D9C049027AC09FD20
+Conform Report Hash (V1): B869A2DCAA7DACEB47895197B4418080943EDDCC3D1A49E9DDE97B9B22DF8F7B83DC95D595972C4345F53236103CE33045056F1A6BB068B32F72C080377A2FC1
 
  
 ConformanceCheck ASCOM Device Conformance Checker Version 6.4.63.0, Build time: 18/12/2018 08:58:32
@@ -14,57 +14,55 @@ Error number for "Value Not Set 1" is: 80040402
 Error number for "Value Not Set 2" is: 80040403
 Error messages will not be interpreted to infer state.
  
-00:05:33.087 Driver Access Checks              OK       
-00:05:33.758 AccessChecks                      OK       Successfully created driver using late binding
-00:05:33.983 AccessChecks                      OK       Successfully connected using late binding
-00:05:33.987 AccessChecks                      INFO     The driver is a .NET object
-00:05:33.991 AccessChecks                      INFO     The AssemblyQualifiedName is: ASCOM.Meade.net.Focuser, ASCOM.Meade.net.Focuser, Version=0.4.0.0, Culture=n
-00:05:33.996 AccessChecks                      INFO     The driver implements interface: ASCOM.DeviceInterface.IFocuserV3
-00:05:34.640 AccessChecks                      INFO     Device does not expose IFocuser interface
-00:05:34.700 AccessChecks                      INFO     Device does not expose IFocuserV2 interface
-00:05:34.951 AccessChecks                      INFO     Device exposes IFocuserV3 interface
-00:05:35.069 AccessChecks                      OK       Successfully created driver using driver access toolkit
-00:05:35.263 AccessChecks                      OK       Successfully connected using driver access toolkit
-00:05:35.324 AccessChecks                      OK       Successfully disconnected using driver access toolkit
+19:18:30.690 Driver Access Checks              OK       
+19:18:31.351 AccessChecks                      OK       Successfully created driver using late binding
+19:18:31.676 AccessChecks                      OK       Successfully connected using late binding
+19:18:31.682 AccessChecks                      INFO     The driver is a .NET object
+19:18:31.687 AccessChecks                      INFO     The AssemblyQualifiedName is: ASCOM.Meade.net.Focuser, ASCOM.Meade.net.Focuser, Version=0.4.0.0, Culture=n
+19:18:31.692 AccessChecks                      INFO     The driver implements interface: ASCOM.DeviceInterface.IFocuserV3
+19:18:32.341 AccessChecks                      INFO     Device does not expose IFocuser interface
+19:18:32.405 AccessChecks                      INFO     Device does not expose IFocuserV2 interface
+19:18:32.675 AccessChecks                      INFO     Device exposes IFocuserV3 interface
+19:18:32.793 AccessChecks                      OK       Successfully created driver using driver access toolkit
+19:18:32.967 AccessChecks                      OK       Successfully connected using driver access toolkit
+19:18:33.031 AccessChecks                      OK       Successfully disconnected using driver access toolkit
  
 Conform is using ASCOM.DriverAccess.Focuser to get a Focuser object
-00:05:35.394 ConformanceCheck                  OK       Driver instance created successfully
-00:05:35.608 ConformanceCheck                  OK       Connected OK
+19:18:33.103 ConformanceCheck                  OK       Driver instance created successfully
+19:18:33.621 ConformanceCheck                  OK       Connected OK
  
 Common Driver Methods 
-00:05:35.647 InterfaceVersion                  OK       3
-00:05:35.676 Connected                         OK       True
-00:05:35.704 Description                       OK       Meade Generic
-00:05:35.736 DriverInfo                        OK       Information about the driver itself. Version: 0.4
-00:05:35.765 DriverVersion                     OK       0.4
-00:05:35.794 Name                              OK       Meade Generic
-00:05:35.823 CommandString                     INFO     Conform cannot test the CommandString method
-00:05:35.829 CommandBlind                      INFO     Conform cannot test the CommandBlind method
-00:05:35.836 CommandBool                       INFO     Conform cannot test the CommandBool method
-00:05:35.842 Action                            INFO     Conform cannot test the Action method
-00:05:35.850 SupportedActions                  OK       Driver returned an empty action list
+19:18:33.661 InterfaceVersion                  OK       3
+19:18:33.691 Connected                         OK       True
+19:18:33.719 Description                       OK       Meade Generic
+19:18:33.749 DriverInfo                        OK       Information about the driver itself. Version: 0.4
+19:18:33.778 DriverVersion                     OK       0.4
+19:18:33.807 Name                              OK       Meade Generic
+19:18:33.836 CommandXXX                        INFO     Tests skipped
+19:18:33.842 Action                            INFO     Conform cannot test the Action method
+19:18:33.850 SupportedActions                  OK       Driver returned an empty action list
  
 Properties 
-00:05:35.961 Absolute                          OK       False
-00:05:35.968 IsMoving                          OK       False
-00:05:35.976 MaxStep                           OK       7000
-00:05:35.983 MaxIncrement                      OK       7000
-00:05:35.992 Position                          OK       Position must not be implemented for a relative focuser and a PropertyNotImplementedException exception was generated as expected
-00:05:36.000 StepSize                          OK       Optional member threw a PropertyNotImplementedException exception.
-00:05:36.008 TempCompAvailable                 OK       False
-00:05:36.016 TempComp Read                     OK       False
-00:05:36.024 TempComp Write                    OK       Temperature compensation is not available and a PropertyNotImplementedException exception was generated as expected
-00:05:36.032 Temperature                       OK       Optional member threw a PropertyNotImplementedException exception.
+19:18:33.962 Absolute                          OK       False
+19:18:33.970 IsMoving                          OK       False
+19:18:33.977 MaxStep                           OK       7000
+19:18:33.985 MaxIncrement                      OK       7000
+19:18:33.994 Position                          OK       Position must not be implemented for a relative focuser and a PropertyNotImplementedException exception was generated as expected
+19:18:34.003 StepSize                          OK       Optional member threw a PropertyNotImplementedException exception.
+19:18:34.011 TempCompAvailable                 OK       False
+19:18:34.019 TempComp Read                     OK       False
+19:18:34.027 TempComp Write                    OK       Temperature compensation is not available and a PropertyNotImplementedException exception was generated as expected
+19:18:34.036 Temperature                       OK       Optional member threw a PropertyNotImplementedException exception.
  
 Methods 
-00:05:36.080 Halt                              OK       Focuser halted OK
-00:05:36.092 Move - TempComp False                      Moving by: 700
-00:05:36.804 Move - TempComp False                      Asynchronous move found
-00:05:36.812 Move - TempComp False             OK       Relative move OK
-00:05:36.822 Move - TempComp False             INFO     Returning to original position: 0
+19:18:34.085 Halt                              OK       Focuser halted OK
+19:18:34.096 Move - TempComp False                      Moving by: 700
+19:18:34.808 Move - TempComp False                      Asynchronous move found
+19:18:34.818 Move - TempComp False             OK       Relative move OK
+19:18:34.830 Move - TempComp False             INFO     Returning to original position: 0
  
 Conformance test complete 
  
 No errors, warnings or issues found: your driver passes ASCOM validation!! 
  
-Driver Hash Value: A3C2D8D9708D2B157CF8BFC2F83BFE3666DA07AA75C592BD3969D42E0566A2F69E06BBE7C33BA78914D292EF3529B65AA22052AC34D13F6B521127072ACF366F
+Driver Hash Value: 1816E24C06CF16B84021B2B07D4629C3E46DCC5E738D9BACBD524BE5A969BCB07AB3704AB754BC5AA54F5A76F77721D6F7D756AC16DC0AC7DACDC9EA900FA3C8

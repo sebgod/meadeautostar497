@@ -43,9 +43,12 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
-            device.CommandBlind(":Sa+30*00'00#", true);
-            device.CommandBlind(":Sz150*00#", true);
-            device.CommandBlind(":MS#", true);
+
+            device.SlewToAltAz(150, 50);
+
+            //device.CommandBlind(":Sa+30*00'00#", true);
+            //device.CommandBlind(":Sz50*00#", true);
+            //device.CommandBlind(":MA#", true);
             //Console.WriteLine($"Ra {device.RightAscension}");
             //Console.WriteLine($"Dec {device.Declination}");
 

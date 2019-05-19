@@ -1243,14 +1243,41 @@ namespace ASCOM.Meade.net
 
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
-            tl.LogMessage("SlewToAltAzAsync", $"Az=~{azimuth} Alt={altitude}");
+            if (altitude > 90)
+                throw new ASCOM.InvalidValueException("Altitude cannot be greater than 90.");
+
+            if (altitude < 0)
+                throw new ASCOM.InvalidValueException("Altitide cannot be less than 0.");
+
+            if (azimuth >= 360)
+                throw new ASCOM.InvalidValueException("Azimuth cannot be 360 or higher.");
+
+            if (azimuth < 0)
+                throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
+
+            tl.LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
+
+            HorizonCoordinates altAz = new HorizonCoordinates();
+            altAz.Azimuth = azimuth;
+            altAz.Altitude = altitude;
+
+            var utcDateTime = UTCDate;
+            var latitude = SiteLatitude;
+            var longitude = SiteLongitude;
 
             SharedResources.Lock(() =>
             {
-                TargetAltitude = altitude;
-                TargetAzimuth = azimuth;
+                var raDec = astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, altAz);
 
-                DoSlewAsync(false);
+                TargetRightAscension = raDec.RightAscension;
+                TargetDeclination = raDec.Declination;
+
+                DoSlewAsync(true);
+
+                //TargetAltitude = altitude;
+                //TargetAzimuth = azimuth;
+
+                //DoSlewAsync(false);
             });
         }
 

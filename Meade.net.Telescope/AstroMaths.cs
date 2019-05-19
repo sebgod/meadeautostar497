@@ -43,6 +43,53 @@ namespace ASCOM.Meade.net
             return h;
         }
 
+        public double HourAngleToRightAscension(DateTime utcDateTime, double longitude, double hourAngle )
+        {
+            var gst = UTtoGST(utcDateTime);
+            var lst = GSTtoLST( gst, longitude);
+            var raHours = hourAngle;
+            var h1 = lst - raHours;
+            var h = h1;
+            if (h1 < 0)
+            {
+                h += 24;
+            }
+
+            return h;
+        }
+
+        public EquatorialCoordinates ConvertHozToEq( DateTime utcDateTime, double latitude, double longitude, HorizonCoordinates altAz)
+        {
+            var az = DegreesToRadians(altAz.Azimuth);
+            var alt = DegreesToRadians(altAz.Altitude);
+            var lat = DegreesToRadians(latitude);
+            
+            var sinDec = Math.Sin(alt) * Math.Sin(lat) + Math.Cos(alt) * Math.Cos(lat) * Math.Cos(az);
+            var dec = RadiansToDegrees(Math.Asin(sinDec));
+            
+            var y = -Math.Cos(alt) * Math.Cos(lat) * Math.Sin(az);
+            var x = Math.Sin(alt) - Math.Sin(lat) * sinDec;
+            var upperA = Math.Atan2(y,x);
+            var upperB = RadiansToDegrees(upperA);
+
+            var ha = upperB;
+
+            if (upperB < 0)
+            {
+                ha += 360;
+            }
+
+            ha = ha / 15;
+
+            EquatorialCoordinates equatorialCoordinates = new EquatorialCoordinates
+            {
+                RightAscension = HourAngleToRightAscension( utcDateTime, longitude, ha ),
+                Declination = dec
+            };
+
+            return equatorialCoordinates;
+        }
+
         public HorizonCoordinates ConvertEqToHoz(double hourAngle, double latitude, EquatorialCoordinates raDec)
         {
             var h = hourAngle * 15;
@@ -51,7 +98,7 @@ namespace ASCOM.Meade.net
             var lat = DegreesToRadians(latitude);
             var sinA = Math.Sin(d) * Math.Sin(lat) + Math.Cos(d) * Math.Cos(lat) * Math.Cos(h1);
 
-            var y = -Math.Cos(d) * Math.Cos(lat) * Math.Sin(h1);
+             var y = -Math.Cos(d) * Math.Cos(lat) * Math.Sin(h1);
             var x = Math.Sin(d) - Math.Sin(lat) * sinA;
             var upperA = Math.Atan2(y, x);
             var upperB = RadiansToDegrees(upperA);

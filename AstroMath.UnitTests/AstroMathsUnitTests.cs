@@ -142,5 +142,31 @@ namespace AstroMath.UnitTests
             Assert.That(altaz.Azimuth, Is.EqualTo(333.2819484462679));
         }
 
+        //[Test]
+        //public void ConvertHozToEq_book()
+        //{
+        //    HorizonCoordinates hc = new HorizonCoordinates();
+        //    hc.Altitude = 19.33434444;
+        //    hc.Azimuth = 283.271028;
+        //    var lat = 52;
+        //    var raDec = _astroMath.ConvertHozToEq(lat, hc);
+
+        //    Assert.That(raDec.RightAscension, Is.EqualTo(5.8622222973512992));
+        //    Assert.That(raDec.Declination, Is.EqualTo(23.219444300552407));
+        //}
+
+
+        //[Test]
+        //public void ConvertHozToEq()
+        //{
+        //    HorizonCoordinates hc = new HorizonCoordinates();
+        //    hc.Altitude = 50;
+        //    hc.Azimuth = 150;
+        //    var lat = 53.5;
+        //    var raDec = _astroMath.ConvertHozToEq(lat, hc);
+
+        //    Assert.That(raDec.RightAscension, Is.EqualTo(22.69408899548845));
+        //    Assert.That(raDec.Declination, Is.EqualTo(16.539114529888948));
+        //}
     }
 }
