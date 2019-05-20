@@ -109,7 +109,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         public Focuser()
         {
-            tl = new TraceLogger("", "Meade.net");
+            tl = new TraceLogger("", "Meade.net.focusser");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl.LogMessage("Focuser", "Starting initialisation");
@@ -136,8 +136,10 @@ namespace ASCOM.Meade.net
         /// </summary>
         public void SetupDialog()
         {
+            tl.LogMessage("SetupDialog", "Opening setup dialog");
             SharedResources.SetupDialog();
             ReadProfile();
+            tl.LogMessage("SetupDialog", "complete");
         }
 
         public ArrayList SupportedActions
@@ -297,6 +299,9 @@ namespace ASCOM.Meade.net
         public void Halt()
         {
             tl.LogMessage("Halt", "Halting");
+
+            CheckConnected("Halt");
+
             SharedResources.SendBlind(":FQ#");
             //:FQ# Halt Focuser Motion
             //Returns: Nothing
@@ -348,6 +353,7 @@ namespace ASCOM.Meade.net
         public void Move(int Position)
         {
             tl.LogMessage("Move", Position.ToString());
+            CheckConnected("Move");
 
             //todo implement backlash compensation
             //todo implement direction reverse

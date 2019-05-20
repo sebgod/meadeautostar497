@@ -42,8 +42,7 @@ namespace ASCOM.Meade.net
         private static readonly object lockObject = new object();
 
         // Shared serial port. This will allow multiple drivers to use one single serial port.
-        private static ASCOM.Utilities.Serial s_sharedSerial = new ASCOM.Utilities.Serial(); // Shared serial port
-        private static int s_z = 0; // counter for the number of connections to the serial port
+        private static ASCOM.Utilities.Serial s_sharedSerial; // Shared serial port
 
         //
         // Public access to shared resources
@@ -68,19 +67,12 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Shared serial port
         /// </summary>
-        public static ASCOM.Utilities.Serial SharedSerial
-        {
-            get { return s_sharedSerial; }
-        }
+        public static ASCOM.Utilities.Serial SharedSerial => s_sharedSerial ?? (s_sharedSerial = new ASCOM.Utilities.Serial());
 
         /// <summary>
         /// number of connections to the shared serial port
         /// </summary>
-        public static int connections
-        {
-            get { return s_z; }
-            set { s_z = value; }
-        }
+        public static int Connections { get; set; } = 0;
 
         public static void SendBlind(string message)
         {
@@ -149,14 +141,14 @@ namespace ASCOM.Meade.net
                 {
                     if (value)
                     {
-                        if (s_z == 0)
+                        if (Connections == 0)
                             SharedSerial.Connected = true;
-                        s_z++;
+                        Connections++;
                     }
                     else
                     {
-                        s_z--;
-                        if (s_z <= 0)
+                        Connections--;
+                        if (Connections <= 0)
                         {
                             SharedSerial.Connected = false;
                         }
@@ -178,11 +170,14 @@ namespace ASCOM.Meade.net
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
-            using (Profile driverProfile = new Profile())
+            lock (lockObject)
             {
-                driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(driverID, traceStateProfileName, profileProperties.TraceLogger.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, profileProperties.ComPort);
+                using (Profile driverProfile = new Profile())
+                {
+                    driverProfile.DeviceType = "Telescope";
+                    driverProfile.WriteValue(driverID, traceStateProfileName, profileProperties.TraceLogger.ToString());
+                    driverProfile.WriteValue(driverID, comPortProfileName, profileProperties.ComPort);
+                }
             }
         }
 
@@ -191,17 +186,20 @@ namespace ASCOM.Meade.net
 
         public static ProfileProperties ReadProfile()
         {
-            ProfileProperties profileProperties = new ProfileProperties();
-            using (Profile driverProfile = new Profile())
+            lock (lockObject)
             {
-                driverProfile.DeviceType = "Telescope";
-                profileProperties.ComPort =
-                    driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
-                profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(driverID,
-                    traceStateProfileName, string.Empty, traceStateDefault));
-            }
+                ProfileProperties profileProperties = new ProfileProperties();
+                using (Profile driverProfile = new Profile())
+                {
+                    driverProfile.DeviceType = "Telescope";
+                    profileProperties.ComPort =
+                        driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                    profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(driverID,
+                        traceStateProfileName, string.Empty, traceStateDefault));
+                }
 
-            return profileProperties;
+                return profileProperties;
+            }
         }
 
         #endregion
@@ -212,7 +210,7 @@ namespace ASCOM.Meade.net
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (SharedSerial.Connected)
+            if (Connections > 0)
             {
                 System.Windows.Forms.MessageBox.Show("Already connected, please disconnect before altering settings");
                 return;
