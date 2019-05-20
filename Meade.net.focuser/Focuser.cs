@@ -216,9 +216,26 @@ namespace ASCOM.Meade.net
 
                 if (value)
                 {
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    SharedResources.Connect("Serial");
-                    connectedState = true;
+                    try
+                    {
+                        SharedResources.Connect("Serial");
+                        try
+                        {
+                            SelectSite(1);
+                            SetLongFormat(true);
+
+                            connectedState = true;
+                        }
+                        catch (Exception)
+                        {
+                            SharedResources.Disconnect("Serial");
+                            throw;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", comPort, ex.Message);
+                    }
                 }
                 else
                 {
@@ -227,6 +244,37 @@ namespace ASCOM.Meade.net
                     connectedState = false;
                 }
             }
+        }
+
+        private void SetLongFormat(bool setLongFormat)
+        {
+            SharedResources.Lock(() =>
+            {
+                var result = SharedResources.SendString(":GZ#");
+                //:GZ# Get telescope azimuth
+                //Returns: DDD*MM#T or DDD*MM’SS#
+                //The current telescope Azimuth depending on the selected precision.
+
+                bool isLongFormat = result.Length > 6;
+
+                if (isLongFormat != setLongFormat)
+                {
+                    utilities.WaitForMilliseconds(500);
+                    SharedResources.SendBlind(":U#");
+                    //:U# Toggle between low/hi precision positions
+                    //Low - RA displays and messages HH:MM.T sDD*MM
+                    //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
+                    //    Returns Nothing
+                }
+            });
+        }
+
+        private void SelectSite(int site)
+        {
+            SharedResources.SendBlind($":W{site}#");
+            //:W<n>#
+            //Set current site to<n>, an ASCII digit in the range 1..4
+            //Returns: Nothing
         }
 
         public string Description
@@ -383,6 +431,18 @@ namespace ASCOM.Meade.net
         {
             SharedResources.Lock(() =>
             {
+                SharedResources.SendBlind(":FF#");
+                //:FF# Set Focus speed to fastest setting
+                //Returns: Nothing
+
+                //:FS# Set Focus speed to slowest setting
+                //Returns: Nothing
+
+                //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+                //Returns: Nothing
+                //All others – Not Supported
+                utilities.WaitForMilliseconds(100);
+
                 SharedResources.SendBlind(directionOut ? ":F+#" : ":F-#");
                 //:F+# Start Focuser moving inward (toward objective)
                 //Returns: None
@@ -393,6 +453,8 @@ namespace ASCOM.Meade.net
                 utilities.WaitForMilliseconds(steps);
 
                 Halt();
+
+                utilities.WaitForMilliseconds(1000);
             });
         }
 
