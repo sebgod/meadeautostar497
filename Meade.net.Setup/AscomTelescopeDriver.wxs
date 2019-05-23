@@ -7,11 +7,7 @@
   -->
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" />
-<!--    <CustomActionRef Id="caPrepareAscomDeviceProfiles"/>
-    <CustomActionRef Id="caUnregisterDrivers"/>
-    <CustomActionRef Id="caRegisterDrivers"/>-->
     <ComponentGroup Id="cgAscomTelescopeDriver">
-      <ComponentGroupRef Id="cgAscomLocalServer" />
       <Component Id="cmpAscomTelescopeDriver"
                  Directory="INSTALLFOLDER"
                  Guid="*"
@@ -51,6 +47,11 @@
           <RegistryKey Key="CLSID">
             <RegistryValue Value="$(var.TelescopeDriverClassId)" Type="string" />
           </RegistryKey>
+        </RegistryKey>
+
+        <!--Register the driver with the ASCOM Profile-->
+        <RegistryKey Root="HKLM" Key="SOFTWARE\ASCOM\Telescope Drivers\$(var.TelescopeDriverProgId)">
+          <RegistryValue Value="$(var.TelescopeDriverDescription)" Type="string"/>
         </RegistryKey>
       </Component>
     </ComponentGroup>

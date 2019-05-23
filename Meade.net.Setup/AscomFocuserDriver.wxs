@@ -7,11 +7,7 @@
   -->
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" />
-<!--    <CustomActionRef Id="caPrepareAscomDeviceProfiles"/>
-    <CustomActionRef Id="caUnregisterDrivers"/>
-    <CustomActionRef Id="caRegisterDrivers"/>-->
     <ComponentGroup Id="cgAscomFocuserDriver">
-      <ComponentGroupRef Id="cgAscomLocalServer" />
       <Component Id="cmpAscomFocuserDriver"
                  Directory="INSTALLFOLDER"
                  Guid="*"
@@ -51,6 +47,11 @@
           <RegistryKey Key="CLSID">
             <RegistryValue Value="$(var.FocuserDriverClassId)" Type="string" />
           </RegistryKey>
+        </RegistryKey>
+
+        <!--Register the driver with the ASCOM Profile-->
+        <RegistryKey Root="HKLM" Key="SOFTWARE\ASCOM\Focuser Drivers\$(var.FocuserDriverProgId)">
+          <RegistryValue Value="$(var.FocuserDriverDescription)" Type="string"/>
         </RegistryKey>
       </Component>
     </ComponentGroup>

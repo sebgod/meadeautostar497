@@ -19,7 +19,7 @@
   <?define LocalServerAppId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}" ?>
   <?define CopyrightNotice="Copyright © 2019 cjdawson.com, all rights reserved" ?>
 
-  <?define TelescopeDriverClassId="{8b9fccb9-87ae-42f7-90af-079e13de6efb}" ?>
+  <?define TelescopeDriverClassId="{d9fd4b3e-c4f1-48ac-a16f-d02eef30d86f}" ?>
   <?define TelescopeDriverProgId="ASCOM.MeadeGeneric.Telescope" ?>
   <?define TelescopeDriverDescription="Meade Generic"?>
 

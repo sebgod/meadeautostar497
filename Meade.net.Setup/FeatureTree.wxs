@@ -6,6 +6,7 @@
     <FeatureGroup Id="fgRoot" >
       <Feature Id="featAscomDrivers" Title="ASCOM drivers" Level="1" Absent="disallow"
                Display="expand" >
+        <ComponentGroupRef Id="cgAscomLocalServer" />
         <ComponentGroupRef Id="cgAscomTelescopeDriver"/>
         <ComponentGroupRef Id="cgAscomFocuserDriver"/>
       </Feature>
