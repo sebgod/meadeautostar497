@@ -30,17 +30,17 @@
   <!-- End of User Configuration - do not edit anything beyond this point -->
 
   <!-- Define platform-specific names and locations -->
-  <?if $(var.Platform) = x64 ?>
+<!--  <?if $(var.Platform) = x64 ?>
   <?define ProductName = "$(var.InstallName) (x64)" ?>
   <?define Win64 = "yes" ?>
   <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
   <?define PlatformCommonFilesFolder = "CommonFiles64Folder" ?>
-  <?else ?>
+  <?else ?>-->
   <?define ProductName = "$(var.InstallName) (x86)" ?>
   <?define Win64 = "no" ?>
   <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?define PlatformCommonFilesFolder = "CommonFilesFolder" ?>
-  <?endif ?>
+<!--  <?endif ?> -->
 
   <!-- Set installer version based on the file version of the main assembly. -->
   <!--<?define ProductVersion="!(bind.FileVersion.filLocalServerAssembly)"?>-->

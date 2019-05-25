@@ -25,13 +25,13 @@
       <![CDATA[Installed or WIX_IS_NETFRAMEWORK_471_OR_LATER_INSTALLED]]>
     </Condition>-->
 
-    <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
+   <!-- <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
       <?if $(var.Win64) = "yes" ?>
       VersionNT64
       <?else?>
       NOT VersionNT64
       <?endif?>
-    </Condition>
+    </Condition> -->
 
     
     <UIRef Id="InstallationUI"/>
