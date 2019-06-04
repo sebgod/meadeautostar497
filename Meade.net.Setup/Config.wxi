@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Include>
+  <!--
+    User Configuration - you must ensure all these variables have correct values for your project. 
+    GUIDs specified here must match those used in the project files, and must be unique to this product.
+    The LocalServerAppId is defined in the Server project, in LocalServer.cs
+    Driver Class IDs are defined in each driver class, in the [Guid()] attribute.
+    Driver ProgIDs must match those used in the source code, typically this will be defined in the LocalServer
+    project as a constant in the SharedResources static class.
+    UpgradeCode must be unique to this product and should not be changed for the product lifetime.
+  -->
+
+  <?define InstallName = "ASCOM Meade.net" ?>
+  <?define Manufacturer = "cjdawson.com" ?>
+  <?define UpgradeCode = "{57597bb6-f207-4998-97f4-8a041950d062}" ?>
+  <?define INSTALLFOLDER = "$(var.InstallName)" ?>
+  
+  <?define LocalServerAppId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}" ?>
+  <?define CopyrightNotice="Copyright © 2019 cjdawson.com, all rights reserved" ?>
+
+  <?define TelescopeDriverClassId="{d9fd4b3e-c4f1-48ac-a16f-d02eef30d86f}" ?>
+  <?define TelescopeDriverProgId="ASCOM.MeadeGeneric.Telescope" ?>
+  <?define TelescopeDriverDescription="Meade Generic"?>
+
+  <?define FocuserDriverClassId="{a32ac647-bf0f-42f9-8ab0-d166fa5884ad}" ?>
+  <?define FocuserDriverProgId="ASCOM.MeadeGeneric.focuser" ?>
+  <?define FocuserDriverDescription="Meade Generic" ?>
+
+  <!-- End of User Configuration - do not edit anything beyond this point -->
+
+  <!-- Define platform-specific names and locations -->
+<!--  <?if $(var.Platform) = x64 ?>
+  <?define ProductName = "$(var.InstallName) (x64)" ?>
+  <?define Win64 = "yes" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+  <?define PlatformCommonFilesFolder = "CommonFiles64Folder" ?>
+  <?else ?>-->
+  <?define ProductName = "$(var.InstallName) (x86)" ?>
+  <?define Win64 = "no" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+  <?define PlatformCommonFilesFolder = "CommonFilesFolder" ?>
+<!--  <?endif ?> -->
+
+  <!-- Set installer version based on the file version of the main assembly. -->
+  <!--<?define ProductVersion="!(bind.FileVersion.filLocalServerAssembly)"?>-->
+  <?define ProductVersion="0.5.0.0"?>
+</Include>
