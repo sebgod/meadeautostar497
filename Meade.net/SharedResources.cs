@@ -221,7 +221,7 @@ namespace ASCOM.Meade.net
             using (SetupDialogForm F = new SetupDialogForm())
             {
                 F.SetProfile(profileProperties);
-
+                
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {

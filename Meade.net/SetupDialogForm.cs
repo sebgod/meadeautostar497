@@ -63,5 +63,10 @@ namespace ASCOM.Meade.net
 
             return profileProperties;
         }
+
+        private void SetupDialogForm_Shown(object sender, EventArgs e)
+        {
+            Activate();
+        }
     }
 }
