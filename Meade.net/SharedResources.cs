@@ -234,7 +234,18 @@ namespace ASCOM.Meade.net
 
         #endregion
 
+        #region AutostarProducts
+
+        public const string AUTOSTAR497 = "Autostar";
+
+        public const string AUTOSTAR497_31EE = "31Ee";
+
+        #endregion
+
         #region Multi Driver handling
+
+        public static string ProductName { get; private set; } = string.Empty;
+        public static string FirmwareVersion { get; private set; } = string.Empty;
 
         // this section illustrates how multiple drivers could be handled,
         // it's for drivers where multiple connections to the hardware can be made and ensures that the
@@ -280,7 +291,8 @@ namespace ASCOM.Meade.net
                         SharedResources.SharedSerial.Handshake = SerialHandshake.None;
                         SharedResources.SharedSerial.Connected = true;
 
-                        string firmware = SendString(":GVN#");
+                        ProductName = SendString(":GVP#");
+                        FirmwareVersion = SendString(":GVN#");
                     }
                 }
             }

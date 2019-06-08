@@ -21,8 +21,8 @@ namespace ASCOM.Meade.net.Localization
         {
             var cultureInfo = new CultureInfo(name);
 
-            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+            //CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            //CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
             Thread.CurrentThread.CurrentCulture = cultureInfo;
             Thread.CurrentThread.CurrentUICulture = cultureInfo;

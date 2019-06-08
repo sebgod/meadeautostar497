@@ -22,7 +22,7 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Telescope.Choose("ASCOM.Meade.net.Telescope");
+            string id = ASCOM.DriverAccess.Telescope.Choose("ASCOM.MeadeGeneric.Telescope");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
@@ -44,7 +44,7 @@ namespace ASCOM
             device.Connected = true;
 
 
-            device.SlewToAltAz(150, 50);
+            //device.SlewToAltAz(150, 50);
 
             //device.CommandBlind(":Sa+30*00'00#", true);
             //device.CommandBlind(":Sz50*00#", true);

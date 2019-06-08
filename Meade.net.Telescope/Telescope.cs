@@ -165,15 +165,92 @@ namespace ASCOM.Meade.net
             get
             {
                 tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                var supportedActions = new ArrayList();
+                supportedActions.Add("handbox");
+                return supportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName +
-                                                          " is not implemented by this driver");
+            switch (actionName.ToLower())
+            {
+                case "handbox":
+                    switch (actionParameters.ToLower())
+                    {
+                        //Read the screen
+                        case "readdisplay":
+                            var output = SharedResources.SendString(":ED#");
+                            return output;
+
+                        //top row of buttons
+                        case "enter":
+                            SharedResources.SendBlind(":EK13#");
+                            break;
+                        case "mode":
+                            SharedResources.SendBlind(":EK9#");
+                            break;
+                        case "goto":
+                            SharedResources.SendBlind(":EK24#");
+                            break;
+
+                        case "0": //light and 0
+                            SharedResources.SendBlind(":EK48#");
+                            break;
+                        case "1":
+                            SharedResources.SendBlind(":EK49#");
+                            break;
+                        case "2":
+                            SharedResources.SendBlind(":EK50#");
+                            break;
+                        case "3":
+                            SharedResources.SendBlind(":EK51#");
+                            break;
+                        case "4":
+                            SharedResources.SendBlind(":EK52#");
+                            break;
+                        case "5":
+                            SharedResources.SendBlind(":EK53#");
+                            break;
+                        case "6":
+                            SharedResources.SendBlind(":EK54#");
+                            break;
+                        case "7":
+                            SharedResources.SendBlind(":EK55#");
+                            break;
+                        case "8":
+                            SharedResources.SendBlind(":EK56#");
+                            break;
+                        case "9":
+                            SharedResources.SendBlind(":EK57#");
+                            break;
+
+                        case "up":
+                            SharedResources.SendBlind(":EK94#");
+                            break;
+                        case "down":
+                            SharedResources.SendBlind(":EK118#");
+                            break;
+                        case "back":
+                            SharedResources.SendBlind(":EK87#");
+                            break;
+                        case "forward":
+                            SharedResources.SendBlind(":EK69#");
+                            break;
+                        case "?":
+                            SharedResources.SendBlind(":EK63#");
+                            break;
+                        default:
+                            LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
+                            throw new ASCOM.ActionNotImplementedException($"Action {actionName}({actionParameters}) is not implemented by this driver");
+                    }
+                    break;
+                default:
+                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
+                    throw new ASCOM.ActionNotImplementedException($"Action {actionName} is not implemented by this driver");
+            }
+
+            return string.Empty;
         }
 
         public void CommandBlind(string command, bool raw)
@@ -240,8 +317,14 @@ namespace ASCOM.Meade.net
                         SharedResources.Connect("Serial");
                         try
                         {
+                            LogMessage("Connected Set", $"Commented to port {comPort}. Product: {SharedResources.ProductName} Version:{SharedResources.FirmwareVersion}");
+
+
                             SelectSite(1);
                             SetLongFormat(true);
+
+
+                            _userNewerPulseGuiding = IsNewPulseGuidingSupported();
 
                             _connectedState = true;
                         }
@@ -263,6 +346,23 @@ namespace ASCOM.Meade.net
                     _connectedState = false;
                 }
             }
+        }
+
+        private bool IsNewPulseGuidingSupported()
+        {
+            if (SharedResources.ProductName == SharedResources.AUTOSTAR497)
+            {
+                return FirmwareIsGreaterThan(SharedResources.AUTOSTAR497_31EE);
+            }
+
+            return false;
+        }
+
+        private bool FirmwareIsGreaterThan(string minVersion)
+        {
+            var currentVersion = SharedResources.FirmwareVersion;
+            var comparison = currentVersion.CompareTo(minVersion);
+            return (comparison >= 0);
         }
 
         private void SetLongFormat(bool setLongFormat)
@@ -312,8 +412,7 @@ namespace ASCOM.Meade.net
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " +
-                                    String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major,
+                string driverInfo = "Meade Generic .net driver. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major,
                                         version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -948,8 +1047,7 @@ namespace ASCOM.Meade.net
             AtPark = true;
         }
 
-        private readonly bool
-            _userNewerPulseGuiding = true; //todo make this a device setting based on firmware revision
+        private bool _userNewerPulseGuiding = true;
 
         public void PulseGuide(GuideDirections direction, int duration)
         {

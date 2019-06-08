@@ -15,9 +15,8 @@
     
     <Property Id="REGISTRYROOT" Value="Software\Cjdawson.com Ltd\Database Patcher" />
 
-    <PropertyRef Id="NETFRAMEWORK45" />
-    <Condition Message="This application requires .NET Framework 4.7.1. Please install the .NET Framework then run this installer again.">
-      <![CDATA[Installed OR NETFRAMEWORK45>="#461308"]]>
+    <Condition Message="This application requires .NET Framework 4.0 or higher. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK40]]>
     </Condition>
 
     <!--todo create a method to check if ASCOM is installed.-->
