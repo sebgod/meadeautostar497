@@ -350,9 +350,16 @@ namespace ASCOM.Meade.net
 
             CheckConnected("Halt");
 
-            SharedResources.SendBlind(":FQ#");
-            //:FQ# Halt Focuser Motion
-            //Returns: Nothing
+            //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (stopwatch.ElapsedMilliseconds < 1000)
+            {
+                SharedResources.SendBlind(":FQ#");
+                //:FQ# Halt Focuser Motion
+                //Returns: Nothing
+
+                utilities.WaitForMilliseconds(250);
+            }
         }
 
         public bool IsMoving
@@ -431,7 +438,7 @@ namespace ASCOM.Meade.net
         {
             SharedResources.Lock(() =>
             {
-                SharedResources.SendBlind(":FF#");
+                //SharedResources.SendBlind(":FF#");
                 //:FF# Set Focus speed to fastest setting
                 //Returns: Nothing
 
@@ -443,17 +450,23 @@ namespace ASCOM.Meade.net
                 //All others – Not Supported
                 utilities.WaitForMilliseconds(100);
 
-                SharedResources.SendBlind(directionOut ? ":F+#" : ":F-#");
-                //:F+# Start Focuser moving inward (toward objective)
-                //Returns: None
+                //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                while (stopwatch.ElapsedMilliseconds < steps)
+                {
+                    SharedResources.SendBlind(directionOut ? ":F+#" : ":F-#");
+                    //:F+# Start Focuser moving inward (toward objective)
+                    //Returns: None
 
-                //:F-# Start Focuser moving outward (away from objective)
-                //Returns: None
+                    //:F-# Start Focuser moving outward (away from objective)
+                    //Returns: None
 
-                utilities.WaitForMilliseconds(steps);
+                    utilities.WaitForMilliseconds(250);
+                }
 
                 Halt();
 
+                //This gives the focuser time to physically stop.
                 utilities.WaitForMilliseconds(1000);
             });
         }
