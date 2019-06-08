@@ -352,13 +352,13 @@ namespace ASCOM.Meade.net
 
             //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
             Stopwatch stopwatch = Stopwatch.StartNew();
-            while (stopwatch.ElapsedMilliseconds < 200)
+            while (stopwatch.ElapsedMilliseconds < 1000)
             {
                 SharedResources.SendBlind(":FQ#");
                 //:FQ# Halt Focuser Motion
                 //Returns: Nothing
 
-                utilities.WaitForMilliseconds(50);
+                utilities.WaitForMilliseconds(250);
             }
         }
 
@@ -461,7 +461,7 @@ namespace ASCOM.Meade.net
                     //:F-# Start Focuser moving outward (away from objective)
                     //Returns: None
 
-                    utilities.WaitForMilliseconds(50);
+                    utilities.WaitForMilliseconds(250);
                 }
 
                 Halt();
