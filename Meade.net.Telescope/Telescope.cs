@@ -1347,7 +1347,7 @@ namespace ASCOM.Meade.net
                 //todo this serial string does not work.  Calculate the EQ version instead.
 
                 var dms = utilities.DegreesToDMS(value, "*", "'", "",0);
-                var s = value < 0 ? "-" : "+";
+                var s = value < 0 ? string.Empty : "+";
 
                 var result = SharedResources.SendChar($":Sa{s}{dms}#");
                 //:SasDD*MM#
