@@ -190,6 +190,9 @@ namespace ASCOM.Meade.net
                         case "mode":
                             SharedResources.SendBlind(":EK9#");
                             break;
+                        case "longMode":
+                            SharedResources.SendBlind(":EK11#");
+                            break;
                         case "goto":
                             SharedResources.SendBlind(":EK24#");
                             break;
@@ -1448,16 +1451,20 @@ namespace ASCOM.Meade.net
                         {
                             case "0":
                                 //We're slewing everything should be working just fine.
+                                tl.LogMessage("DoSlewAsync", "Slewing to target");
                                 break;
                             case "1":
                                 //Below Horizon 
                                 string belowHorizonMessage = SharedResources.ReadTerminated();
+                                tl.LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
                                 throw new ASCOM.InvalidOperationException(belowHorizonMessage);
                             case "2":
                                 //Below Horizon 
                                 string belowMinimumElevationMessage = SharedResources.ReadTerminated();
+                                tl.LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
                                 throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
                             default:
+                                tl.LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
                                 throw new ASCOM.DriverException("This error should not happen");
 
                         }
@@ -1492,6 +1499,8 @@ namespace ASCOM.Meade.net
             {
                 utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
+
+            tl.LogMessage("SlewToCoordinates", $"Slewing completed new coordinates Ra={RightAscension}, Dec={Declination}");
         }
 
         public void SlewToCoordinatesAsync(double rightAscension, double declination)
@@ -1631,9 +1640,12 @@ namespace ASCOM.Meade.net
                 CheckConnected("TargetDeclination Set");
 
                 var dms = utilities.DegreesToDMS(value, "*", ":", ":", 2);
-                var s = value < 0 ? '-' : '+';
+                var s = value < 0 ? string.Empty : "+";
 
-                var result = SharedResources.SendChar($":Sd{s}{dms}#");
+                var command = $":Sd{s}{dms}#";
+
+                tl.LogMessage("TargetDeclination Set", $"{command}");
+                var result = SharedResources.SendChar(command);
                 //:SdsDD*MM#
                 //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
                 //Returns:

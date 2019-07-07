@@ -12,8 +12,18 @@
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 
     <MediaTemplate EmbedCab="yes" />
-    
-    <Property Id="REGISTRYROOT" Value="Software\Cjdawson.com Ltd\Database Patcher" />
+
+    <Property Id="ASCOMPLATFORMVERSION">
+      <RegistrySearch Id="AscomPlatformVersion"
+                      Root="HKLM"
+                      Key="SOFTWARE\ASCOM\Platform"
+                      Name="Platform Version"
+                      Type="raw" />
+    </Property>
+
+    <Condition Message="This application requires Ascom Platform 6.4 SP1 or higher. Please install this before installing the driver.">
+      <![CDATA[Installed OR ASCOMPLATFORMVERSION >= "6.4.1"]]>
+    </Condition>
 
     <PropertyRef Id="NETFRAMEWORK40FULL"/>
     <Condition Message="This application requires .NET Framework 4.0 or higher. Please install the .NET Framework then run this installer again.">
