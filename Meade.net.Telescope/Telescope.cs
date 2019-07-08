@@ -74,19 +74,19 @@ namespace ASCOM.Meade.net
         /// </summary>
         public Telescope()
         {
-            tl = new TraceLogger("", "Meade.net.Telescope");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            tl.LogMessage("Telescope", "Starting initialisation");
-
-            IsConnected = false; // Initialise connected to false
+            //todo move this out to IOC
             _utilities = new Util(); //Initialise util object
             _utilitiesExtra = new Util(); //Initialise util object
             _astroUtilities = new AstroUtils(); // Initialise astro utilities object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
-
-            //TODO: Implement your additional construction here
             _astroMaths = new AstroMaths();
+
+            tl = new TraceLogger("", "Meade.net.Telescope");
+            tl.LogMessage("Telescope", "Starting initialisation");
+
+            ReadProfile(); // Read device configuration from the ASCOM Profile store
+
+            IsConnected = false; // Initialise connected to false
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
