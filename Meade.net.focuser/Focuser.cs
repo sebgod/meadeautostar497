@@ -40,6 +40,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 using System.Reflection;
+using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
@@ -103,6 +104,8 @@ namespace ASCOM.Meade.net
         /// </summary>
         internal static TraceLogger tl;
 
+        private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -117,6 +120,7 @@ namespace ASCOM.Meade.net
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            _sharedResourcesWrapper = new SharedResourcesWrapper();
 
             tl.LogMessage("Focuser", "Completed initialisation");
         }
@@ -137,7 +141,7 @@ namespace ASCOM.Meade.net
         public void SetupDialog()
         {
             tl.LogMessage("SetupDialog", "Opening setup dialog");
-            SharedResources.SetupDialog();
+            _sharedResourcesWrapper.SetupDialog();
             ReadProfile();
             tl.LogMessage("SetupDialog", "complete");
         }
@@ -162,7 +166,7 @@ namespace ASCOM.Meade.net
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
-            SharedResources.SendBlind(command);
+            _sharedResourcesWrapper.SendBlind(command);
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
@@ -184,7 +188,7 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResources.SendString(command);
+            return _sharedResourcesWrapper.SendString(command);
 
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
@@ -218,7 +222,7 @@ namespace ASCOM.Meade.net
                 {
                     try
                     {
-                        SharedResources.Connect("Serial");
+                        _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
                             SelectSite(1);
@@ -228,7 +232,7 @@ namespace ASCOM.Meade.net
                         }
                         catch (Exception)
                         {
-                            SharedResources.Disconnect("Serial");
+                            _sharedResourcesWrapper.Disconnect("Serial");
                             throw;
                         }
                     }
@@ -240,7 +244,7 @@ namespace ASCOM.Meade.net
                 else
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
-                    SharedResources.Disconnect("Serial");
+                    _sharedResourcesWrapper.Disconnect("Serial");
                     connectedState = false;
                 }
             }
@@ -248,9 +252,9 @@ namespace ASCOM.Meade.net
 
         private void SetLongFormat(bool setLongFormat)
         {
-            SharedResources.Lock(() =>
+            _sharedResourcesWrapper.Lock(() =>
             {
-                var result = SharedResources.SendString(":GZ#");
+                var result = _sharedResourcesWrapper.SendString(":GZ#");
                 //:GZ# Get telescope azimuth
                 //Returns: DDD*MM#T or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
@@ -260,7 +264,7 @@ namespace ASCOM.Meade.net
                 if (isLongFormat != setLongFormat)
                 {
                     utilities.WaitForMilliseconds(500);
-                    SharedResources.SendBlind(":U#");
+                    _sharedResourcesWrapper.SendBlind(":U#");
                     //:U# Toggle between low/hi precision positions
                     //Low - RA displays and messages HH:MM.T sDD*MM
                     //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
@@ -271,7 +275,7 @@ namespace ASCOM.Meade.net
 
         private void SelectSite(int site)
         {
-            SharedResources.SendBlind($":W{site}#");
+            _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
             //Set current site to<n>, an ASCII digit in the range 1..4
             //Returns: Nothing
@@ -354,7 +358,7 @@ namespace ASCOM.Meade.net
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (stopwatch.ElapsedMilliseconds < 1000)
             {
-                SharedResources.SendBlind(":FQ#");
+                _sharedResourcesWrapper.SendBlind(":FQ#");
                 //:FQ# Halt Focuser Motion
                 //Returns: Nothing
 
@@ -436,9 +440,9 @@ namespace ASCOM.Meade.net
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            SharedResources.Lock(() =>
+            _sharedResourcesWrapper.Lock(() =>
             {
-                //SharedResources.SendBlind(":FF#");
+                //_sharedResourcesWrapper.SendBlind(":FF#");
                 //:FF# Set Focus speed to fastest setting
                 //Returns: Nothing
 
@@ -454,7 +458,7 @@ namespace ASCOM.Meade.net
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {
-                    SharedResources.SendBlind(directionOut ? ":F+#" : ":F-#");
+                    _sharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
                     //:F+# Start Focuser moving inward (toward objective)
                     //Returns: None
 
@@ -630,7 +634,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         internal void ReadProfile()
         {
-            var profileProperties = SharedResources.ReadProfile();
+            var profileProperties = _sharedResourcesWrapper.ReadProfile();
             tl.Enabled = profileProperties.TraceLogger;
             comPort = profileProperties.ComPort;
         }

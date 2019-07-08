@@ -233,15 +233,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        #region AutostarProducts
-
-        public const string AUTOSTAR497 = "Autostar";
-
-        public const string AUTOSTAR497_31EE = "31Ee";
-
-        #endregion
-
+        
         #region Multi Driver handling
 
         public static string ProductName { get; private set; } = string.Empty;
