@@ -81,6 +81,11 @@ namespace ASCOM.Meade.net
             _sharedResourcesWrapper = new SharedResourcesWrapper();
             _astroMaths = new AstroMaths();
 
+            Initialise();
+        }
+
+        private void Initialise()
+        {
             tl = new TraceLogger("", "Meade.net.Telescope");
             tl.LogMessage("Telescope", "Starting initialisation");
 

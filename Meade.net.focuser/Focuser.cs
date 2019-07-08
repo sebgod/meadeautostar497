@@ -68,13 +68,19 @@ namespace ASCOM.Meade.net
             //todo move this out to IOC
             _utilities = new Util(); //Initialise util object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
+
+            Initialise();
+        }
+
+        private void Initialise()
+        {
             tl = new TraceLogger("", "Meade.net.focusser");
-            
+
             tl.LogMessage("Focuser", "Starting initialisation");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
-            
+
             tl.LogMessage("Focuser", "Completed initialisation");
         }
 
