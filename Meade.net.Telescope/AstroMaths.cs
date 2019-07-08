@@ -24,7 +24,7 @@ namespace ASCOM.Meade.net
         public EquatorialCoordinates equatorialCoordinates { get; set; }
     }
 
-    public class AstroMaths
+    public class AstroMaths : IAstroMaths
     {
 
         //returns the decimal hour angle for given right ascension on a given datetime for a given logitude.

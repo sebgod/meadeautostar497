@@ -1,29 +1,3 @@
-//tabs=4
-// --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
-//
-// ASCOM Focuser driver for Meade.net
-//
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
-//
-// Implements:	ASCOM Focuser interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
-//
-// Edit Log:
-//
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
-// --------------------------------------------------------------------------------
-//
-
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Focuser
 
 using System;
@@ -77,27 +51,12 @@ namespace ASCOM.Meade.net
         /// </summary>
         private static string driverDescription = "Meade Generic";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
-
         internal static string comPort; // Variables to hold the currrent device configuration
-
-        /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool connectedState;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
-        private Util utilities;
-
-        /// <summary>
-        /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
-        /// </summary>
-        private AstroUtils astroUtilities;
+        private readonly IUtil _utilities;
 
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
@@ -117,9 +76,8 @@ namespace ASCOM.Meade.net
 
             tl.LogMessage("Focuser", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            IsConnected = false; // Initialise connected to false
+            _utilities = new Util(); //Initialise util object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
 
             tl.LogMessage("Focuser", "Completed initialisation");
@@ -199,10 +157,6 @@ namespace ASCOM.Meade.net
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
-            utilities.Dispose();
-            utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
         }
 
         public bool Connected
@@ -228,7 +182,7 @@ namespace ASCOM.Meade.net
                             SelectSite(1);
                             SetLongFormat(true);
 
-                            connectedState = true;
+                            IsConnected = true;
                         }
                         catch (Exception)
                         {
@@ -245,7 +199,7 @@ namespace ASCOM.Meade.net
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
                     _sharedResourcesWrapper.Disconnect("Serial");
-                    connectedState = false;
+                    IsConnected = false;
                 }
             }
         }
@@ -263,7 +217,7 @@ namespace ASCOM.Meade.net
 
                 if (isLongFormat != setLongFormat)
                 {
-                    utilities.WaitForMilliseconds(500);
+                    _utilities.WaitForMilliseconds(500);
                     _sharedResourcesWrapper.SendBlind(":U#");
                     //:U# Toggle between low/hi precision positions
                     //Low - RA displays and messages HH:MM.T sDD*MM
@@ -362,7 +316,7 @@ namespace ASCOM.Meade.net
                 //:FQ# Halt Focuser Motion
                 //Returns: Nothing
 
-                utilities.WaitForMilliseconds(250);
+                _utilities.WaitForMilliseconds(250);
             }
         }
 
@@ -452,7 +406,7 @@ namespace ASCOM.Meade.net
                 //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
                 //Returns: Nothing
                 //All others – Not Supported
-                utilities.WaitForMilliseconds(100);
+                _utilities.WaitForMilliseconds(100);
 
                 //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
                 Stopwatch stopwatch = Stopwatch.StartNew();
@@ -465,13 +419,13 @@ namespace ASCOM.Meade.net
                     //:F-# Start Focuser moving outward (away from objective)
                     //Returns: None
 
-                    utilities.WaitForMilliseconds(250);
+                    _utilities.WaitForMilliseconds(250);
                 }
 
                 Halt();
 
                 //This gives the focuser time to physically stop.
-                utilities.WaitForMilliseconds(1000);
+                _utilities.WaitForMilliseconds(1000);
             });
         }
 
@@ -608,14 +562,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Returns true if there is a valid connection to the driver hardware
         /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return connectedState;
-            }
-        }
+        private bool IsConnected { get; set; }
 
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware

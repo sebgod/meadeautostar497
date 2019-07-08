@@ -1,39 +1,7 @@
-//tabs=4
-// --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
-//
-// ASCOM Telescope driver for Meade.net
-//
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
-//
-// Implements:	ASCOM Telescope interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
-//
-// Edit Log:
-//
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
-// --------------------------------------------------------------------------------
-//
-
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Telescope
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Runtime.InteropServices;
-
-using ASCOM;
-using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
@@ -41,6 +9,7 @@ using System.Globalization;
 using System.Collections;
 using System.Reflection;
 using ASCOM.Meade.net.Wrapper;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
 {
@@ -77,29 +46,20 @@ namespace ASCOM.Meade.net
         /// </summary>
         private static string driverDescription = "Meade Generic";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
-
         internal static string comPort; // Variables to hold the currrent device configuration
-
-        /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool _connectedState;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
-        private Util utilities;
+        private readonly IUtil _utilities;
+        private readonly IUtilExtra _utilitiesExtra;
 
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
         /// </summary>
-        private AstroUtils astroUtilities;
+        private readonly IAstroUtils _astroUtilities;
 
-        private readonly AstroMaths _astroMaths;
+        private readonly IAstroMaths _astroMaths;
 
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
@@ -119,9 +79,10 @@ namespace ASCOM.Meade.net
 
             tl.LogMessage("Telescope", "Starting initialisation");
 
-            _connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            IsConnected = false; // Initialise connected to false
+            _utilities = new Util(); //Initialise util object
+            _utilitiesExtra = new Util(); //Initialise util object
+            _astroUtilities = new AstroUtils(); // Initialise astro utilities object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
 
             //TODO: Implement your additional construction here
@@ -297,10 +258,6 @@ namespace ASCOM.Meade.net
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
-            utilities.Dispose();
-            utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
         }
 
         public bool Connected
@@ -333,7 +290,7 @@ namespace ASCOM.Meade.net
 
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
 
-                            _connectedState = true;
+                            IsConnected = true;
                         }
                         catch (Exception)
                         {
@@ -350,7 +307,7 @@ namespace ASCOM.Meade.net
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
                     _sharedResourcesWrapper.Disconnect("Serial");
-                    _connectedState = false;
+                    IsConnected = false;
                 }
             }
         }
@@ -385,7 +342,7 @@ namespace ASCOM.Meade.net
 
                 if (isLongFormat != setLongFormat)
                 {
-                    utilities.WaitForMilliseconds(500);
+                    _utilities.WaitForMilliseconds(500);
                     _sharedResourcesWrapper.SendBlind(":U#");
                     //:U# Toggle between low/hi precision positions
                     //Low - RA displays and messages HH:MM.T sDD*MM
@@ -835,9 +792,9 @@ namespace ASCOM.Meade.net
                 //Returns: sDD* MM# or sDD*MM’SS#
                 //Depending upon the current precision setting for the telescope.
 
-                double declination = utilities.DMSToDegrees(result);
+                double declination = _utilities.DMSToDegrees(result);
 
-                tl.LogMessage("Declination", "Get - " + utilities.DegreesToDMS(declination, ":", ":"));
+                tl.LogMessage("Declination", "Get - " + _utilitiesExtra.DegreesToDMS(declination, ":", ":"));
                 return declination;
             }
         }
@@ -1090,7 +1047,7 @@ namespace ASCOM.Meade.net
                 //Returns – Nothing
                 //LX200 – Not Supported
 
-               utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
+               _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
             }
             else
             {
@@ -1108,7 +1065,7 @@ namespace ASCOM.Meade.net
                     //Returns: Nothing
                     //:Mw# Move Telescope West at current slew rate
                     //Returns: Nothing
-                    utilities.WaitForMilliseconds(duration);
+                    _utilities.WaitForMilliseconds(duration);
                     _sharedResourcesWrapper.SendBlind($":Q{d}#");
                     //:Qe# Halt eastward Slews
                     //Returns: Nothing
@@ -1132,9 +1089,9 @@ namespace ASCOM.Meade.net
                 //Returns: HH: MM.T# or HH:MM:SS#
                 //Depending which precision is set for the telescope
 
-                double rightAscension = utilities.HMSToHours(result);
+                double rightAscension = _utilities.HMSToHours(result);
 
-                tl.LogMessage("RightAscension", "Get - " + utilities.HoursToHMS(rightAscension));
+                tl.LogMessage("RightAscension", "Get - " + _utilitiesExtra.HoursToHMS(rightAscension));
                 return rightAscension;
             }
         }
@@ -1182,7 +1139,7 @@ namespace ASCOM.Meade.net
                 double siderealTime = 0.0;
                 using (var novas = new ASCOM.Astrometry.NOVAS.NOVAS31())
                 {
-                    var jd = utilities.DateUTCToJulian(DateTime.UtcNow);
+                    var jd = _utilities.DateUTCToJulian(DateTime.UtcNow);
                     novas.SiderealTime(jd, 0, novas.DeltaT(jd),
                         ASCOM.Astrometry.GstType.GreenwichApparentSiderealTime,
                         ASCOM.Astrometry.Method.EquinoxBased,
@@ -1193,7 +1150,7 @@ namespace ASCOM.Meade.net
                 siderealTime += SiteLongitude / 360.0 * 24.0;
 
                 // Reduce to the range 0 to 24 hours
-                siderealTime = astroUtilities.ConditionRA(siderealTime);
+                siderealTime = _astroUtilities.ConditionRA(siderealTime);
 
                 tl.LogMessage("SiderealTime", "Get - " + siderealTime.ToString());
                 return siderealTime;
@@ -1225,13 +1182,13 @@ namespace ASCOM.Meade.net
                 //Returns: sDD* MM#
                 //The latitude of the current site. Positive inplies North latitude.
 
-                var siteLatitude = utilities.DMSToDegrees(latitude);
-                tl.LogMessage("SiteLatitude Get", $"{utilities.DegreesToDMS(siteLatitude)}");
+                var siteLatitude = _utilities.DMSToDegrees(latitude);
+                tl.LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
                 return siteLatitude;
             }
             set
             {
-                tl.LogMessage("SiteLatitude Set", $"{utilities.DegreesToDMS(value)}");
+                tl.LogMessage("SiteLatitude Set", $"{_utilitiesExtra.DegreesToDMS(value)}");
 
                 CheckConnected("SiteLatitude Set");
 
@@ -1266,21 +1223,21 @@ namespace ASCOM.Meade.net
                 //:Gg# Get Current Site Longitude
                 //Returns: sDDD* MM#
                 //The current site Longitude. East Longitudes are expressed as negative
-                double siteLongitude = utilities.DMSToDegrees(longitude);
+                double siteLongitude = _utilities.DMSToDegrees(longitude);
 
                 if (siteLongitude > 180)
                     siteLongitude = siteLongitude - 360;
 
                 siteLongitude = -siteLongitude;
 
-                tl.LogMessage("SiteLongitude Get", $"{utilities.DegreesToDMS(siteLongitude)}");
+                tl.LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
                 return siteLongitude;
             }
             set
             {
                 var newLongitude = value;
 
-                tl.LogMessage("SiteLongitude Set", $"{utilities.DegreesToDMS(newLongitude)}");
+                tl.LogMessage("SiteLongitude Set", $"{_utilitiesExtra.DegreesToDMS(newLongitude)}");
 
                 CheckConnected("SiteLongitude Set");
 
@@ -1332,7 +1289,7 @@ namespace ASCOM.Meade.net
 
             while (Slewing) //wait for slew to complete
             {
-                utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
+                _utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
         }
 
@@ -1350,7 +1307,7 @@ namespace ASCOM.Meade.net
 
                 //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var dms = utilities.DegreesToDMS(value, "*", "'", "",0);
+                var dms = _utilities.DegreesToDMS(value, "*", "'", "",0);
                 var s = value < 0 ? string.Empty : "+";
 
                 var result = _sharedResourcesWrapper.SendChar($":Sa{s}{dms}#");
@@ -1379,7 +1336,7 @@ namespace ASCOM.Meade.net
 
                 //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var dms = utilities.DegreesToDM(value, "*" );
+                var dms = _utilitiesExtra.DegreesToDM(value, "*" );
 
                 var result = _sharedResourcesWrapper.SendChar($":Sz{dms}#");
                 //:SzDDD*MM#
@@ -1501,7 +1458,7 @@ namespace ASCOM.Meade.net
 
             while (Slewing) //wait for slew to complete
             {
-                utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
+                _utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
 
             tl.LogMessage("SlewToCoordinates", $"Slewing completed new coordinates Ra={RightAscension}, Dec={Declination}");
@@ -1530,7 +1487,7 @@ namespace ASCOM.Meade.net
 
             while (Slewing)
             {
-                utilities.WaitForMilliseconds(200);
+                _utilities.WaitForMilliseconds(200);
             }
         }
 
@@ -1643,7 +1600,7 @@ namespace ASCOM.Meade.net
 
                 CheckConnected("TargetDeclination Set");
 
-                var dms = utilities.DegreesToDMS(value, "*", ":", ":", 2);
+                var dms = _utilities.DegreesToDMS(value, "*", ":", ":", 2);
                 var s = value < 0 ? string.Empty : "+";
 
                 var command = $":Sd{s}{dms}#";
@@ -1697,7 +1654,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("TargetRightAscension Set");
                 //todo implement the low precision version
 
-                var hms = utilities.HoursToHMS(value, ":", ":", ":", 2);
+                var hms = _utilities.HoursToHMS(value, ":", ":", ":", 2);
                 var response = _sharedResourcesWrapper.SendChar($":Sr{hms}#");
                 //:SrHH:MM.T#
                 //:SrHH:MM:SS#
@@ -1992,14 +1949,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Returns true if there is a valid connection to the driver hardware
         /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connectedState;
-            }
-        }
+        private bool IsConnected { get; set; }
 
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
