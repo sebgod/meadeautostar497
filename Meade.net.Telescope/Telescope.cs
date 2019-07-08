@@ -84,8 +84,20 @@ namespace ASCOM.Meade.net
             Initialise();
         }
 
+        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths)
+        {
+            _utilities = util; //Initialise util object
+            _utilitiesExtra = utilExtra; //Initialise util object
+            _astroUtilities = astroUtilities; // Initialise astro utilities object
+            _sharedResourcesWrapper = sharedResourcesWrapper;
+            _astroMaths = astroMaths;
+
+            Initialise();
+        }
+
         private void Initialise()
         {
+            //todo move the TraceLogger out to a factory class.
             tl = new TraceLogger("", "Meade.net.Telescope");
             tl.LogMessage("Telescope", "Starting initialisation");
 
