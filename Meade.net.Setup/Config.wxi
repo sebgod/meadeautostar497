@@ -43,6 +43,6 @@
 <!--  <?endif ?> -->
 
   <!-- Set installer version based on the file version of the main assembly. -->
-  <?define ProductVersion="!(bind.FileVersion.filLocalServerAssembly)"?>-->
+  <?define ProductVersion="!(bind.FileVersion.filLocalServerAssembly)"?>
   <!--<?define ProductVersion="0.7.0.0"?>-->
 </Include>
