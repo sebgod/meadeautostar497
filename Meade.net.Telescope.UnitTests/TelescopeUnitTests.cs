@@ -48,5 +48,16 @@ namespace Meade.net.Telescope.UnitTests
         {
             Assert.That(_telescope.Connected, Is.False);
         }
+
+        [Test]
+        public void SetupDialog()
+        {
+            _sharedResourcesWrapperMock.Verify(x => x.ReadProfile(), Times.Once);
+
+            _telescope.SetupDialog();
+
+            _sharedResourcesWrapperMock.Verify( x => x.SetupDialog(), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.ReadProfile(), Times.Exactly(2));
+        }
     }
 }

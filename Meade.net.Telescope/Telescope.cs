@@ -75,8 +75,9 @@ namespace ASCOM.Meade.net
         public Telescope()
         {
             //todo move this out to IOC
-            _utilities = new Util(); //Initialise util object
-            _utilitiesExtra = new Util(); //Initialise util object
+            var util = new Util(); //Initialise util object
+            _utilities = util; 
+            _utilitiesExtra = util; //Initialise util object
             _astroUtilities = new AstroUtils(); // Initialise astro utilities object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
             _astroMaths = new AstroMaths();
