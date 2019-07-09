@@ -113,8 +113,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AstroMaths.cs" />
-    <Compile Include="IAstroMaths.cs" />
+    <Compile Include="AstroMaths\AltitudeData.cs" />
+    <Compile Include="AstroMaths\AstroMaths.cs" />
+    <Compile Include="AstroMaths\EquatorialCoordinates.cs" />
+    <Compile Include="AstroMaths\HorizonCoordinates.cs" />
+    <Compile Include="AstroMaths\IAstroMaths.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Telescope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

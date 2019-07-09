@@ -8,6 +8,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 using System.Reflection;
+using ASCOM.Meade.net.AstroMaths;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 
@@ -80,7 +81,7 @@ namespace ASCOM.Meade.net
             _utilitiesExtra = util; //Initialise util object
             _astroUtilities = new AstroUtils(); // Initialise astro utilities object
             _sharedResourcesWrapper = new SharedResourcesWrapper();
-            _astroMaths = new AstroMaths();
+            _astroMaths = new AstroMaths.AstroMaths();
 
             Initialise();
         }
@@ -173,7 +174,7 @@ namespace ASCOM.Meade.net
                         case "mode":
                             _sharedResourcesWrapper.SendBlind(":EK9#");
                             break;
-                        case "longMode":
+                        case "longmode":
                             _sharedResourcesWrapper.SendBlind(":EK11#");
                             break;
                         case "goto":
@@ -228,12 +229,12 @@ namespace ASCOM.Meade.net
                             break;
                         default:
                             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                            throw new ASCOM.ActionNotImplementedException($"Action {actionName}({actionParameters}) is not implemented by this driver");
+                            throw new ASCOM.ActionNotImplementedException($"{actionName}({actionParameters})");
                     }
                     break;
                 default:
                     LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                    throw new ASCOM.ActionNotImplementedException($"Action {actionName} is not implemented by this driver");
+                    throw new ASCOM.ActionNotImplementedException($"{actionName}");
             }
 
             return string.Empty;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ASCOM.Meade.net
+namespace ASCOM.Meade.net.AstroMaths
 {
     public interface IAstroMaths
     {

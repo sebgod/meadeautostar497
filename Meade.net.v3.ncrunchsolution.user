@@ -2,6 +2,7 @@
   <Settings>
     <AutoEnable>True</AutoEnable>
     <CurrentEngineMode>Run all tests automatically [Global]</CurrentEngineMode>
+    <MetricsTreeShowTestProjects>False</MetricsTreeShowTestProjects>
     <StatusIndicatorSplitterDistance>25</StatusIndicatorSplitterDistance>
     <TestsWindowMenuOptions>
       <VerticalSplitMenuOption>false</VerticalSplitMenuOption>
