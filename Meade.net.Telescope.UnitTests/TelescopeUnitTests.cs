@@ -9,6 +9,7 @@ using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
+using NotImplementedException = ASCOM.NotImplementedException;
 
 namespace Meade.net.Telescope.UnitTests
 {
@@ -39,6 +40,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31Ee");
+            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_43EG) .Returns(() => "43Eg");
 
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             
@@ -300,7 +302,7 @@ namespace Meade.net.Telescope.UnitTests
 
         [TestCase("AUTOSTAR", "30Ab", false)]
         [TestCase("AUTOSTAR","31Ee", true)]
-        [TestCase("AUTOSTAR", "41Aa", true)]
+        [TestCase("AUTOSTAR", "43Eg", true)]
         [TestCase("AUTOSTAR II", "", false)]
         public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string productName, string firmware, bool isSupported)
         {
@@ -428,6 +430,81 @@ namespace Meade.net.Telescope.UnitTests
             var name = _telescope.Name;
 
             Assert.That(name, Is.EqualTo(expectedName));
+        }
+
+        [Test]
+        public void AlignmentMode_Get_WhenNotConnected_ThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var actualResult = _telescope.AlignmentMode; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Get"));
+        }
+
+
+        [TestCase("A", AlignmentModes.algAltAz)]
+        [TestCase("P", AlignmentModes.algPolar)]
+        [TestCase("G", AlignmentModes.algGermanPolar)]
+        public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns(telescopeMode);
+
+            var actualResult = _telescope.AlignmentMode;
+            
+            Assert.That(actualResult, Is.EqualTo(alignmentMode));
+        }
+
+        [Test]
+        public void AlignmentMode_Get_WhenUnknownAlignmentMode_ThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            Assert.Throws<InvalidValueException>(() => { var actualResult = _telescope.AlignmentMode; });
+        }
+
+        [Test]
+        public void AlignmentMode_Set_WhenNotConnected_ThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => {  _telescope.AlignmentMode = AlignmentModes.algAltAz; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Set"));
+        }
+
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algAltAz, ":AA#")]
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algPolar, ":AP#")]
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algGermanPolar, ":AP#")]
+        public void AlignmentMode_Set_WhenConnected_ThenSendsExpectedCommand(string productName, string firmware, AlignmentModes alignmentMode, string expectedCommand)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _telescope.Connected = true;
+
+            _telescope.AlignmentMode = alignmentMode;
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(expectedCommand), Times.Once);
+        }
+
+        [TestCase("AUTOSTAR", "43Ef")]
+        public void AlignmentMode_Set_WhenAutostarFirmwareToLow_ThenThrowsException(string productName, string firmware )
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _telescope.Connected = true;
+
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.AlignmentMode = AlignmentModes.algAltAz; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("AlignmentMode"));
+            Assert.That(excpetion.AccessorSet, Is.True);
         }
     }
 }

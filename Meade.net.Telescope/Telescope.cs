@@ -482,14 +482,17 @@ namespace ASCOM.Meade.net
                 //L If scope in Land Mode
                 //P If scope in Polar Mode
 
-                //todo implement GW Command
-                //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
-                //:GW# Get Scope Alignment Status
-                //Returns: <mount><tracking><alignment>#
-                //    where:
-                //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
-                //tracking: T - tracking, N - not tracking
-                //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
+                //todo implement GW Command - Supported in Autostar 43Eg and above
+                //if FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_43EG)
+                //{
+                    //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
+                    //:GW# Get Scope Alignment Status
+                    //Returns: <mount><tracking><alignment>#
+                    //    where:
+                    //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
+                    //tracking: T - tracking, N - not tracking
+                    //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
+                //}
 
                 AlignmentModes alignmentMode;
                 switch (alignmentString)
@@ -515,7 +518,13 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("AlignmentMode Set");
 
-                switch (value)
+                //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
+                if (!FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_43EG))
+                    throw new PropertyNotImplementedException("AlignmentMode",true );
+
+                //todo make this only try with Autostar 43Eg and above.
+
+                    switch (value)
                 {
                     case AlignmentModes.algAltAz:
                         _sharedResourcesWrapper.SendBlind(":AA#");

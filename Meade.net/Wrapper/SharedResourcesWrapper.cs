@@ -10,6 +10,8 @@ namespace ASCOM.Meade.net.Wrapper
         string AUTOSTAR497 { get; }
         string AUTOSTAR497_31EE { get; }
 
+        string AUTOSTAR497_43EG { get;}
+
         void Connect(string deviceId);
         void Disconnect(string deviceId);
 
@@ -38,6 +40,7 @@ namespace ASCOM.Meade.net.Wrapper
         public string AUTOSTAR497 => "Autostar";
 
         public string AUTOSTAR497_31EE => "31Ee";
+        public string AUTOSTAR497_43EG => "43Eg";
 
         #endregion
 
