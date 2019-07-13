@@ -157,6 +157,8 @@ namespace ASCOM.Meade.net
 
         public string Action(string actionName, string actionParameters)
         {
+            CheckConnected("Action");
+
             switch (actionName.ToLower())
             {
                 case "handbox":
@@ -1978,7 +1980,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new ASCOM.NotConnectedException(message);
+                throw new ASCOM.NotConnectedException($"Not connected to telescope when trying to execute: {message}");
             }
         }
 
