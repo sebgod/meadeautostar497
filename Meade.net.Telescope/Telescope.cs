@@ -356,7 +356,7 @@ namespace ASCOM.Meade.net
             {
                 var result = _sharedResourcesWrapper.SendString(":GZ#");
                 //:GZ# Get telescope azimuth
-                //Returns: DDD*MM#T or DDD*MM’SS#
+                //Returns: DDD*MM# or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
 
                 bool isLongFormat = result.Length > 6;
@@ -373,12 +373,13 @@ namespace ASCOM.Meade.net
             });
         }
 
-        private void SelectSite(int site)
+        //todo hook this up to a custom action
+        public void SelectSite(int site)
         {
             if (site < 1)
-                throw new ArgumentOutOfRangeException("site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException("site",site,"Site cannot be lower than 1");
             else if (site > 4)
-                throw new ArgumentOutOfRangeException("site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
 
             _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
@@ -400,10 +401,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Meade Generic .net driver. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major,
-                                        version.Minor);
+                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
                 LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -414,8 +413,7 @@ namespace ASCOM.Meade.net
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion =
-                    String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverVersion = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
                 LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }

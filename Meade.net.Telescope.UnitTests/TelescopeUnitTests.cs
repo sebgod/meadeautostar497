@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Globalization;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.AstroMaths;
 using ASCOM.Meade.net.Wrapper;
@@ -34,7 +36,7 @@ namespace Meade.net.Telescope.UnitTests
             _astroUtilsMock = new Mock<IAstroUtils>();
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS#");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31Ee");
 
@@ -308,6 +310,124 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.IsNewPulseGuidingSupported();
 
             Assert.That(result, Is.EqualTo(isSupported));
+        }
+
+        [Test]
+        public void SetLongFormatFalse_WhenTelescopeReturnsShortFormat_ThenDoesNothing()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM");
+            _telescope.SetLongFormat(false);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"),Times.Never);
+        }
+
+        [Test]
+        public void SetLongFormatFalse_WhenTelescopeReturnsLongFormat_ThenTogglesPrecision()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
+            _telescope.SetLongFormat(false);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Once);
+        }
+
+        [Test]
+        public void SetLongFormatTrue_WhenTelescopeReturnsLongFormat_ThenDoesNothing()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
+            _telescope.SetLongFormat(true);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Never);
+        }
+
+        [Test]
+        public void SetLongFormatTrue_WhenTelescopeReturnsShortFormat_ThenTogglesPrecision()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM");
+            _telescope.SetLongFormat(true);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Once);
+        }
+
+        [Test]
+        public void SelectSite_WhenNewSiteToLow_ThenThrowsException()
+        {
+            var site = 0;
+            var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
+
+            Assert.That(result.Message, Is.EqualTo($"Site cannot be lower than 1\r\nParameter name: site\r\nActual value was {site}."));
+        }
+
+        [Test]
+        public void SelectSite_WhenNewSiteToHigh_ThenThrowsException()
+        {
+            var site = 5;
+            var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
+
+            Assert.That(result.Message, Is.EqualTo($"Site cannot be higher than 4\r\nParameter name: site\r\nActual value was {site}."));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        public void SelectSite_WhenNewSiteToHigh_ThenThrowsException(int site)
+        {
+            _telescope.SelectSite(site);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
+        }
+
+        [Test]
+        public void Description_Get()
+        {
+            var expectedDescription = "Meade Generic";
+
+            var description = _telescope.Description;
+
+            Assert.That(description, Is.EqualTo(expectedDescription));
+        }
+
+        [Test]
+        public void DriverVersion_Get()
+        {
+            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
+
+            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
+
+            var driverVersion = _telescope.DriverVersion;
+
+            Assert.That(driverVersion, Is.EqualTo(exptectedDriverInfo));
+        }
+
+        [Test]
+        public void DriverInfo_Get()
+        {
+            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
+
+            string exptectedDriverInfo = $"{_telescope.Description} .net driver. Version: {_telescope.DriverVersion}";
+
+            var driverInfo = _telescope.DriverInfo;
+
+            Assert.That(driverInfo, Is.EqualTo(exptectedDriverInfo));
+        }
+
+        [Test]
+        public void InterfaceVersion_Get()
+        {
+            var interfaceVersion = _telescope.InterfaceVersion;
+            Assert.That(interfaceVersion, Is.EqualTo(3));
+
+            Assert.That(_telescope, Is.AssignableTo<ITelescopeV3>());
+        }
+
+        [Test]
+        public void Name_Get()
+        {
+            string expectedName = "Meade Generic";
+
+            var name = _telescope.Name;
+
+            Assert.That(name, Is.EqualTo(expectedName));
         }
     }
 }
