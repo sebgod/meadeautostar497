@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.DeviceInterface;
@@ -505,6 +504,201 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(excpetion.Property, Is.EqualTo("AlignmentMode"));
             Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void ApertureArea_Get_ThrowsNotImplementedException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.ApertureArea; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("ApertureArea"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void ApertureDiameter_Get_ThrowsNotImplementedException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.ApertureDiameter; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("ApertureDiameter"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void AtHome_Get_ReturnsFalse()
+        {
+            var result = _telescope.AtHome;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void AtPark_Get_WhenNotParked_ThenReturnsFalse()
+        {
+            var result = _telescope.AtPark;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void AtPark_Get_WhenParked_ThenReturnsTrue()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_43EG);
+            _telescope.Connected = true;
+            _telescope.Park();
+
+            var result = _telescope.AtPark;
+
+            Assert.That(result, Is.True);
+        }
+
+        [TestCase(TelescopeAxes.axisPrimary, 4)]
+        [TestCase(TelescopeAxes.axisSecondary, 4)]
+        [TestCase(TelescopeAxes.axisTertiary, 0)]
+        public void AxisRates_ReturnsExpectedResult(TelescopeAxes axis, int expectedCount)
+        {
+            var result = _telescope.AxisRates(axis);
+
+            Assert.That(result.Count, Is.EqualTo(expectedCount));
+        }
+
+        [Test]
+        public void CanFindHome_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanFindHome;
+
+            Assert.That(result, Is.False);
+        }
+
+        [TestCase(TelescopeAxes.axisPrimary, true)]
+        [TestCase(TelescopeAxes.axisSecondary, true)]
+        [TestCase(TelescopeAxes.axisTertiary, false)]
+        public void CanMoveAxis_ReturnsExpectedResult(TelescopeAxes axis, bool expected)
+        {
+            var result = _telescope.CanMoveAxis(axis);
+
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void CanPark_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanPark;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanPulseGuide_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanPulseGuide;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSetDeclinationRate_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSetDeclinationRate;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetGuideRates_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSetGuideRates;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetPark_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSetPark;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetPierSide_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSetPierSide;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetRightAscensionRate_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSetRightAscensionRate;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetTracking_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSetTracking;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSlew_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSlew;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSlewAltAz_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSlewAltAz;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSlewAltAzAsync_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSlewAltAzAsync;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSlewAsync_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSlewAsync;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSync_Get_ReturnsTrue()
+        {
+            var result = _telescope.CanSync;
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanSyncAltAz_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanSyncAltAz;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanUnpark_Get_ReturnsFalse()
+        {
+            var result = _telescope.CanUnpark;
+
+            Assert.That(result, Is.False);
         }
     }
 }
