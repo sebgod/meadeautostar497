@@ -305,7 +305,7 @@ namespace ASCOM.Meade.net
                             LogMessage("Connected Set", $"Commented to port {comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
 
 
-                            SelectSite(1);
+                            //SelectSite(1);
                             SetLongFormat(true);
 
 
