@@ -101,13 +101,13 @@ namespace ASCOM.Meade.net
         {
             //todo move the TraceLogger out to a factory class.
             tl = new TraceLogger("", "Meade.net.Telescope");
-            tl.LogMessage("Telescope", "Starting initialisation");
+            LogMessage("Telescope", "Starting initialisation");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
 
-            tl.LogMessage("Telescope", "Completed initialisation");
+            LogMessage("Telescope", "Completed initialisation");
         }
 
 
@@ -125,10 +125,10 @@ namespace ASCOM.Meade.net
         /// </summary>
         public void SetupDialog()
         {
-            tl.LogMessage("SetupDialog", "Opening setup dialog");
+            LogMessage("SetupDialog", "Opening setup dialog");
             _sharedResourcesWrapper.SetupDialog();
             ReadProfile();
-            tl.LogMessage("SetupDialog", "complete");
+            LogMessage("SetupDialog", "complete");
             //// consider only showing the setup dialog if not connected
             //// or call a different dialog if connected
             //if (IsConnected)
@@ -148,7 +148,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                LogMessage("SupportedActions Get", "Returning empty arraylist");
                 var supportedActions = new ArrayList();
                 supportedActions.Add("handbox");
                 return supportedActions;
@@ -293,7 +293,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                tl.LogMessage("Connected", "Set {0}", value);
+                LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
 
@@ -305,14 +305,11 @@ namespace ASCOM.Meade.net
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
-                            LogMessage("Connected Set", $"Commented to port {comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
+                            LogMessage("Connected Set", $"Connected to port {comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
 
-
-                            //SelectSite(1);
                             SetLongFormat(true);
-
-
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
+                            LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
 
                             IsConnected = true;
                         }
@@ -336,7 +333,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private bool IsNewPulseGuidingSupported()
+        public bool IsNewPulseGuidingSupported()
         {
             if (_sharedResourcesWrapper.ProductName == _sharedResourcesWrapper.AUTOSTAR497)
             {
@@ -394,7 +391,7 @@ namespace ASCOM.Meade.net
             // TODO customise this device description
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
+                LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -407,7 +404,7 @@ namespace ASCOM.Meade.net
                 // TODO customise this driver description
                 string driverInfo = "Meade Generic .net driver. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major,
                                         version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
+                LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
         }
@@ -419,7 +416,7 @@ namespace ASCOM.Meade.net
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion =
                     String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
+                LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
         }
@@ -450,7 +447,7 @@ namespace ASCOM.Meade.net
 
                 //string name = $"{telescopeProduceName} - {firmwareVersion}";
                 string name = driverDescription;
-                tl.LogMessage("Name Get", name);
+                LogMessage("Name Get", name);
                 return name;
             }
         }
@@ -463,7 +460,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("AbortSlew");
 
-            tl.LogMessage("AbortSlew", "Aborting slew");
+            LogMessage("AbortSlew", "Aborting slew");
             _sharedResourcesWrapper.SendBlind(":Q#");
             //:Q# Halt all current slewing
             //Returns:Nothing
@@ -473,7 +470,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("AlignmentMode Get", "Getting alignmode");
+                LogMessage("AlignmentMode Get", "Getting alignmode");
 
                 CheckConnected("AlignmentMode Get");
 
@@ -513,7 +510,7 @@ namespace ASCOM.Meade.net
                             $"unknown alignment returned from telescope: {alignmentString}");
                 }
 
-                tl.LogMessage("AlignmentMode Get", $"alignmode = {alignmentMode}");
+                LogMessage("AlignmentMode Get", $"alignmode = {alignmentMode}");
                 return alignmentMode;
             }
             set
@@ -549,7 +546,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("Altitude get");
 
                 var altAz = CalcAltAzFromTelescopeEqData();
-                tl.LogMessage("Altitude", $"{altAz.Altitude}");
+                LogMessage("Altitude", $"{altAz.Altitude}");
                 return altAz.Altitude;
 
                 ////todo firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
@@ -559,10 +556,10 @@ namespace ASCOM.Meade.net
                 ////The current scope altitude. The returned format depending on the current precision setting.
 
                 //var alt = utilities.DMSToDegrees(result);
-                //tl.LogMessage("Altitude", $"{alt}");
+                //LogMessage("Altitude", $"{alt}");
                 //return alt;
 
-                //tl.LogMessage("Altitude Get", "Not implemented");
+                //LogMessage("Altitude Get", "Not implemented");
                 //throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
         }
@@ -591,7 +588,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("ApertureArea Get", "Not implemented");
+                LogMessage("ApertureArea Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("ApertureArea", false);
             }
         }
@@ -600,7 +597,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("ApertureDiameter Get", "Not implemented");
+                LogMessage("ApertureDiameter Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("ApertureDiameter", false);
             }
         }
@@ -609,7 +606,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("AtHome", "Get - " + false.ToString());
+                LogMessage("AtHome", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -620,7 +617,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("AtPark", "Get - " + _atPark);
+                LogMessage("AtPark", "Get - " + _atPark);
                 return _atPark;
             }
             private set { _atPark = value; }
@@ -628,7 +625,7 @@ namespace ASCOM.Meade.net
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            tl.LogMessage("AxisRates", "Get - " + Axis.ToString());
+            LogMessage("AxisRates", "Get - " + Axis.ToString());
             return new AxisRates(Axis);
         }
 
@@ -645,11 +642,11 @@ namespace ASCOM.Meade.net
 
                 //double az = utilities.DMSToDegrees(result);
 
-                //tl.LogMessage("Azimuth Get", $"{az}");
+                //LogMessage("Azimuth Get", $"{az}");
                 //return az;
 
                 var altAz = CalcAltAzFromTelescopeEqData();
-                tl.LogMessage("Azimuth Get", $"{altAz.Azimuth}");
+                LogMessage("Azimuth Get", $"{altAz.Azimuth}");
                 return altAz.Azimuth;
             }
         }
@@ -658,14 +655,14 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanFindHome", "Get - " + false.ToString());
+                LogMessage("CanFindHome", "Get - " + false.ToString());
                 return false;
             }
         }
 
         public bool CanMoveAxis(TelescopeAxes Axis)
         {
-            tl.LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
+            LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
             switch (Axis)
             {
                 case TelescopeAxes.axisPrimary: return true; //RA or AZ
@@ -679,7 +676,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + true.ToString());
+                LogMessage("CanPark", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -688,7 +685,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + true.ToString());
+                LogMessage("CanPulseGuide", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -697,7 +694,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
+                LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -706,7 +703,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetGuideRates", "Get - " + false.ToString());
+                LogMessage("CanSetGuideRates", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -715,7 +712,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetPark", "Get - " + false.ToString());
+                LogMessage("CanSetPark", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -724,7 +721,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetPierSide", "Get - " + false.ToString());
+                LogMessage("CanSetPierSide", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -733,7 +730,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
+                LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -742,7 +739,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                LogMessage("CanSetTracking", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -751,7 +748,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + true.ToString());
+                LogMessage("CanSlew", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -760,7 +757,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                LogMessage("CanSlewAltAz", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -769,7 +766,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -778,7 +775,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                LogMessage("CanSlewAsync", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -787,7 +784,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSync", "Get - " + true.ToString());
+                LogMessage("CanSync", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -796,7 +793,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanSyncAltAz", "Get - " + false.ToString());
+                LogMessage("CanSyncAltAz", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -805,7 +802,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("CanUnpark", "Get - " + false.ToString());
+                LogMessage("CanUnpark", "Get - " + false.ToString());
                 return false;
             }
         }
@@ -823,7 +820,7 @@ namespace ASCOM.Meade.net
 
                 double declination = _utilities.DMSToDegrees(result);
 
-                tl.LogMessage("Declination", "Get - " + _utilitiesExtra.DegreesToDMS(declination, ":", ":"));
+                LogMessage("Declination", "Get - " + _utilitiesExtra.DegreesToDMS(declination, ":", ":"));
                 return declination;
             }
         }
@@ -833,19 +830,19 @@ namespace ASCOM.Meade.net
             get
             {
                 double declination = 0.0;
-                tl.LogMessage("DeclinationRate", "Get - " + declination.ToString());
+                LogMessage("DeclinationRate", "Get - " + declination.ToString());
                 return declination;
             }
             set
             {
-                tl.LogMessage("DeclinationRate Set", "Not implemented");
+                LogMessage("DeclinationRate Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("DeclinationRate", true);
             }
         }
 
         public PierSide DestinationSideOfPier(double rightAscension, double declination)
         {
-            tl.LogMessage("DestinationSideOfPier Get", "Not implemented");
+            LogMessage("DestinationSideOfPier Get", "Not implemented");
             throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
         }
 
@@ -853,12 +850,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("DoesRefraction Get", "Not implemented");
+                LogMessage("DoesRefraction Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("DoesRefraction", false);
             }
             set
             {
-                tl.LogMessage("DoesRefraction Set", "Not implemented");
+                LogMessage("DoesRefraction Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("DoesRefraction", true);
             }
         }
@@ -868,14 +865,14 @@ namespace ASCOM.Meade.net
             get
             {
                 EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equTopocentric;
-                tl.LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
+                LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
                 return equatorialSystem;
             }
         }
 
         public void FindHome()
         {
-            tl.LogMessage("FindHome", "Not implemented");
+            LogMessage("FindHome", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("FindHome");
         }
 
@@ -883,7 +880,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("FocalLength Get", "Not implemented");
+                LogMessage("FocalLength Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("FocalLength", false);
             }
         }
@@ -892,12 +889,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("GuideRateDeclination Get", "Not implemented");
+                LogMessage("GuideRateDeclination Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
             }
             set
             {
-                tl.LogMessage("GuideRateDeclination Set", "Not implemented");
+                LogMessage("GuideRateDeclination Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
             }
         }
@@ -906,12 +903,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("GuideRateRightAscension Get", "Not implemented");
+                LogMessage("GuideRateRightAscension Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
             }
             set
             {
-                tl.LogMessage("GuideRateRightAscension Set", "Not implemented");
+                LogMessage("GuideRateRightAscension Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
             }
         }
@@ -920,7 +917,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
+                LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
                 //throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
                 return false;
             }
@@ -931,7 +928,7 @@ namespace ASCOM.Meade.net
 
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
-            tl.LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
+            LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
             CheckConnected("MoveAxis");
 
             var absRate = Math.Abs(rate);
@@ -1028,7 +1025,7 @@ namespace ASCOM.Meade.net
 
         public void Park()
         {
-            tl.LogMessage("Park", "Parking telescope");
+            LogMessage("Park", "Parking telescope");
             CheckConnected("Park");
 
             if (AtPark)
@@ -1044,7 +1041,7 @@ namespace ASCOM.Meade.net
 
         public void PulseGuide(GuideDirections direction, int duration)
         {
-            tl.LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
+            LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
             CheckConnected("PulseGuide");
 
             string d = string.Empty;
@@ -1120,7 +1117,7 @@ namespace ASCOM.Meade.net
 
                 double rightAscension = _utilities.HMSToHours(result);
 
-                tl.LogMessage("RightAscension", "Get - " + _utilitiesExtra.HoursToHMS(rightAscension));
+                LogMessage("RightAscension", "Get - " + _utilitiesExtra.HoursToHMS(rightAscension));
                 return rightAscension;
             }
         }
@@ -1130,19 +1127,19 @@ namespace ASCOM.Meade.net
             get
             {
                 double rightAscensionRate = 0.0;
-                tl.LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
+                LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
                 return rightAscensionRate;
             }
             set
             {
-                tl.LogMessage("RightAscensionRate Set", "Not implemented");
+                LogMessage("RightAscensionRate Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
             }
         }
 
         public void SetPark()
         {
-            tl.LogMessage("SetPark", "Not implemented");
+            LogMessage("SetPark", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("SetPark");
         }
 
@@ -1150,12 +1147,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("SideOfPier Get", "Not implemented");
+                LogMessage("SideOfPier Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SideOfPier", false);
             }
             set
             {
-                tl.LogMessage("SideOfPier Set", "Not implemented");
+                LogMessage("SideOfPier Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
             }
         }
@@ -1181,7 +1178,7 @@ namespace ASCOM.Meade.net
                 // Reduce to the range 0 to 24 hours
                 siderealTime = _astroUtilities.ConditionRA(siderealTime);
 
-                tl.LogMessage("SiderealTime", "Get - " + siderealTime.ToString());
+                LogMessage("SiderealTime", "Get - " + siderealTime.ToString());
                 return siderealTime;
             }
         }
@@ -1190,12 +1187,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("SiteElevation Get", "Not implemented");
+                LogMessage("SiteElevation Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SiteElevation", false);
             }
             set
             {
-                tl.LogMessage("SiteElevation Set", "Not implemented");
+                LogMessage("SiteElevation Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SiteElevation", true);
             }
         }
@@ -1212,12 +1209,12 @@ namespace ASCOM.Meade.net
                 //The latitude of the current site. Positive inplies North latitude.
 
                 var siteLatitude = _utilities.DMSToDegrees(latitude);
-                tl.LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
+                LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
                 return siteLatitude;
             }
             set
             {
-                tl.LogMessage("SiteLatitude Set", $"{_utilitiesExtra.DegreesToDMS(value)}");
+                LogMessage("SiteLatitude Set", $"{_utilitiesExtra.DegreesToDMS(value)}");
 
                 CheckConnected("SiteLatitude Set");
 
@@ -1259,14 +1256,14 @@ namespace ASCOM.Meade.net
 
                 siteLongitude = -siteLongitude;
 
-                tl.LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
+                LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
                 return siteLongitude;
             }
             set
             {
                 var newLongitude = value;
 
-                tl.LogMessage("SiteLongitude Set", $"{_utilitiesExtra.DegreesToDMS(newLongitude)}");
+                LogMessage("SiteLongitude Set", $"{_utilitiesExtra.DegreesToDMS(newLongitude)}");
 
                 CheckConnected("SiteLongitude Set");
 
@@ -1299,19 +1296,19 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("SlewSettleTime Get", "Not implemented");
+                LogMessage("SlewSettleTime Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
             }
             set
             {
-                tl.LogMessage("SlewSettleTime Set", "Not implemented");
+                LogMessage("SlewSettleTime Set", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
             }
         }
 
         public void SlewToAltAz(double azimuth, double altitude)
         {
-            tl.LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude}");
+            LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude}");
             CheckConnected("SlewToAltAz");
 
             SlewToAltAzAsync(azimuth, altitude);
@@ -1394,7 +1391,7 @@ namespace ASCOM.Meade.net
             if (azimuth < 0)
                 throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
 
-            tl.LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
+            LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
             CheckConnected("SlewToAltAzAsync");
 
             HorizonCoordinates altAz = new HorizonCoordinates();
@@ -1441,20 +1438,20 @@ namespace ASCOM.Meade.net
                         {
                             case "0":
                                 //We're slewing everything should be working just fine.
-                                tl.LogMessage("DoSlewAsync", "Slewing to target");
+                                LogMessage("DoSlewAsync", "Slewing to target");
                                 break;
                             case "1":
                                 //Below Horizon 
                                 string belowHorizonMessage = _sharedResourcesWrapper.ReadTerminated();
-                                tl.LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
+                                LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
                                 throw new ASCOM.InvalidOperationException(belowHorizonMessage);
                             case "2":
                                 //Below Horizon 
                                 string belowMinimumElevationMessage = _sharedResourcesWrapper.ReadTerminated();
-                                tl.LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
+                                LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
                                 throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
                             default:
-                                tl.LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
+                                LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
                                 throw new ASCOM.DriverException("This error should not happen");
 
                         }
@@ -1480,7 +1477,7 @@ namespace ASCOM.Meade.net
 
         public void SlewToCoordinates(double rightAscension, double declination)
         {
-            tl.LogMessage("SlewToCoordinates", $"Ra={rightAscension}, Dec={declination}");
+            LogMessage("SlewToCoordinates", $"Ra={rightAscension}, Dec={declination}");
             CheckConnected("SlewToCoordinates");
 
             SlewToCoordinatesAsync(rightAscension, declination);
@@ -1490,12 +1487,12 @@ namespace ASCOM.Meade.net
                 _utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
 
-            tl.LogMessage("SlewToCoordinates", $"Slewing completed new coordinates Ra={RightAscension}, Dec={Declination}");
+            LogMessage("SlewToCoordinates", $"Slewing completed new coordinates Ra={RightAscension}, Dec={Declination}");
         }
 
         public void SlewToCoordinatesAsync(double rightAscension, double declination)
         {
-            tl.LogMessage("SlewToCoordinatesAsync", $"Ra={rightAscension}, Dec={declination}");
+            LogMessage("SlewToCoordinatesAsync", $"Ra={rightAscension}, Dec={declination}");
             CheckConnected("SlewToCoordinatesAsync");
 
             _sharedResourcesWrapper.Lock(() =>
@@ -1510,7 +1507,7 @@ namespace ASCOM.Meade.net
 
         public void SlewToTarget()
         {
-            tl.LogMessage("SlewToTarget", "Executing");
+            LogMessage("SlewToTarget", "Executing");
             CheckConnected("SlewToTarget");
             SlewToTargetAsync();
 
@@ -1556,20 +1553,20 @@ namespace ASCOM.Meade.net
                 //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
                 bool isSlewing = result != string.Empty;
 
-                tl.LogMessage("Slewing Get", $"Result = {isSlewing}");
+                LogMessage("Slewing Get", $"Result = {isSlewing}");
                 return isSlewing;
             }
         }
 
         public void SyncToAltAz(double azimuth, double altitude)
         {
-            tl.LogMessage("SyncToAltAz", "Not implemented");
+            LogMessage("SyncToAltAz", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("SyncToAltAz");
         }
 
         public void SyncToCoordinates(double rightAscension, double declination)
         {
-            tl.LogMessage("SyncToCoordinates", $"RA={rightAscension} Dec={declination}");
+            LogMessage("SyncToCoordinates", $"RA={rightAscension} Dec={declination}");
             CheckConnected("SyncToCoordinates");
 
             _sharedResourcesWrapper.Lock(() =>
@@ -1583,7 +1580,7 @@ namespace ASCOM.Meade.net
 
         public void SyncToTarget()
         {
-            tl.LogMessage("SyncToTarget", "Executing");
+            LogMessage("SyncToTarget", "Executing");
             CheckConnected("SyncToTarget");
 
             var result = _sharedResourcesWrapper.SendString(":CM#");
@@ -1613,12 +1610,12 @@ namespace ASCOM.Meade.net
 
                 //return targetDec;
 
-                tl.LogMessage("TargetDeclination Get", $"{_targetDeclination}");
+                LogMessage("TargetDeclination Get", $"{_targetDeclination}");
                 return _targetDeclination;
             }
             set
             {
-                tl.LogMessage("TargetDeclination Set", $"{value}");
+                LogMessage("TargetDeclination Set", $"{value}");
                 
                 //todo implement low precision version of this.
                 if (value > 90)
@@ -1634,7 +1631,7 @@ namespace ASCOM.Meade.net
 
                 var command = $":Sd{s}{dms}#";
 
-                tl.LogMessage("TargetDeclination Set", $"{command}");
+                LogMessage("TargetDeclination Set", $"{command}");
                 var result = _sharedResourcesWrapper.SendChar(command);
                 //:SdsDD*MM#
                 //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
@@ -1667,12 +1664,12 @@ namespace ASCOM.Meade.net
                 //double targetRa = HmsToDouble(result);
                 //return targetRa;
 
-                tl.LogMessage("TargetRightAscension Get", $"{_targetRightAscension}");
+                LogMessage("TargetRightAscension Get", $"{_targetRightAscension}");
                 return _targetRightAscension;
             }
             set
             {
-                tl.LogMessage("TargetRightAscension Set", $"{value}");
+                LogMessage("TargetRightAscension Set", $"{value}");
 
                 if (value < 0)
                     throw new InvalidValueException("Right ascension value cannot be below 0");
@@ -1704,12 +1701,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("Tracking", $"Get - {_tracking}");
+                LogMessage("Tracking", $"Get - {_tracking}");
                 return _tracking;
             }
             set
             {
-                tl.LogMessage($"Tracking Set", $"{value}");
+                LogMessage($"Tracking Set", $"{value}");
                 _tracking = value;
             }
         }
@@ -1732,12 +1729,12 @@ namespace ASCOM.Meade.net
                 //    return DriveRates.driveSidereal;
 
                 //return DriveRates.driveKing;
-                tl.LogMessage("TrackingRate Get", $"{_trackingRate}");
+                LogMessage("TrackingRate Get", $"{_trackingRate}");
                 return _trackingRate;
             }
             set
             {
-                tl.LogMessage("TrackingRate Set", $"{value}");
+                LogMessage("TrackingRate Set", $"{value}");
                 CheckConnected("TrackingRate Set");
 
                 switch (value)
@@ -1774,10 +1771,10 @@ namespace ASCOM.Meade.net
             get
             {
                 ITrackingRates trackingRates = new TrackingRates();
-                tl.LogMessage("TrackingRates", "Get - ");
+                LogMessage("TrackingRates", "Get - ");
                 foreach (DriveRates driveRate in trackingRates)
                 {
-                    tl.LogMessage("TrackingRates", "Get - " + driveRate.ToString());
+                    LogMessage("TrackingRates", "Get - " + driveRate.ToString());
                 }
                 return trackingRates;
             }
@@ -1810,7 +1807,7 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("UTCDate Get");
 
-                tl.LogMessage("UTCDate", "Get started");
+                LogMessage("UTCDate", "Get started");
 
                 TelescopeDateDetails telescopeDateDetails = _sharedResourcesWrapper.Lock(() =>
                 {
@@ -1844,13 +1841,13 @@ namespace ASCOM.Meade.net
                 var utcDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) +
                               telescopeDateDetails.utcCorrection;
 
-                tl.LogMessage("UTCDate", "Get - " + utcDate.ToString("MM/dd/yy HH:mm:ss"));
+                LogMessage("UTCDate", "Get - " + utcDate.ToString("MM/dd/yy HH:mm:ss"));
 
                 return utcDate;
             }
             set
             {
-                tl.LogMessage("UTCDate", "Set - " + value.ToString("MM/dd/yy HH:mm:ss"));
+                LogMessage("UTCDate", "Set - " + value.ToString("MM/dd/yy HH:mm:ss"));
 
                 CheckConnected("UTCDate Set");
 
@@ -1891,7 +1888,7 @@ namespace ASCOM.Meade.net
 
         public void Unpark()
         {
-            tl.LogMessage("Unpark", "Not implemented");
+            LogMessage("Unpark", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("Unpark");
         }
 
