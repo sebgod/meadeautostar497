@@ -35,8 +35,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS#");
-            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR497");
-            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31EE");
+            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR");
+            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31Ee");
 
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             
@@ -296,6 +296,18 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
         }
 
+        [TestCase("AUTOSTAR", "30Ab", false)]
+        [TestCase("AUTOSTAR","31Ee", true)]
+        [TestCase("AUTOSTAR", "41Aa", true)]
+        [TestCase("AUTOSTAR II", "", false)]
+        public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string productName, string firmware, bool isSupported)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
 
+            var result = _telescope.IsNewPulseGuidingSupported();
+
+            Assert.That(result, Is.EqualTo(isSupported));
+        }
     }
 }

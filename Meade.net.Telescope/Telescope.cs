@@ -350,7 +350,7 @@ namespace ASCOM.Meade.net
             return (comparison >= 0);
         }
 
-        private void SetLongFormat(bool setLongFormat)
+        public void SetLongFormat(bool setLongFormat)
         {
             _sharedResourcesWrapper.Lock(() =>
             {
