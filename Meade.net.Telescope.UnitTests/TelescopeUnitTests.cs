@@ -1,5 +1,5 @@
-﻿using ASCOM;
-using ASCOM.Astrometry;
+﻿using System;
+using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.AstroMaths;
@@ -34,9 +34,12 @@ namespace Meade.net.Telescope.UnitTests
             _astroUtilsMock = new Mock<IAstroUtils>();
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS#");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR497");
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31EE");
 
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
+            
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
 
             _astroMathsMock = new Mock<IAstroMaths>();
@@ -93,10 +96,12 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
 
             string expectedResult = "test result string";
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(It.IsAny<string>())).Returns(expectedResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#")).Returns(expectedResult);
+            _telescope.Connected = true;
+
+            
 
             var actualResult = _telescope.Action("handbox", "readdisplay");
 
@@ -127,6 +132,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
             _telescope.Connected = true;
             _telescope.Action("handbox", action);
 
@@ -232,5 +238,64 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage), Times.Once);
             Assert.That(actualMessage, Is.EqualTo(expectedMessage));
         }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Connected_Get_ReturnsExpectedValue(bool expectedConnected)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = expectedConnected;
+
+            Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
+        }
+
+
+        [Test]
+        public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>()),Times.Once);
+
+            //act
+            _telescope.Connected = true;
+
+            //assert
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>()), Times.Once);
+
+            //act
+            _telescope.Connected = false;
+
+            //assert
+            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
+        }
+
+        [Test]
+        public void Connected_Set_WhenFailsToConnect_ThenDisconnects()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(It.IsAny<string>())).Throws(new Exception("TestFailed"));
+
+            //act
+            _telescope.Connected = true;
+
+            //assert
+            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
+        }
+
+
     }
 }

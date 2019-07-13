@@ -65,7 +65,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        internal static TraceLogger tl;
+        private TraceLogger tl;
 
         private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -275,6 +275,9 @@ namespace ASCOM.Meade.net
 
         public void Dispose()
         {
+            if (Connected)
+                Connected = false;
+
             // Clean up the tracelogger and util objects
             tl.Enabled = false;
             tl.Dispose();
@@ -375,6 +378,11 @@ namespace ASCOM.Meade.net
 
         private void SelectSite(int site)
         {
+            if (site < 1)
+                throw new ArgumentOutOfRangeException("site cannot be lower than 1");
+            else if (site > 4)
+                throw new ArgumentOutOfRangeException("site cannot be higher than 4");
+
             _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
             //Set current site to<n>, an ASCII digit in the range 1..4
@@ -2000,7 +2008,7 @@ namespace ASCOM.Meade.net
         /// <param name="identifier"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        internal static void LogMessage(string identifier, string message, params object[] args)
+        internal void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
             tl.LogMessage(identifier, msg);
