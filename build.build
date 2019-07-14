@@ -4,7 +4,7 @@
 
 	<property name="solution.directory" value="${directory::get-current-directory()}"/>
 	<property name="build.output.directory" value="${solution.directory}\${outputDir}"/>
-	<property name="Version.full" value="${Version.full}"/>
+	<property name="AssemblyVersionUpdater" value="${build.number}"/>
 
 	<target name="setup">
 		<delete dir="${build.output.directory}"/>
@@ -36,7 +36,7 @@
 		
 		<foreach item="File" in="${build.output.directory}" property="fileName">
 			<if test="${string::to-lower(path::get-extension(fileName)) == '.msi'}">
-				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + '${Version.full}.msi')}" />
+				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + '${AssemblyVersionUpdater}.msi')}" />
 			</if>
 		</foreach>
 	</target>
