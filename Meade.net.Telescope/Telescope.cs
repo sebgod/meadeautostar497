@@ -1234,10 +1234,13 @@ namespace ASCOM.Meade.net
                     throw new InvalidValueException("Latitude cannot be less than -90 degrees.");
 
                 string sign = value > 0 ? "+" : "-";
-                int d = Convert.ToInt32(Math.Floor(value));
-                int m = Convert.ToInt32(60 * (value - d));
 
-                var result = _sharedResourcesWrapper.SendChar($":St{sign}{d:00}*{m:00}#");
+                var absValue = Math.Abs(value);
+                int d = Convert.ToInt32(Math.Floor(absValue));
+                int m = Convert.ToInt32(60 * (absValue - d));
+                var commandString = $":St{sign}{d:00}*{m:00}#";
+
+                var result = _sharedResourcesWrapper.SendChar(commandString);
                 //:StsDD*MM#
                 //Sets the current site latitude to sDD* MM#
                 //Returns:

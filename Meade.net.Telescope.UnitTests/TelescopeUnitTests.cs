@@ -1197,5 +1197,99 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(excpetion.Method, Is.EqualTo("Unpark"));
         }
+
+        [Test]
+        public void SiteLatitude_Get_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.SiteLatitude; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLatitude Get"));
+        }
+
+        [Test]
+        public void SiteLatitude_Get_WhenConnected_ThenRetrievesAndReturnsExpectedValue()
+        {
+            var siteLatitudeString = "testLatString";
+            var siteLatitudeValue = 123.45;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gt#")).Returns(siteLatitudeString);
+            _utilMock.Setup(x => x.DMSToDegrees(siteLatitudeString)).Returns(siteLatitudeValue);
+
+            var result = _telescope.SiteLatitude;
+            
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":Gt#"), Times.Once);
+
+            Assert.That(result,Is.EqualTo(siteLatitudeValue));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLatitude = 123.45; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLatitude Set"));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_WhenConnectedAndLatitudeIsGreaterThan90_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = 90.01; });
+            Assert.That(exception.Message, Is.EqualTo("Latitude cannot be greater than 90 degrees."));
+        }
+
+        [Test]
+        public void SiteLatitude_Set_WhenConnectedAndLatitudeIsLessThanNegative90_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = -90.01; });
+            Assert.That(exception.Message, Is.EqualTo("Latitude cannot be less than -90 degrees."));
+        }
+
+        [TestCase(-10.5)]
+        [TestCase(20.75)]
+        public void SiteLatitude_Set_WhenValueSetAndTelescopRejects_ThenExceptionThrown(double siteLatitude)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescope.SiteLatitude = siteLatitude; });
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
+        }
+
+        [TestCase(-10.5, ":St-10*30#")]
+        [TestCase(20.75, ":St+20*45#")]
+        public void SiteLatitude_Set_WhenValidValues_ThenValueSentToTelescope(double siteLatitude, string expectedCommand)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
+
+            _telescope.SiteLatitude = siteLatitude;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(expectedCommand), Times.Once);
+        }
     }
 }
