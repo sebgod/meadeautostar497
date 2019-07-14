@@ -1293,7 +1293,9 @@ namespace ASCOM.Meade.net
                 int d = Convert.ToInt32(Math.Floor(newLongitude));
                 int m = Convert.ToInt32(60 * (newLongitude - d));
 
-                var result = _sharedResourcesWrapper.SendChar($":Sg{d:000}*{m:00}#");
+                var commandstring = $":Sg{d:000}*{m:00}#";
+
+                var result = _sharedResourcesWrapper.SendChar(commandstring);
                 //:SgDDD*MM#
                 //Set current site’s longitude to DDD*MM an ASCII position string
                 //Returns:

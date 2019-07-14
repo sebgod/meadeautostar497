@@ -9,6 +9,7 @@ using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
+using InvalidOperationException = ASCOM.InvalidOperationException;
 using NotImplementedException = ASCOM.NotImplementedException;
 
 namespace Meade.net.Telescope.UnitTests
@@ -1322,6 +1323,65 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.SiteLongitude;
 
             Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLongitude = 123.45; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLongitude Set"));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_WhenConnectedAndGreaterThan180_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = 180.1; });
+            Assert.That(exception.Message, Is.EqualTo("Longitude cannot be greater than 180 degrees."));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_WhenConnectedAndLessThanNegative180_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = -180.1; });
+            Assert.That(exception.Message, Is.EqualTo("Longitude cannot be lower than -180 degrees."));
+        }
+
+        [Test]
+        public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLongitude = 10; });
+            Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
+        }
+
+        [TestCase(10, ":Sg350*00#")]
+        public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException(double longitude, string expectedCommand)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
+
+            _telescope.SiteLongitude = longitude;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(expectedCommand), Times.Once);
         }
     }
 }
