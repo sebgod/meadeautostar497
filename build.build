@@ -4,6 +4,7 @@
 
 	<property name="solution.directory" value="${directory::get-current-directory()}"/>
 	<property name="build.output.directory" value="${solution.directory}\${outputDir}"/>
+	<property name="build.number" value="${build.number}"/>
 
 	<target name="setup">
 		<delete dir="${build.output.directory}"/>
@@ -32,5 +33,13 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
+		
+		<foreach item="File" in="${build.output.directory}" property="fileName">
+			<!-- If the file has the .msi extension -->
+			<if test="${string::to-lower(path::get-extension(fileName)) == '.msi'}">
+				<!-- Rename the file to .txt extension -->
+				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + ${build.number} + '.msi')}" />
+			</if>
+		</foreach>
 	</target>
 </project>
