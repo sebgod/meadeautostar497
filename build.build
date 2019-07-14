@@ -35,7 +35,7 @@
 		
 		<foreach item="File" in="${build.output.directory}" property="fileName">
 			<if test="${string::to-lower(path::get-extension(fileName)) == '.msi'}">
-				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + environment::get-variable('BUILD_NUMBER') + '.msi')}" />
+				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + '.' + environment::get-variable('BUILD_NUMBER') + '.msi')}" />
 			</if>
 		</foreach>
 	</target>
