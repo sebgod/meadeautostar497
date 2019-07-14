@@ -38,7 +38,7 @@
 			<!-- If the file has the .msi extension -->
 			<if test="${string::to-lower(path::get-extension(fileName)) == '.msi'}">
 				<!-- Rename the file to .txt extension -->
-				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + ${build.number} + '.msi')}" />
+				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + '${build.number}.msi')}" />
 			</if>
 		</foreach>
 	</target>
