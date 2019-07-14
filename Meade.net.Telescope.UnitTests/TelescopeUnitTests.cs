@@ -998,5 +998,204 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
             Assert.That(_telescope.AtPark, Is.True);
         }
+
+        [Test]
+        public void PulseGuide_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.PulseGuide(GuideDirections.guideEast,0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: PulseGuide"));
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailable_ThenSendsNewCommandsAndWaits(GuideDirections direction)
+        {
+            var duration = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, 0);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Mg{d}{duration:0000}#"));
+            _utilMock.Verify( x => x.WaitForMilliseconds(duration), Times.Once);
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
+        {
+            var duration = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => "31Ed");
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, 0);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":M{d}#"));
+            _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Q{d}#"));
+        }
+
+        [Test]
+        public void RightAscension_Get_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.RightAscension; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: RightAscension Get"));
+        }
+
+        [Test]
+        public void RightAscension_Get_WhenConnected_ThenReturnsExpectedResult()
+        {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
+            var result = _telescope.RightAscension;
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":GR#"), Times.Once);
+            _utilMock.Verify( x => x.HMSToHours(telescopeRaResult), Times.Once);
+
+            Assert.That(result,Is.EqualTo(hmsResult));
+        }
+
+        [Test]
+        public void RightAscensionRate_Get_ThenReturns0()
+        {
+            var result = _telescope.RightAscensionRate;
+
+            Assert.That(result, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RightAscensionRate_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.RightAscensionRate = 1; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("RightAscensionRate"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void SetPark_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SetPark(); });
+
+            Assert.That(excpetion.Method, Is.EqualTo("SetPark"));
+        }
+
+        [Test]
+        public void SideOfPier_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.SideOfPier; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void SideOfPier_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SideOfPier = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void SiteElevation_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.SiteElevation; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SiteElevation"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void SiteElevation_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SiteElevation = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SiteElevation"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void SlewSettleTime_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.SlewSettleTime; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SlewSettleTime"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void SlewSettleTime_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SlewSettleTime = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SlewSettleTime"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void Unpark_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.Unpark(); });
+
+            Assert.That(excpetion.Method, Is.EqualTo("Unpark"));
+        }
     }
 }
