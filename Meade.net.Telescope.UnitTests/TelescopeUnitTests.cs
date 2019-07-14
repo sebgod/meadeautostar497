@@ -1291,5 +1291,37 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(expectedCommand), Times.Once);
         }
+
+        [Test]
+        public void SiteLongitude_Get_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.SiteLongitude; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLongitude Get"));
+        }
+
+
+        //todo figure out if this is right.  don't feel right to me
+        [TestCase("5", 5, -5)]
+        [TestCase("-5", -5, 5)]
+        [TestCase("185", 185, 175)]
+        [TestCase("350", 350, 10)]
+        public void SiteLongitude_Get_WhenConnected_ThenRetrivesAndReturnsExpectedValue(string telescopelongitudeString, double telescopeLongitudeValue, double expectedResult)
+        {
+            var telescopeLongitude = "testLongitude";
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
+
+            var result = _telescope.SiteLongitude;
+
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
     }
 }
