@@ -822,7 +822,7 @@ namespace ASCOM.Meade.net
 
                 var result = _sharedResourcesWrapper.SendString(":GD#");
                 //:GD# Get Telescope Declination.
-                //Returns: sDD* MM# or sDD*MM’SS#
+                //Returns: sDD*MM# or sDD*MM’SS#
                 //Depending upon the current precision setting for the telescope.
 
                 double declination = _utilities.DMSToDegrees(result);
@@ -850,7 +850,7 @@ namespace ASCOM.Meade.net
         public PierSide DestinationSideOfPier(double rightAscension, double declination)
         {
             LogMessage("DestinationSideOfPier Get", "Not implemented");
-            throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
+            throw new ASCOM.MethodNotImplementedException("DestinationSideOfPier");
         }
 
         public bool DoesRefraction
@@ -924,6 +924,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                //Todo implement this if I can make the new pulse guiding async
                 LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
                 //throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
                 return false;
@@ -1026,7 +1027,7 @@ namespace ASCOM.Meade.net
 
                     break;
                 default:
-                    throw new ASCOM.MethodNotImplementedException("Can not move this axis.");
+                    throw new ASCOM.InvalidValueException("Can not move this axis.");
             }
         }
 
@@ -1080,7 +1081,8 @@ namespace ASCOM.Meade.net
                 //Returns – Nothing
                 //LX200 – Not Supported
 
-               _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
+                //todo implement IsPulseGuiding if WaitForMilliseconds is not needed
+                _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
             }
             else
             {

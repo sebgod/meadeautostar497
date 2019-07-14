@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Eventing.Reader;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.DeviceInterface;
@@ -699,6 +700,303 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.CanUnpark;
 
             Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void Declination_Get_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var actualResult = _telescope.Declination; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Declination Get"));
+        }
+
+        [TestCase("s12*34")]
+        [TestCase("s12*34’56")]
+        public void Declination_Get_WhenConnected_ThenReadsValueFromScope(string declincationString)
+        {
+            var expectedResult = 12.34;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(declincationString);
+            _utilMock.Setup(x => x.DMSToDegrees(declincationString)).Returns(expectedResult);
+            
+            var actualResult = _telescope.Declination;
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void DeclinationRate_Get_ThenReturns0()
+        {
+            var actualResult = _telescope.DeclinationRate;
+            
+            Assert.That(actualResult, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DeclinationRate_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.DeclinationRate = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("DeclinationRate"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void DestinationSideOfPier_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { var result = _telescope.DestinationSideOfPier(0,0); });
+
+            Assert.That(excpetion.Method, Is.EqualTo("DestinationSideOfPier"));
+        }
+
+        [Test]
+        public void DoesRefraction_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.DoesRefraction; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("DoesRefraction"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void DoesRefraction_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.DoesRefraction = true; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("DoesRefraction"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void EquatorialSystem_Get_ReturnsExpectedValue()
+        {
+            var actualResult = _telescope.EquatorialSystem;
+
+            Assert.That(actualResult, Is.EqualTo(EquatorialCoordinateType.equTopocentric));
+        }
+
+        [Test]
+        public void FindHome_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.FindHome();});
+
+            Assert.That(excpetion.Method, Is.EqualTo("FindHome"));
+        }
+
+        [Test]
+        public void FocalLength_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.FocalLength; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("FocalLength"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void GuideRateDeclination_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateDeclination; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void GuideRateDeclination_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateDeclination = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void GuideRateRightAscension_Get_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateRightAscension; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [Test]
+        public void GuideRateRightAscension_Set_ThenThrowsException()
+        {
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateRightAscension = 0; });
+
+            Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
+            Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void IsPulseGuiding_Get_ReturnsFalse()
+        {
+            var result = _telescope.IsPulseGuiding;
+
+            Assert.That(result, Is.False);
+        }
+
+
+        [Test]
+        public void MoveAxis_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: MoveAxis"));
+        }
+
+        [TestCase( 0, "", TelescopeAxes.axisPrimary)]
+        [TestCase( 1, ":RG#", TelescopeAxes.axisPrimary)]
+        [TestCase(-1, ":RG#", TelescopeAxes.axisPrimary)]
+        [TestCase( 2, ":RC#", TelescopeAxes.axisPrimary)]
+        [TestCase(-2, ":RC#", TelescopeAxes.axisPrimary)]
+        [TestCase( 3, ":RM#", TelescopeAxes.axisPrimary)]
+        [TestCase(-3, ":RM#", TelescopeAxes.axisPrimary)]
+        [TestCase( 4, ":RS#", TelescopeAxes.axisPrimary)]
+        [TestCase(-4, ":RS#", TelescopeAxes.axisPrimary)]
+        [TestCase(0, "", TelescopeAxes.axisSecondary)]
+        [TestCase(1, ":RG#", TelescopeAxes.axisSecondary)]
+        [TestCase(-1, ":RG#", TelescopeAxes.axisSecondary)]
+        [TestCase(2, ":RC#", TelescopeAxes.axisSecondary)]
+        [TestCase(-2, ":RC#", TelescopeAxes.axisSecondary)]
+        [TestCase(3, ":RM#", TelescopeAxes.axisSecondary)]
+        [TestCase(-3, ":RM#", TelescopeAxes.axisSecondary)]
+        [TestCase(4, ":RS#", TelescopeAxes.axisSecondary)]
+        [TestCase(-4, ":RS#", TelescopeAxes.axisSecondary)]
+        public void MoveAxis_WhenConnected_ThenExecutesCorrectCommandSequence(double rate, string slewRateCommand, TelescopeAxes axis)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.MoveAxis(axis, rate);
+
+            if (slewRateCommand != string.Empty)
+                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(slewRateCommand), Times.Once);
+            else
+            {
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RC#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RM#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RS#"), Times.Never);
+            }
+
+            switch (axis)
+            {
+                case TelescopeAxes.axisPrimary:
+                    if (rate == 0)
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qe#"), Times.Once);
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qw#"), Times.Once);
+                    }
+                    else if (rate > 0)
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Me#"), Times.Once);
+                    }
+                    else
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Mw#"), Times.Once);
+                    }
+                    break;
+                case TelescopeAxes.axisSecondary:
+                    if (rate == 0)
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qn#"), Times.Once);
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qs#"), Times.Once);
+                    }
+                    else if (rate > 0)
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Mn#"), Times.Once);
+                    }
+                    else
+                    {
+                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Ms#"), Times.Once);
+                    }
+                    break;
+                default:
+                    Assert.Fail("This should never happen");
+                    break;
+            }
+        }
+
+        [Test]
+        public void MoveAxis_WhenRateTooHigh_ThenThrowsException()
+        {
+            var testRate = 5;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>( () => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Rate {testRate} not supported"));
+        }
+
+        [Test]
+        public void MoveAxis_WhenTertiaryAxis_ThenThrowsException()
+        {
+            var testRate = 0;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Can not move this axis."));
+        }
+
+        [Test]
+        public void Park_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.Park(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Park"));
+        }
+
+        [Test]
+        public void Park_WhenNotParked_ThenSendsParkCommand()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+            Assert.That(_telescope.AtPark, Is.False);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Never);
+
+            _telescope.Park();
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            Assert.That(_telescope.AtPark, Is.True);
+        }
+
+        [Test]
+        public void Park_WhenParked_ThenDoesNothing()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+            
+            _telescope.Park();
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            Assert.That(_telescope.AtPark, Is.True);
+
+
+            //act 
+            _telescope.Park();
+
+            //no change from previous state.
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            Assert.That(_telescope.AtPark, Is.True);
         }
     }
 }
