@@ -311,6 +311,7 @@ namespace ASCOM.Meade.net
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
                             _targetDeclination = INVALID_PARAMETER;
                             _targetRightAscension = INVALID_PARAMETER;
+                            _tracking = true;
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;

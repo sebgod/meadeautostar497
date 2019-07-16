@@ -1616,5 +1616,22 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(result, Is.EqualTo(rightAscension));
         }
+
+        [Test]
+        public void Tracking_Get_WhenDefault_ThenIsTrue()
+        {
+            Assert.That(_telescope.Tracking, Is.True);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Tracking_SetAndGet_WhenValueSet_ThenCanGetNewValue(bool tracking)
+        {
+            _telescope.Tracking = tracking;
+
+            Assert.That(_telescope.Tracking, Is.EqualTo( tracking));
+        }
+
+
     }
 }
