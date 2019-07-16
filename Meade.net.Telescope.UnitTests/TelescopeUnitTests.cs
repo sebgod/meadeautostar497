@@ -1527,5 +1527,94 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(result, Is.EqualTo(declination));
         }
+
+        [Test]
+        public void TargetRightAscension_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetRightAscension = 0; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetRightAscension Set"));
+        }
+
+        [Test]
+        public void TargetRightAscension_Set_WhenValueTooHigh_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = 24; });
+            Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be greater than 23:59:59"));
+        }
+
+        [Test]
+        public void TargetRightAscension_Set_WhenValueTooLow_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = -0.1; });
+            Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be below 0"));
+        }
+
+        [Test]
+        public void TargetRightAscension_Set_WhenTelescopeReportsInvalidRA_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetRightAscension = 1; });
+            Assert.That(exception.Message, Is.EqualTo("Failed to set TargetRightAscension."));
+        }
+
+        [TestCase(5.5, "05:30:00", ":Sr05:30:00#")]
+        [TestCase(10, "10:00:00", ":Sr10:00:00#")]
+        public void TargetRightAscension_Set_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            _telescope.TargetRightAscension = rightAscension;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(commandString), Times.Once);
+        }
+
+        [Test]
+        public void TargetRightAscension_Get_WhenTargetNotSet_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { var result = _telescope.TargetRightAscension; });
+            Assert.That(exception.Message, Is.EqualTo("Target not set"));
+        }
+
+        [TestCase(15, "15:00:00", ":Sr15:00:00#")]
+        public void TargetRightAscension_Get_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            _telescope.TargetRightAscension = rightAscension;
+
+            var result = _telescope.TargetRightAscension;
+
+            Assert.That(result, Is.EqualTo(rightAscension));
+        }
     }
 }

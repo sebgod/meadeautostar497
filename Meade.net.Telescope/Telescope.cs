@@ -1686,14 +1686,13 @@ namespace ASCOM.Meade.net
             set
             {
                 LogMessage("TargetRightAscension Set", $"{value}");
+                CheckConnected("TargetRightAscension Set");
 
                 if (value < 0)
                     throw new InvalidValueException("Right ascension value cannot be below 0");
 
                 if (value >= 24)
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
-
-                CheckConnected("TargetRightAscension Set");
                 //todo implement the low precision version
 
                 var hms = _utilities.HoursToHMS(value, ":", ":", ":", 2);
