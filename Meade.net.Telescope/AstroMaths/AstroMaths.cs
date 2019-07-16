@@ -1,30 +1,9 @@
 ﻿using System;
 using ASCOM.Utilities;
 
-namespace ASCOM.Meade.net
+namespace ASCOM.Meade.net.AstroMaths
 {
-    public class EquatorialCoordinates
-    {
-        public double RightAscension { get; set; }
-        public double Declination { get; set; }
-    }
-
-    public class HorizonCoordinates
-    {
-        public double Altitude { get; set; }
-        public double Azimuth { get; set; }
-    }
-
-
-    public class AltitudeData
-    {
-        public DateTime UtcDateTime { get; set; }
-        public double SiteLatitude { get; set; }
-        public double SiteLongitude { get; set; }
-        public EquatorialCoordinates equatorialCoordinates { get; set; }
-    }
-
-    public class AstroMaths
+    public class AstroMaths : IAstroMaths
     {
 
         //returns the decimal hour angle for given right ascension on a given datetime for a given logitude.

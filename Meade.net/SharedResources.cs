@@ -21,13 +21,6 @@ using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
 {
-    public class ProfileProperties
-    {
-        // properies that are part of the profile
-        public string ComPort { get; set; }
-        public bool TraceLogger { get; set; }
-    }
-
     /// <summary>
     /// The resources shared by all drivers and devices, in this example it's a serial port with a shared SendMessage method
     /// an idea for locking the message and handling connecting is given.
@@ -233,15 +226,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        #region AutostarProducts
-
-        public const string AUTOSTAR497 = "Autostar";
-
-        public const string AUTOSTAR497_31EE = "31Ee";
-
-        #endregion
-
+        
         #region Multi Driver handling
 
         public static string ProductName { get; private set; } = string.Empty;

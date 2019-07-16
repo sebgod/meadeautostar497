@@ -1,45 +1,14 @@
-//tabs=4
-// --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
-//
-// ASCOM Focuser driver for Meade.net
-//
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
-//
-// Implements:	ASCOM Focuser interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
-//
-// Edit Log:
-//
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
-// --------------------------------------------------------------------------------
-//
-
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Focuser
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Runtime.InteropServices;
-
-using ASCOM;
-using ASCOM.Astrometry;
-using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 using System.Reflection;
+using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
@@ -76,32 +45,19 @@ namespace ASCOM.Meade.net
         /// </summary>
         private static string driverDescription = "Meade Generic";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
-
         internal static string comPort; // Variables to hold the currrent device configuration
-
-        /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool connectedState;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
-        private Util utilities;
-
-        /// <summary>
-        /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
-        /// </summary>
-        private AstroUtils astroUtilities;
+        private readonly IUtil _utilities;
 
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
         internal static TraceLogger tl;
+
+        private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
@@ -109,14 +65,21 @@ namespace ASCOM.Meade.net
         /// </summary>
         public Focuser()
         {
+            //todo move this out to IOC
+            _utilities = new Util(); //Initialise util object
+            _sharedResourcesWrapper = new SharedResourcesWrapper();
+
+            Initialise();
+        }
+
+        private void Initialise()
+        {
             tl = new TraceLogger("", "Meade.net.focusser");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl.LogMessage("Focuser", "Starting initialisation");
+            ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            IsConnected = false; // Initialise connected to false
 
             tl.LogMessage("Focuser", "Completed initialisation");
         }
@@ -137,7 +100,7 @@ namespace ASCOM.Meade.net
         public void SetupDialog()
         {
             tl.LogMessage("SetupDialog", "Opening setup dialog");
-            SharedResources.SetupDialog();
+            _sharedResourcesWrapper.SetupDialog();
             ReadProfile();
             tl.LogMessage("SetupDialog", "complete");
         }
@@ -162,7 +125,7 @@ namespace ASCOM.Meade.net
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
-            SharedResources.SendBlind(command);
+            _sharedResourcesWrapper.SendBlind(command);
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
@@ -184,7 +147,7 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResources.SendString(command);
+            return _sharedResourcesWrapper.SendString(command);
 
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
@@ -195,10 +158,6 @@ namespace ASCOM.Meade.net
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
-            utilities.Dispose();
-            utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
         }
 
         public bool Connected
@@ -218,17 +177,17 @@ namespace ASCOM.Meade.net
                 {
                     try
                     {
-                        SharedResources.Connect("Serial");
+                        _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
                             SelectSite(1);
                             SetLongFormat(true);
 
-                            connectedState = true;
+                            IsConnected = true;
                         }
                         catch (Exception)
                         {
-                            SharedResources.Disconnect("Serial");
+                            _sharedResourcesWrapper.Disconnect("Serial");
                             throw;
                         }
                     }
@@ -240,17 +199,17 @@ namespace ASCOM.Meade.net
                 else
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
-                    SharedResources.Disconnect("Serial");
-                    connectedState = false;
+                    _sharedResourcesWrapper.Disconnect("Serial");
+                    IsConnected = false;
                 }
             }
         }
 
         private void SetLongFormat(bool setLongFormat)
         {
-            SharedResources.Lock(() =>
+            _sharedResourcesWrapper.Lock(() =>
             {
-                var result = SharedResources.SendString(":GZ#");
+                var result = _sharedResourcesWrapper.SendString(":GZ#");
                 //:GZ# Get telescope azimuth
                 //Returns: DDD*MM#T or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
@@ -259,8 +218,8 @@ namespace ASCOM.Meade.net
 
                 if (isLongFormat != setLongFormat)
                 {
-                    utilities.WaitForMilliseconds(500);
-                    SharedResources.SendBlind(":U#");
+                    _utilities.WaitForMilliseconds(500);
+                    _sharedResourcesWrapper.SendBlind(":U#");
                     //:U# Toggle between low/hi precision positions
                     //Low - RA displays and messages HH:MM.T sDD*MM
                     //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
@@ -271,7 +230,7 @@ namespace ASCOM.Meade.net
 
         private void SelectSite(int site)
         {
-            SharedResources.SendBlind($":W{site}#");
+            _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
             //Set current site to<n>, an ASCII digit in the range 1..4
             //Returns: Nothing
@@ -354,11 +313,11 @@ namespace ASCOM.Meade.net
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (stopwatch.ElapsedMilliseconds < 1000)
             {
-                SharedResources.SendBlind(":FQ#");
+                _sharedResourcesWrapper.SendBlind(":FQ#");
                 //:FQ# Halt Focuser Motion
                 //Returns: Nothing
 
-                utilities.WaitForMilliseconds(250);
+                _utilities.WaitForMilliseconds(250);
             }
         }
 
@@ -436,9 +395,9 @@ namespace ASCOM.Meade.net
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            SharedResources.Lock(() =>
+            _sharedResourcesWrapper.Lock(() =>
             {
-                //SharedResources.SendBlind(":FF#");
+                //_sharedResourcesWrapper.SendBlind(":FF#");
                 //:FF# Set Focus speed to fastest setting
                 //Returns: Nothing
 
@@ -448,26 +407,26 @@ namespace ASCOM.Meade.net
                 //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
                 //Returns: Nothing
                 //All others – Not Supported
-                utilities.WaitForMilliseconds(100);
+                _utilities.WaitForMilliseconds(100);
 
                 //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {
-                    SharedResources.SendBlind(directionOut ? ":F+#" : ":F-#");
+                    _sharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
                     //:F+# Start Focuser moving inward (toward objective)
                     //Returns: None
 
                     //:F-# Start Focuser moving outward (away from objective)
                     //Returns: None
 
-                    utilities.WaitForMilliseconds(250);
+                    _utilities.WaitForMilliseconds(250);
                 }
 
                 Halt();
 
                 //This gives the focuser time to physically stop.
-                utilities.WaitForMilliseconds(1000);
+                _utilities.WaitForMilliseconds(1000);
             });
         }
 
@@ -604,14 +563,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Returns true if there is a valid connection to the driver hardware
         /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return connectedState;
-            }
-        }
+        private bool IsConnected { get; set; }
 
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
@@ -630,7 +582,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         internal void ReadProfile()
         {
-            var profileProperties = SharedResources.ReadProfile();
+            var profileProperties = _sharedResourcesWrapper.ReadProfile();
             tl.Enabled = profileProperties.TraceLogger;
             comPort = profileProperties.ComPort;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using ASCOM.Meade.net;
+using ASCOM.Meade.net.AstroMaths;
 using NUnit.Framework;
 
 namespace AstroMath.UnitTests
