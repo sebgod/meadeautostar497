@@ -1383,5 +1383,149 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(expectedCommand), Times.Once);
         }
+
+        [Test]
+        public void SyncToAltAz_WhenConnected_ThenSendsExpectedMessage()
+        {
+            string expectedMessage = "test blind Message";
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SyncToAltAz(0,0); });
+
+            Assert.That(exception.Message, Is.EqualTo("Method SyncToAltAz is not implemented in this driver."));
+        }
+
+        [Test]
+        public void SyncToTarget_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SyncToTarget(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SyncToTarget"));
+        }
+
+        [Test]
+        public void SyncToTarget_WhenSyncToTargetFails_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(string.Empty);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SyncToTarget(); } );
+
+            Assert.That(exception.Message, Is.EqualTo("Unable to perform sync"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":CM#"), Times.Once);
+        }
+
+        [Test]
+        public void SyncToTarget_WhenSyncToTargetWorks_ThennoExceptionThrown()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(" M31 EX GAL MAG 3.5 SZ178.0'#");
+
+            Assert.DoesNotThrow(() => { _telescope.SyncToTarget(); });
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":CM#"), Times.Once);
+        }
+
+        [Test]
+        public void TargetDeclination_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetDeclination = 0; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetDeclination Set"));
+        }
+
+        [Test]
+        public void TargetDeclination_Set_WhenValueTooHigh_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = 90.1; });
+            Assert.That(exception.Message, Is.EqualTo("Declination cannot be greater than 90."));
+        }
+
+        [Test]
+        public void TargetDeclination_Set_WhenValueTooLow_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = -90.1; });
+            Assert.That(exception.Message, Is.EqualTo("Declination cannot be less than -90."));
+        }
+
+        [Test]
+        public void TargetDeclination_Set_WhenTelescopeReportsInvalidDec_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetDeclination = 50; });
+            Assert.That(exception.Message, Is.EqualTo("Target declination invalid"));
+        }
+
+        [TestCase(-30.5, "-30*30:00", ":Sd-30*30:00#")]
+        [TestCase(30.5, "30*30:00", ":Sd+30*30:00#")]
+        [TestCase(-75.25, "-75*15:00", ":Sd-75*15:00#")]
+        [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
+        public void TargetDeclination_Set_WhenValueOK_ThenSetsNewTargetDeclination( double declination,string decstring, string commandString)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            _telescope.TargetDeclination = declination;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(commandString),Times.Once);
+        }
+
+        [Test]
+        public void TargetDeclination_Get_WhenTargetNotSet_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { var result = _telescope.TargetDeclination; });
+            Assert.That(exception.Message, Is.EqualTo("Target not set"));
+        }
+
+        [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
+        public void TargetDeclination_Get_WhenValueOK_ThenSetsNewTargetDeclination(double declination, string decstring, string commandString)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            _telescope.TargetDeclination = declination;
+
+            var result = _telescope.TargetDeclination;
+
+            Assert.That(result, Is.EqualTo(declination));
+        }
     }
 }

@@ -309,8 +309,10 @@ namespace ASCOM.Meade.net
 
                             SetLongFormat(true);
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
-                            LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
+                            _targetDeclination = INVALID_PARAMETER;
+                            _targetRightAscension = INVALID_PARAMETER;
 
+                            LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;
                         }
                         catch (Exception)
@@ -1601,7 +1603,7 @@ namespace ASCOM.Meade.net
             //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
             //Returns:
             //LX200's - a "#" terminated string with the name of the object that was synced.
-            //    Autostars & Autostar II - At static string: " M31 EX GAL MAG 3.5 SZ178.0'#"
+            //    Autostars & Autostar II - A static string: " M31 EX GAL MAG 3.5 SZ178.0'#"
 
             if (result == string.Empty)
                 throw new ASCOM.InvalidOperationException("Unable to perform sync");
@@ -1630,16 +1632,16 @@ namespace ASCOM.Meade.net
             set
             {
                 LogMessage("TargetDeclination Set", $"{value}");
-                
+
+                CheckConnected("TargetDeclination Set");
+
                 //todo implement low precision version of this.
                 if (value > 90)
                     throw new ASCOM.InvalidValueException("Declination cannot be greater than 90.");
 
                 if (value < -90)
                     throw new ASCOM.InvalidValueException("Declination cannot be less than -90.");
-
-                CheckConnected("TargetDeclination Set");
-
+                
                 var dms = _utilities.DegreesToDMS(value, "*", ":", ":", 2);
                 var s = value < 0 ? string.Empty : "+";
 
