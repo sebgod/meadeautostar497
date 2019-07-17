@@ -1632,6 +1632,66 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.Tracking, Is.EqualTo( tracking));
         }
 
+        [Test]
+        public void TrackingRate_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
 
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TrackingRate = DriveRates.driveSidereal; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TrackingRate Set"));
+        }
+
+        [TestCase(DriveRates.driveSidereal, ":TQ#")]
+        [TestCase(DriveRates.driveLunar, ":TL#")]
+        public void TrackingRate_Set_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string commandString)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TrackingRate = rate;
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(commandString), Times.Once);
+        }
+
+        [Test]
+        public void TrackingRate_Set_WhenUnSupportedRateSet_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>( () => { _telescope.TrackingRate = DriveRates.driveKing; });
+
+            Assert.That(exception.Message, Is.EqualTo("Exception of type 'System.ArgumentOutOfRangeException' was thrown.\r\nParameter name: value\r\nActual value was driveKing."));
+        }
+
+        [Test]
+        public void TrackingRage_Get_WhenReadongDefaultValue_ThenAssumesSidereal()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var result = _telescope.TrackingRate;
+
+            Assert.That(result, Is.EqualTo(DriveRates.driveSidereal));
+        }
+
+        [TestCase(DriveRates.driveSidereal)]
+        [TestCase(DriveRates.driveLunar)]
+        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TrackingRate = rate;
+
+            var result = _telescope.TrackingRate;
+
+            Assert.That(result, Is.EqualTo(rate));
+        }
     }
 }
