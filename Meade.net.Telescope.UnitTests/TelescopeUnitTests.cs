@@ -1806,10 +1806,8 @@ namespace Meade.net.Telescope.UnitTests
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName)
-                .Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion)
-                .Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
@@ -1819,6 +1817,32 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.UTCDate = newDate;
 
             _sharedResourcesWrapperMock.Verify(x => x.ReadTerminated(), Times.Exactly(2));
+        }
+
+        [Test]
+        public void SyncToCoordinates_WhenNotConnected_ThenThrowsException()
+        {
+            double rightAscension = 5.5;
+            string hms = "05:30:00";
+
+            double declination = -30.5;
+            string dec = "-30*30:00";
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{hms}#")).Returns("1");
+
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(dec);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sd{dec}#")).Returns("1");
+
+            _telescope.SyncToCoordinates(rightAscension, declination);
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":CM#"), Times.Once);
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
         }
     }
 }
