@@ -1568,6 +1568,12 @@ namespace ASCOM.Meade.net
                 //Returns:
                 //LX200's – a string of bar characters indicating the distance.
                 //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
+
+                if (result == null)
+                {
+                    return false;
+                }
+
                 bool isSlewing = result != string.Empty;
 
                 LogMessage("Slewing Get", $"Result = {isSlewing}");

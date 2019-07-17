@@ -1844,5 +1844,66 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
         }
+
+        [Test]
+        public void Slewing_WhenNotConnected_ThenReturnsFalse()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.False);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
+        }
+
+        [Test]
+        public void Slewing_WhenConnectedAndTelescopeFails_ThenReturnsFalse()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.False);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Once);
+        }
+
+        [Test]
+        public void Slewing_WhenTelescopeIsSlewing_ThenReturnsTrue()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns("|");
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.True);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"),Times.Once);
+        }
+
+        [TestCase(1, TelescopeAxes.axisPrimary)]
+        [TestCase(-1, TelescopeAxes.axisPrimary)]
+        [TestCase(1, TelescopeAxes.axisSecondary)]
+        [TestCase(-1, TelescopeAxes.axisSecondary)]
+        public void Slewing_WhenTelescopeIsMoving_ThenDoesNotSendCommandAndReturnsTrue(int rate, TelescopeAxes axis)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.MoveAxis(axis, rate);
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.True);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
+        }
     }
 }
