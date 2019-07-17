@@ -44,7 +44,8 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_43EG) .Returns(() => "43Eg");
 
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
-            
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
+
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
 
             _astroMathsMock = new Mock<IAstroMaths>();
@@ -1692,6 +1693,132 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.TrackingRate;
 
             Assert.That(result, Is.EqualTo(rate));
+        }
+
+        [Test]
+        public void TrackingRates_Get_ReturnsExpectedType()
+        {
+            var result = _telescope.TrackingRates;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.AssignableTo<TrackingRates>());
+        }
+
+        [Test]
+        public void UTCDate_Get_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.UTCDate; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: UTCDate Get"));
+        }
+
+        [TestCase("10/15/20", "20:15:10", "-1.0", 2020, 10, 15, 19, 15, 10)]
+        [TestCase("12/03/15", "21:30:45", "+0.0", 2015, 12, 3, 21, 30, 45)]
+        public void UTCDate_Get_WhenConnected_ThenReturnsUTCDateTime(string telescopeDate, string telescopeTime,
+            string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns(telescopeDate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns(telescopeTime);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
+
+            var result = _telescope.UTCDate;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.AssignableTo<DateTime>());
+            Assert.That(result.Kind, Is.EqualTo(DateTimeKind.Utc));
+            Assert.That(result.Year, Is.EqualTo(year));
+            Assert.That(result.Month, Is.EqualTo(month));
+            Assert.That(result.Day, Is.EqualTo(day));
+            Assert.That(result.Hour, Is.EqualTo(hour));
+            Assert.That(result.Minute, Is.EqualTo(min));
+            Assert.That(result.Second, Is.EqualTo(second));
+        }
+
+        [Test]
+        public void UTCDate_Set_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.UTCDate = new DateTime(2010,10,15,16,42,32, DateTimeKind.Utc); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: UTCDate Set"));
+        }
+
+        [TestCase("10/15/20", "20:15:10", "-1.0", 2020, 10, 15, 19, 15, 10)]
+        [TestCase("12/03/15", "21:30:45", "+0.0", 2015, 12, 3, 21, 30, 45)]
+        public void UTCDate_Set_WhenFailsToSetTelescopeTime_ThenThrowsException(string telescopeDate, string telescopeTime, string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
+        {
+            double utcOffsetHours = double.Parse(telescopeUtcCorrection);
+            TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
+
+            var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("0");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; } );
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set local time"));
+        }
+
+        [TestCase("10/15/20", "20:15:10", "-1.0", 2020, 10, 15, 20, 15, 10)]
+        [TestCase("12/03/15", "21:30:45", "+0.0", 2015, 12, 3, 21, 30, 45)]
+        public void UTCDate_Set_WhenFailsToSetTelescopeDate_ThenThrowsException(string telescopeDate, string telescopeTime, string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
+        {
+            double utcOffsetHours = double.Parse(telescopeUtcCorrection);
+            TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
+
+            var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
+
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{newDate:MM/dd/yy}#")).Returns("0");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; });
+
+            Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
+        }
+
+        [TestCase("10/15/20", "20:15:10", "-1.0", 2020, 10, 15, 20, 15, 10)]
+        [TestCase("12/03/15", "21:30:45", "+0.0", 2015, 12, 3, 21, 30, 45)]
+        public void UTCDate_Set_WhenSucceeds_ThenReadsTwoStringsFromTelescope(string telescopeDate,
+            string telescopeTime, string telescopeUtcCorrection, int year, int month, int day, int hour, int min,
+            int second)
+        {
+            double utcOffsetHours = double.Parse(telescopeUtcCorrection);
+            TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
+
+            var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
+
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName)
+                .Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion)
+                .Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{telescopeDate}#")).Returns("1");
+
+            _telescope.UTCDate = newDate;
+
+            _sharedResourcesWrapperMock.Verify(x => x.ReadTerminated(), Times.Exactly(2));
         }
     }
 }

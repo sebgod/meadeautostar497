@@ -1798,8 +1798,6 @@ namespace ASCOM.Meade.net
 
         private TimeSpan GetUtcCorrection()
         {
-            CheckConnected("GetUtcCorrection");
-
             string utcOffSet = _sharedResourcesWrapper.SendString(":GG#");
             //:GG# Get UTC offset time
             //Returns: sHH# or sHH.H#
@@ -1810,7 +1808,7 @@ namespace ASCOM.Meade.net
             return utcCorrection;
         }
 
-        private class TelescopeDateDetails
+        public class TelescopeDateDetails
         {
             public string telescopeDate { get; set; }
             public string telescopeTime { get; set; }
@@ -1830,11 +1828,11 @@ namespace ASCOM.Meade.net
                     TelescopeDateDetails tdd = new TelescopeDateDetails();
                     tdd.telescopeDate = _sharedResourcesWrapper.SendString(":GC#");
                     //:GC# Get current date.
-                    //Returns: MM / DD / YY#
+                    //Returns: MM/DD/YY#
                     //The current local calendar date for the telescope.
                     tdd.telescopeTime = _sharedResourcesWrapper.SendString(":GL#");
                     //:GL# Get Local Time in 24 hour format
-                    //Returns: HH: MM: SS#
+                    //Returns: HH:MM:SS#
                     //The Local Time in 24 - hour Format
                     tdd.utcCorrection = GetUtcCorrection();
 
@@ -1872,7 +1870,8 @@ namespace ASCOM.Meade.net
                     var utcCorrection = GetUtcCorrection();
                     var localDateTime = value - utcCorrection;
 
-                    var timeResult = _sharedResourcesWrapper.SendChar($":SL{localDateTime:HH:mm:ss}#");
+                    string localStingCommand = $":SL{localDateTime:HH:mm:ss}#";
+                    var timeResult = _sharedResourcesWrapper.SendChar(localStingCommand);
                     //:SLHH:MM:SS#
                     //Set the local Time
                     //Returns:
@@ -1883,7 +1882,8 @@ namespace ASCOM.Meade.net
                         throw new InvalidOperationException("Failed to set local time");
                     }
 
-                    var dateResult = _sharedResourcesWrapper.SendChar($":SC{localDateTime:MM/dd/yy}#");
+                    string localDateCommand = $":SC{localDateTime:MM/dd/yy}#";
+                    var dateResult = _sharedResourcesWrapper.SendChar(localDateCommand);
                     //:SCMM/DD/YY#
                     //Change Handbox Date to MM/DD/YY
                     //Returns: <D><string>
