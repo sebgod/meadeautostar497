@@ -1905,5 +1905,109 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.True);
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
         }
+
+
+        [Test]
+        public void SlewToTargetAsync_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTargetAsync"));
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetDeclinationNotSet_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 1;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("Target not set"));
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetRightAscensionNotSet_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetDeclination = 1;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("Target not set"));
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetSet_ThenAttemptsSlew()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            var exception = Assert.Throws<DriverException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("This error should not happen"));
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetSetAndSlewIsPossible_ThenAttemptsSlew()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            _telescope.SlewToTargetAsync();
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetBelowHorizon_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("1");
+
+            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Below horizon");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("Below horizon"));
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenTargetBelowElevation_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("2");
+
+            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Above below elevation");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("Above below elevation"));
+        }
     }
 }
