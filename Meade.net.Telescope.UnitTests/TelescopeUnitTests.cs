@@ -2187,7 +2187,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenAltAndAzValid_ThenConvertsToRADec()
         {
-
             var altitude = 30;
             var azimuth = 45;
             var rightAscension = 20;
@@ -2212,6 +2211,57 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+        }
+
+        [Test]
+        public void SlewToAltAz_WhenAzimuthLowerThan0_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAz(0, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAz"));
+        }
+
+        [Test]
+        public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
+        {
+            var rightAscension = 10;
+            var declination = 20;
+            var azimuth = 30;
+            var altitude = 40;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+
+            _astroMathsMock
+                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
+                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates() { Declination = declination, RightAscension = rightAscension });
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            var slewCounter = 0;
+            var iterations = 10;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            {
+                slewCounter++;
+                if (slewCounter <= iterations)
+                    return "|";
+                else
+                    return "";
+            });
+
+            _telescope.SlewToAltAz( azimuth, altitude);
+
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
     }
 }
