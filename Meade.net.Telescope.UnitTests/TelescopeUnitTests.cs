@@ -2009,5 +2009,43 @@ namespace Meade.net.Telescope.UnitTests
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
             Assert.That(exception.Message, Is.EqualTo("Above below elevation"));
         }
+
+        [Test]
+        public void SlewToTarget_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTarget(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTarget"));
+        }
+
+        [Test]
+        public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            var slewCounter = 0;
+            var iterations = 10;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            {
+                slewCounter++;
+                if (slewCounter <= iterations)
+                    return "|";
+                else
+                    return "";
+            });
+
+            _telescope.SlewToTarget();
+
+            _utilMock.Verify( x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+        }
     }
 }

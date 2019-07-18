@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
-using System.Globalization;
 using System.Collections;
 using System.Reflection;
 using ASCOM.Meade.net.AstroMaths;
