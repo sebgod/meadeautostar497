@@ -2128,7 +2128,90 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAzAsync(0, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAzAsync"));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenAltitudeGreaterThan90_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, 90.1); });
+            Assert.That(exception.Message, Is.EqualTo("Altitude cannot be greater than 90."));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenAltitudeLowerThan0_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, -0.1); });
+            Assert.That(exception.Message, Is.EqualTo("Altitide cannot be less than 0."));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenAzimuth360OrHigher_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(360, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be 360 or higher."));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenAzimuthLowerThan0_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(-0.1, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be less than 0."));
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenAltAndAzValid_ThenConvertsToRADec()
+        {
+
+            var altitude = 30;
+            var azimuth = 45;
+            var rightAscension = 20;
+            var declination = 10;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+
+            _astroMathsMock
+                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
+                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates(){ Declination = declination, RightAscension = rightAscension });
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            _telescope.SlewToAltAzAsync(azimuth, altitude);
             
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
         }
     }
 }

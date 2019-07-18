@@ -1395,6 +1395,8 @@ namespace ASCOM.Meade.net
 
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
+            CheckConnected("SlewToAltAzAsync");
+
             if (altitude > 90)
                 throw new ASCOM.InvalidValueException("Altitude cannot be greater than 90.");
 
@@ -1408,8 +1410,7 @@ namespace ASCOM.Meade.net
                 throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
 
             LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
-            CheckConnected("SlewToAltAzAsync");
-
+            
             HorizonCoordinates altAz = new HorizonCoordinates();
             altAz.Azimuth = azimuth;
             altAz.Altitude = altitude;
