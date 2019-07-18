@@ -2047,5 +2047,88 @@ namespace Meade.net.Telescope.UnitTests
 
             _utilMock.Verify( x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
+
+        [Test]
+        public void SlewToCoordinatesAsync_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinatesAsync(0,0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinatesAsync"));
+        }
+
+        [Test]
+        public void SlewToCoordinatesAsync_WhenCalled_ThenSetsTargetAndSlews()
+        {
+            var rightAscension = 1;
+            var declination = 2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            //var slewCounter = 0;
+            //var iterations = 10;
+            //_sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            //{
+            //    slewCounter++;
+            //    if (slewCounter <= iterations)
+            //        return "|";
+            //    else
+            //        return "";
+            //});
+
+            _telescope.SlewToCoordinatesAsync(rightAscension, declination);
+
+            //_utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            _sharedResourcesWrapperMock.Verify( x => x.SendChar(":MS#"), Times.Once);
+        }
+
+        [Test]
+        public void SlewToCoordinates_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinates(0, 0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinates"));
+        }
+
+        [Test]
+        public void SlewToCoordinates_WhenCalled_ThenSetsTargetAndSlews()
+        {
+            var rightAscension = 1;
+            var declination = 2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            var slewCounter = 0;
+            var iterations = 10;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            {
+                slewCounter++;
+                if (slewCounter <= iterations)
+                    return "|";
+                else
+                    return "";
+            });
+
+            _telescope.SlewToCoordinates(rightAscension, declination);
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            
+        }
     }
 }
