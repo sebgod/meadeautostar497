@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Eventing.Reader;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.DeviceInterface;
@@ -10,7 +9,6 @@ using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
 using InvalidOperationException = ASCOM.InvalidOperationException;
-using NotImplementedException = ASCOM.NotImplementedException;
 
 namespace Meade.net.Telescope.UnitTests
 {

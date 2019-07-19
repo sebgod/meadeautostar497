@@ -15,8 +15,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
-using ASCOM;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
