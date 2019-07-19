@@ -45,6 +45,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>((func) => func());
+
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
 
@@ -1102,7 +1104,6 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
-
             _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
 
             var result = _telescope.RightAscension;
@@ -2263,5 +2264,125 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
+
+        [Test]
+        public void Azimuth_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.Azimuth; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Azimuth Get"));
+        }
+
+        [Test]
+        public void Azimuth_WhenConnected_ThenReturnsTelescopeAzumith()
+        {
+            var expectedAzimuth = 200;
+
+            var telescopeLongitude = "350";
+            var telescopeLongitudeValue = 350;
+
+            var telescopeLatitude = "HH:MM:SS";
+            var telescopeLatitudeValue = 1.2;
+
+            var mockHourAngle = 3;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeLatitude);
+            _utilMock.Setup(x => x.HMSToHours(telescopeLatitude)).Returns(telescopeLatitudeValue);
+
+            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
+
+            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns( new HorizonCoordinates{ Altitude = 45, Azimuth = expectedAzimuth });
+
+            var result = _telescope.Azimuth;
+
+            Assert.That(result,Is.EqualTo(expectedAzimuth));
+        }
+
+        [Test]
+        public void Altitude_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.Altitude; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Altitude Get"));
+        }
+
+        [Test]
+        public void Altitude_WhenConnected_ThenReturnsTelescopeAltitude()
+        {
+            var expectedAltitude = 45;
+
+            var telescopeLongitude = "350";
+            var telescopeLongitudeValue = 350;
+
+            var telescopeLatitude = "HH:MM:SS";
+            var telescopeLatitudeValue = 1.2;
+
+            var mockHourAngle = 3;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeLatitude);
+            _utilMock.Setup(x => x.HMSToHours(telescopeLatitude)).Returns(telescopeLatitudeValue);
+
+            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
+
+            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = expectedAltitude, Azimuth = 200 });
+
+            var result = _telescope.Altitude;
+
+            Assert.That(result, Is.EqualTo(expectedAltitude));
+        }
+
+        [Test]
+        public void AbortSlew_WhenNotConnected_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.AbortSlew(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AbortSlew"));
+        }
+
+        [Test]
+        public void AbortSlew_WhenConnected_ThenSendsStopSlewingToTelescope()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+
+            _telescope.AbortSlew();
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":Q#"),Times.Once);
+
+            var isSloSlewing = _telescope.Slewing;
+
+            Assert.That(isSloSlewing, Is.False);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":D#"), Times.Once);
+        }
     }
 }
+;

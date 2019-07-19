@@ -464,6 +464,9 @@ namespace ASCOM.Meade.net
             _sharedResourcesWrapper.SendBlind(":Q#");
             //:Q# Halt all current slewing
             //Returns:Nothing
+
+            _movingPrimary = false;
+            _movingSecondary = false;
         }
 
         public AlignmentModes AlignmentMode
@@ -552,7 +555,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                CheckConnected("Altitude get");
+                CheckConnected("Altitude Get");
 
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Altitude", $"{altAz.Altitude}");
@@ -642,7 +645,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                CheckConnected("Azimuth get");
+                CheckConnected("Azimuth Get");
 
                 //var result = _sharedResourcesWrapper.SendString(":GZ#");
                 //:GZ# Get telescope azimuth
@@ -1261,7 +1264,7 @@ namespace ASCOM.Meade.net
 
                 var longitude = _sharedResourcesWrapper.SendString(":Gg#");
                 //:Gg# Get Current Site Longitude
-                //Returns: sDDD* MM#
+                //Returns: sDDD*MM#
                 //The current site Longitude. East Longitudes are expressed as negative
                 double siteLongitude = _utilities.DMSToDegrees(longitude);
 
