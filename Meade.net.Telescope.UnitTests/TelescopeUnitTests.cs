@@ -769,10 +769,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void GuideRateDeclination_Get_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateDeclination; });
+            var result = _telescope.GuideRateDeclination;
 
-            Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(0.004178074616551509));
         }
 
         [Test]
@@ -787,10 +786,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void GuideRateRightAscension_Get_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateRightAscension; });
+            var result = _telescope.GuideRateRightAscension;
 
-            Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(0.004178074616551509));
         }
 
         [Test]
@@ -969,7 +967,7 @@ namespace Meade.net.Telescope.UnitTests
             var duration = 0;
             ConnectTelescope();
 
-            _telescope.PulseGuide(direction, 0);
+            _telescope.PulseGuide(direction, duration);
 
             string d = string.Empty;
             switch (direction)
@@ -1003,7 +1001,43 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => "31Ed");
             _telescope.Connected = true;
 
-            _telescope.PulseGuide(direction, 0);
+            _telescope.PulseGuide(direction, duration);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":M{d}#"));
+            _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Q{d}#"));
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailableButDurationTooLong_ThenSendsOldCommandsAndWaits(GuideDirections direction)
+        {
+            var duration = 10000;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => "31Ed");
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, duration);
 
             string d = string.Empty;
             switch (direction)

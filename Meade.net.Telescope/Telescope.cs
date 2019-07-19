@@ -97,6 +97,10 @@ namespace ASCOM.Meade.net
             Initialise();
         }
 
+        private double _guideRate;
+
+        private const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
+
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
@@ -106,6 +110,8 @@ namespace ASCOM.Meade.net
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
+
+            _guideRate = 15.0 * (1.0 / 3600.0) / SIDRATE;
 
             LogMessage("Telescope", "Completed initialisation");
         }
@@ -903,7 +909,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("GuideRateDeclination Get", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateDeclination", false);
+                return _guideRate;
             }
             set
             {
@@ -917,7 +923,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("GuideRateRightAscension Get", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateRightAscension", false);
+                return _guideRate;
             }
             set
             {
@@ -1075,7 +1081,7 @@ namespace ASCOM.Meade.net
                     break;
             }
 
-            if (_userNewerPulseGuiding)
+            if (_userNewerPulseGuiding && duration < 10000)
             {
                 _sharedResourcesWrapper.SendBlind($":Mg{d}{duration:0000}#");
                 //:MgnDDDD#
@@ -1086,8 +1092,6 @@ namespace ASCOM.Meade.net
                 //passed in the command.These commands support serial port driven guiding.
                 //Returns – Nothing
                 //LX200 – Not Supported
-
-                //todo implement IsPulseGuiding if WaitForMilliseconds is not needed
                 _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
             }
             else
