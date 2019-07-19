@@ -56,6 +56,13 @@ namespace Meade.net.Telescope.UnitTests
                 _sharedResourcesWrapperMock.Object, _astroMathsMock.Object);
         }
 
+        private void ConnectTelescope()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _telescope.Connected = true;
+        }
+
         [Test]
         public void CheckThatClassCreatedProperly()
         {
@@ -92,9 +99,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Action_WhenNotConnected_ThrowsNotConnectedException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var actualResult = _telescope.Action(string.Empty, string.Empty); });
             Assert.That(exception.Message,Is.EqualTo("Not connected to telescope when trying to execute: Action"));
         }
@@ -102,9 +106,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Action_Handbox_ReadDisplay()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             string expectedResult = "test result string";
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#")).Returns(expectedResult);
             _telescope.Connected = true;
@@ -138,10 +139,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("?", ":EK63#")]
         public void Action_Handbox_blindCommands(string action, string expectedString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            ConnectTelescope();
 
-            _telescope.Connected = true;
             _telescope.Action("handbox", action);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedString), Times.Once);
@@ -150,9 +149,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Action_Handbox_nonExistantAction()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             string actionName = "handbox";
             string actionParameters = "doesnotexist";
@@ -164,9 +161,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Action_nonExistantAction()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             string actionName = "doesnotexist";
             var exception = Assert.Throws<ActionNotImplementedException>(() => { _telescope.Action(actionName, string.Empty); });
@@ -188,9 +183,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             string expectedMessage = "test blind Message";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns( () => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.CommandBlind(expectedMessage, true);
 
@@ -211,9 +204,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             string expectedMessage = "test blind Message";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<MethodNotImplementedException>(() => { _telescope.CommandBool(expectedMessage, true); });
 
@@ -235,9 +226,7 @@ namespace Meade.net.Telescope.UnitTests
             string expectedMessage = "expected result message";
             string sendMessage = "test blind Message";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage)).Returns(() => expectedMessage);
 
@@ -262,9 +251,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
             _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>()),Times.Once);
 
             //act
@@ -277,9 +264,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
             _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>()), Times.Once);
 
             //act
@@ -439,9 +424,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Get_WhenNotConnected_ThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var actualResult = _telescope.AlignmentMode; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Get"));
         }
@@ -452,9 +434,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("G", AlignmentModes.algGermanPolar)]
         public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             const char ack = (char)6;
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns(telescopeMode);
@@ -467,9 +447,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Get_WhenUnknownAlignmentMode_ThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             Assert.Throws<InvalidValueException>(() => { var actualResult = _telescope.AlignmentMode; });
         }
@@ -477,9 +455,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Set_WhenNotConnected_ThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => {  _telescope.AlignmentMode = AlignmentModes.algAltAz; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Set"));
         }
@@ -548,9 +523,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AtPark_Get_WhenParked_ThenReturnsTrue()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_43EG);
-            _telescope.Connected = true;
+            ConnectTelescope();
             _telescope.Park();
 
             var result = _telescope.AtPark;
@@ -709,9 +682,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Declination_Get_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var actualResult = _telescope.Declination; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Declination Get"));
         }
@@ -721,9 +691,7 @@ namespace Meade.net.Telescope.UnitTests
         public void Declination_Get_WhenConnected_ThenReadsValueFromScope(string declincationString)
         {
             var expectedResult = 12.34;
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(declincationString);
             _utilMock.Setup(x => x.DMSToDegrees(declincationString)).Returns(expectedResult);
@@ -848,9 +816,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void MoveAxis_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: MoveAxis"));
         }
@@ -875,9 +840,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-4, ":RS#", TelescopeAxes.axisSecondary)]
         public void MoveAxis_WhenConnected_ThenExecutesCorrectCommandSequence(double rate, string slewRateCommand, TelescopeAxes axis)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.MoveAxis(axis, rate);
 
@@ -934,9 +897,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var testRate = 5;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>( () => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
 
@@ -948,9 +909,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var testRate = 0;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
 
@@ -960,9 +919,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Park_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.Park(); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Park"));
         }
@@ -970,9 +926,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Park_WhenNotParked_ThenSendsParkCommand()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
             Assert.That(_telescope.AtPark, Is.False);
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Never);
 
@@ -985,10 +939,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Park_WhenParked_ThenDoesNothing()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
-            
+            ConnectTelescope();
+
             _telescope.Park();
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
@@ -1006,9 +958,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void PulseGuide_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.PulseGuide(GuideDirections.guideEast,0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: PulseGuide"));
         }
@@ -1020,9 +969,7 @@ namespace Meade.net.Telescope.UnitTests
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailable_ThenSendsNewCommandsAndWaits(GuideDirections direction)
         {
             var duration = 0;
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.PulseGuide(direction, 0);
 
@@ -1086,9 +1033,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void RightAscension_Get_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.RightAscension; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: RightAscension Get"));
         }
@@ -1099,9 +1043,7 @@ namespace Meade.net.Telescope.UnitTests
             var telescopeRaResult = "HH:MM:SS";
             var hmsResult = 1.2;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
             _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
@@ -1204,9 +1146,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Get_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.SiteLatitude; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLatitude Get"));
         }
@@ -1217,10 +1156,7 @@ namespace Meade.net.Telescope.UnitTests
             var siteLatitudeString = "testLatString";
             var siteLatitudeValue = 123.45;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
-
+            ConnectTelescope();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gt#")).Returns(siteLatitudeString);
             _utilMock.Setup(x => x.DMSToDegrees(siteLatitudeString)).Returns(siteLatitudeValue);
 
@@ -1234,9 +1170,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLatitude = 123.45; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLatitude Set"));
         }
@@ -1244,9 +1177,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Set_WhenConnectedAndLatitudeIsGreaterThan90_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = 90.01; });
             Assert.That(exception.Message, Is.EqualTo("Latitude cannot be greater than 90 degrees."));
@@ -1255,9 +1186,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Set_WhenConnectedAndLatitudeIsLessThanNegative90_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = -90.01; });
             Assert.That(exception.Message, Is.EqualTo("Latitude cannot be less than -90 degrees."));
@@ -1267,9 +1196,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(20.75)]
         public void SiteLatitude_Set_WhenValueSetAndTelescopRejects_ThenExceptionThrown(double siteLatitude)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
@@ -1282,12 +1209,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(20.75, ":St+20*45#")]
         public void SiteLatitude_Set_WhenValidValues_ThenValueSentToTelescope(double siteLatitude, string expectedCommand)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
-
-
-
+            ConnectTelescope();
+            
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
 
             _telescope.SiteLatitude = siteLatitude;
@@ -1298,9 +1221,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Get_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.SiteLongitude; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLongitude Get"));
         }
@@ -1315,9 +1235,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var telescopeLongitude = "testLongitude";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
             _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
@@ -1330,9 +1248,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLongitude = 123.45; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLongitude Set"));
         }
@@ -1340,9 +1255,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenConnectedAndGreaterThan180_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = 180.1; });
             Assert.That(exception.Message, Is.EqualTo("Longitude cannot be greater than 180 degrees."));
@@ -1351,9 +1264,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenConnectedAndLessThanNegative180_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = -180.1; });
             Assert.That(exception.Message, Is.EqualTo("Longitude cannot be lower than -180 degrees."));
@@ -1362,9 +1273,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
@@ -1375,9 +1284,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(10, ":Sg350*00#")]
         public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException(double longitude, string expectedCommand)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
 
@@ -1391,9 +1298,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             string expectedMessage = "test blind Message";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SyncToAltAz(0,0); });
 
@@ -1403,9 +1308,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SyncToTarget(); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SyncToTarget"));
         }
@@ -1413,9 +1315,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenSyncToTargetFails_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(string.Empty);
 
@@ -1428,9 +1328,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenSyncToTargetWorks_ThennoExceptionThrown()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(" M31 EX GAL MAG 3.5 SZ178.0'#");
 
@@ -1442,9 +1340,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetDeclination = 0; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetDeclination Set"));
         }
@@ -1452,9 +1347,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenValueTooHigh_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = 90.1; });
             Assert.That(exception.Message, Is.EqualTo("Declination cannot be greater than 90."));
@@ -1463,9 +1356,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenValueTooLow_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = -90.1; });
             Assert.That(exception.Message, Is.EqualTo("Declination cannot be less than -90."));
@@ -1474,9 +1365,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenTelescopeReportsInvalidDec_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
@@ -1490,9 +1379,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
         public void TargetDeclination_Set_WhenValueOK_ThenSetsNewTargetDeclination( double declination,string decstring, string commandString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
@@ -1505,9 +1392,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Get_WhenTargetNotSet_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { var result = _telescope.TargetDeclination; });
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
@@ -1516,9 +1401,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
         public void TargetDeclination_Get_WhenValueOK_ThenSetsNewTargetDeclination(double declination, string decstring, string commandString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
@@ -1533,9 +1416,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetRightAscension = 0; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetRightAscension Set"));
         }
@@ -1543,9 +1423,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenValueTooHigh_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = 24; });
             Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be greater than 23:59:59"));
@@ -1554,9 +1432,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenValueTooLow_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = -0.1; });
             Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be below 0"));
@@ -1565,9 +1441,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenTelescopeReportsInvalidRA_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
@@ -1579,9 +1453,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(10, "10:00:00", ":Sr10:00:00#")]
         public void TargetRightAscension_Set_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
@@ -1594,9 +1466,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Get_WhenTargetNotSet_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { var result = _telescope.TargetRightAscension; });
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
@@ -1605,9 +1475,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(15, "15:00:00", ":Sr15:00:00#")]
         public void TargetRightAscension_Get_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
@@ -1637,9 +1505,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TrackingRate_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TrackingRate = DriveRates.driveSidereal; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TrackingRate Set"));
         }
@@ -1648,9 +1513,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(DriveRates.driveLunar, ":TL#")]
         public void TrackingRate_Set_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string commandString)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TrackingRate = rate;
 
@@ -1660,9 +1523,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TrackingRate_Set_WhenUnSupportedRateSet_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>( () => { _telescope.TrackingRate = DriveRates.driveKing; });
 
@@ -1672,9 +1533,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TrackingRage_Get_WhenReadongDefaultValue_ThenAssumesSidereal()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var result = _telescope.TrackingRate;
 
@@ -1685,9 +1544,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(DriveRates.driveLunar)]
         public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TrackingRate = rate;
 
@@ -1708,9 +1565,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void UTCDate_Get_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.UTCDate; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: UTCDate Get"));
         }
@@ -1720,9 +1574,7 @@ namespace Meade.net.Telescope.UnitTests
         public void UTCDate_Get_WhenConnected_ThenReturnsUTCDateTime(string telescopeDate, string telescopeTime,
             string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns(telescopeDate);
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns(telescopeTime);
@@ -1744,9 +1596,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void UTCDate_Set_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.UTCDate = new DateTime(2010,10,15,16,42,32, DateTimeKind.Utc); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: UTCDate Set"));
         }
@@ -1760,9 +1609,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("0");
@@ -1781,10 +1628,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
@@ -1806,10 +1650,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
@@ -1829,9 +1670,7 @@ namespace Meade.net.Telescope.UnitTests
             double declination = -30.5;
             string dec = "-30*30:00";
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{hms}#")).Returns("1");
@@ -1849,9 +1688,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Slewing_WhenNotConnected_ThenReturnsFalse()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var result = _telescope.Slewing;
 
             Assert.That(result, Is.False);
@@ -1862,9 +1698,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Slewing_WhenConnectedAndTelescopeFails_ThenReturnsFalse()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var result = _telescope.Slewing;
 
@@ -1876,9 +1710,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Slewing_WhenTelescopeIsSlewing_ThenReturnsTrue()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns("|");
 
@@ -1895,9 +1727,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-1, TelescopeAxes.axisSecondary)]
         public void Slewing_WhenTelescopeIsMoving_ThenDoesNotSendCommandAndReturnsTrue(int rate, TelescopeAxes axis)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.MoveAxis(axis, rate);
 
@@ -1911,9 +1741,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTargetAsync(); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTargetAsync"));
         }
@@ -1921,9 +1748,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetDeclinationNotSet_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 1;
 
@@ -1934,9 +1759,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetRightAscensionNotSet_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetDeclination = 1;
 
@@ -1947,9 +1770,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetSet_ThenAttemptsSlew()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
@@ -1961,9 +1782,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetSetAndSlewIsPossible_ThenAttemptsSlew()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
@@ -1978,9 +1797,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetBelowHorizon_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
@@ -1996,9 +1813,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetBelowElevation_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
@@ -2014,9 +1829,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTarget(); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTarget"));
         }
@@ -2024,9 +1836,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
@@ -2052,9 +1862,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinatesAsync_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinatesAsync(0,0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinatesAsync"));
         }
@@ -2065,9 +1872,7 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 1;
             var declination = 2;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
@@ -2093,9 +1898,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinates_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinates(0, 0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinates"));
         }
@@ -2106,9 +1908,7 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 1;
             var declination = 2;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
@@ -2134,9 +1934,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAzAsync(0, 0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAzAsync"));
         }
@@ -2144,9 +1941,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenAltitudeGreaterThan90_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, 90.1); });
             Assert.That(exception.Message, Is.EqualTo("Altitude cannot be greater than 90."));
@@ -2155,9 +1950,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenAltitudeLowerThan0_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, -0.1); });
             Assert.That(exception.Message, Is.EqualTo("Altitide cannot be less than 0."));
@@ -2166,9 +1959,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenAzimuth360OrHigher_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(360, 0); });
             Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be 360 or higher."));
@@ -2177,9 +1968,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenAzimuthLowerThan0_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(-0.1, 0); });
             Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be less than 0."));
@@ -2193,9 +1982,7 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 20;
             var declination = 10;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
@@ -2217,9 +2004,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAz_WhenAzimuthLowerThan0_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAz(0, 0); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAz"));
         }
@@ -2232,9 +2016,7 @@ namespace Meade.net.Telescope.UnitTests
             var azimuth = 30;
             var altitude = 40;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
@@ -2268,9 +2050,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Azimuth_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.Azimuth; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Azimuth Get"));
         }
@@ -2288,9 +2067,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var mockHourAngle = 3;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
@@ -2314,9 +2091,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Altitude_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.Altitude; });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Altitude Get"));
         }
@@ -2334,9 +2108,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var mockHourAngle = 3;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
@@ -2360,9 +2132,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AbortSlew_WhenNotConnected_ThenThrowsException()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.AbortSlew(); });
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AbortSlew"));
         }
@@ -2370,9 +2139,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AbortSlew_WhenConnected_ThenSendsStopSlewingToTelescope()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _telescope.AbortSlew();
 
