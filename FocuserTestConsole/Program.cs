@@ -12,7 +12,7 @@ using System;
 using System.Threading;
 using ASCOM.DriverAccess;
 
-namespace ASCOM
+namespace ASCOM.MeadeGeneric
 {
     class Program
     {

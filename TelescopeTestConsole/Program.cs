@@ -10,7 +10,7 @@
 
 using System;
 
-namespace ASCOM
+namespace ASCOM.Meade.net
 {
     class Program
     {

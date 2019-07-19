@@ -349,7 +349,7 @@ namespace ASCOM.Meade.net
         private bool FirmwareIsGreaterThan(string minVersion)
         {
             var currentVersion = _sharedResourcesWrapper.FirmwareVersion;
-            var comparison = currentVersion.CompareTo(minVersion);
+            var comparison = String.Compare(currentVersion, minVersion, StringComparison.Ordinal);
             return (comparison >= 0);
         }
 

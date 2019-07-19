@@ -244,7 +244,7 @@ namespace ASCOM.Meade.net
         /// The Key is the connection number that identifies the device, it could be the COM port name,
         /// USB ID or IP Address, the Value is the DeviceHardware class
         /// </summary>
-        private static Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
 
         /// <summary>
         /// This is called in the driver Connect(true) property,

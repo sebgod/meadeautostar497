@@ -33,8 +33,8 @@ namespace ASCOM.Meade.net
         #region Access to ole32.dll functions for class factories
 
         // Define two common GUID objects for public usage.
-        private static Guid _iidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
-        private static Guid _iidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
+        private static readonly Guid _iidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+        private static readonly Guid _iidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
 
         [Flags]
         enum Clsctx : uint
@@ -136,7 +136,7 @@ namespace ASCOM.Meade.net
         #endregion
 
         #region Common ClassFactory Methods
-        public uint ClassContext { get; set; }
+        public uint ClassContext { get; }
 
         public Guid ClassId
         {
@@ -144,7 +144,7 @@ namespace ASCOM.Meade.net
             set => _mClassId = value;
         }
 
-        public uint Flags { get; set; }
+        public uint Flags { get; }
 
         public bool RegisterClassObject()
         {
