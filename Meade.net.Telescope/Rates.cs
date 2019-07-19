@@ -79,7 +79,7 @@ namespace ASCOM.Meade.net
         //
         internal AxisRates(TelescopeAxes axis)
         {
-            this._axis = axis;
+            _axis = axis;
             //
             // This collection must hold zero or more Rate objects describing the 
             // rates of motion ranges for the Telescope.MoveAxis() method

@@ -38,14 +38,14 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Focuser";
-        internal static string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string _driverDescription = "Meade Generic";
+        private static readonly string DriverDescription = "Meade Generic";
 
-        internal static string ComPort; // Variables to hold the currrent device configuration
+        private static string _comPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -193,12 +193,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _comPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
                     _sharedResourcesWrapper.Disconnect("Serial");
                     IsConnected = false;
                 }
@@ -241,8 +241,8 @@ namespace ASCOM.Meade.net
             // TODO customise this device description
             get
             {
-                Tl.LogMessage("Description Get", _driverDescription);
-                return _driverDescription;
+                Tl.LogMessage("Description Get", DriverDescription);
+                return DriverDescription;
             }
         }
 
@@ -284,7 +284,7 @@ namespace ASCOM.Meade.net
             get
             {
                 //string name = "Short driver name - please customise";
-                string name = _driverDescription;
+                string name = DriverDescription;
                 Tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -496,7 +496,7 @@ namespace ASCOM.Meade.net
                 p.DeviceType = "Focuser";
                 if (bRegister)
                 {
-                    p.Register(DriverId, _driverDescription);
+                    p.Register(DriverId, DriverDescription);
                 }
                 else
                 {
@@ -577,7 +577,7 @@ namespace ASCOM.Meade.net
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             Tl.Enabled = profileProperties.TraceLogger;
-            ComPort = profileProperties.ComPort;
+            _comPort = profileProperties.ComPort;
         }
 
         /// <summary>

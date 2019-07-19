@@ -153,11 +153,11 @@ namespace ASCOM.Meade.net
 
         #region Profile
 
-        internal static string DriverId = "ASCOM.MeadeGeneric.Telescope";
+        private const string DriverId = "ASCOM.MeadeGeneric.Telescope";
 
         // Constants used for Profile persistence
-        internal static string ComPortProfileName = "COM Port";
-        internal static string TraceStateProfileName = "Trace Level";
+        private const string ComPortProfileName = "COM Port";
+        private const string TraceStateProfileName = "Trace Level";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -172,8 +172,8 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private static readonly string ComPortDefault = "COM1";
-        internal static string TraceStateDefault = "false";
+        private const string ComPortDefault = "COM1";
+        private const string TraceStateDefault = "false";
 
         public static ProfileProperties ReadProfile()
         {

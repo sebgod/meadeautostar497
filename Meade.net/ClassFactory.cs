@@ -33,8 +33,8 @@ namespace ASCOM.Meade.net
         #region Access to ole32.dll functions for class factories
 
         // Define two common GUID objects for public usage.
-        public static Guid IidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
-        public static Guid IidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
+        private static Guid _iidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+        private static Guid _iidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
 
         [Flags]
         enum Clsctx : uint
@@ -109,70 +109,60 @@ namespace ASCOM.Meade.net
 
         #region Constructor and Private ClassFactory Data
 
-        protected readonly Type MClassType;
-        protected Guid MClassId;
-        protected readonly ArrayList MInterfaceTypes;
-        protected uint MClassContext;
-        protected uint MFlags;
-        protected UInt32 MLocked = 0;
-        protected uint MCookie;
-        protected string MProgid;
+        private readonly Type _mClassType;
+        private Guid _mClassId;
+        private readonly ArrayList _mInterfaceTypes;
+        private UInt32 _mLocked = 0;
+        private uint _mCookie;
+        private readonly string _mProgid;
 
         public ClassFactory(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");
-            MClassType = type;
+            _mClassType = type;
 
             //PWGS Get the ProgID from the MetaData
-            MProgid = Marshal.GenerateProgIdForType(type);
-            MClassId = Marshal.GenerateGuidForType(type);		// Should be nailed down by [Guid(...)]
-            MClassContext = (uint)Clsctx.ClsctxLocalServer;	// Default
-            MFlags = (uint)Regcls.RegclsMultipleuse |			// Default
+            _mProgid = Marshal.GenerateProgIdForType(type);
+            _mClassId = Marshal.GenerateGuidForType(type);		// Should be nailed down by [Guid(...)]
+            ClassContext = (uint)Clsctx.ClsctxLocalServer;	// Default
+            Flags = (uint)Regcls.RegclsMultipleuse |			// Default
                         (uint)Regcls.RegclsSuspended;
-            MInterfaceTypes = new ArrayList();
+            _mInterfaceTypes = new ArrayList();
             foreach (Type T in type.GetInterfaces())            // Save all of the implemented interfaces
-                MInterfaceTypes.Add(T);
+                _mInterfaceTypes.Add(T);
         }
 
         #endregion
 
         #region Common ClassFactory Methods
-        public uint ClassContext
-        {
-            get => MClassContext;
-            set => MClassContext = value;
-        }
+        public uint ClassContext { get; set; }
 
         public Guid ClassId
         {
-            get => MClassId;
-            set => MClassId = value;
+            get => _mClassId;
+            set => _mClassId = value;
         }
 
-        public uint Flags
-        {
-            get => MFlags;
-            set => MFlags = value;
-        }
+        public uint Flags { get; set; }
 
         public bool RegisterClassObject()
         {
             // Register the class factory
             int i = CoRegisterClassObject
                 (
-                ref MClassId,
+                ref _mClassId,
                 this,
-                MClassContext,
-                MFlags,
-                out MCookie
+                ClassContext,
+                Flags,
+                out _mCookie
                 );
             return (i == 0);
         }
 
         public bool RevokeClassObject()
         {
-            int i = CoRevokeClassObject(MCookie);
+            int i = CoRevokeClassObject(_mCookie);
             return (i == 0);
         }
 
@@ -201,25 +191,25 @@ namespace ASCOM.Meade.net
             //
             // Handle specific requests for implemented interfaces
             //
-            foreach (Type iType in MInterfaceTypes)
+            foreach (Type iType in _mInterfaceTypes)
             {
                 if (riid == Marshal.GenerateGuidForType(iType))
                 {
-                    ppvObject = Marshal.GetComInterfaceForObject(Activator.CreateInstance(MClassType), iType);
+                    ppvObject = Marshal.GetComInterfaceForObject(Activator.CreateInstance(_mClassType), iType);
                     return;
                 }
             }
             //
             // Handle requests for IDispatch or IUnknown on the class
             //
-            if (riid == IidIDispatch)
+            if (riid == _iidIDispatch)
             {
-                ppvObject = Marshal.GetIDispatchForObject(Activator.CreateInstance(MClassType));
+                ppvObject = Marshal.GetIDispatchForObject(Activator.CreateInstance(_mClassType));
                 return;
             }
-            else if (riid == IidIUnknown)
+            else if (riid == _iidIUnknown)
             {
-                ppvObject = Marshal.GetIUnknownForObject(Activator.CreateInstance(MClassType));
+                ppvObject = Marshal.GetIUnknownForObject(Activator.CreateInstance(_mClassType));
             }
             else
             {
