@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ASCOM.Meade.net
 {
-    public partial class frmMain : Form
+    public partial class FrmMain : Form
     {
         delegate void SetTextCallback(string text);
 
-        public frmMain()
+        public FrmMain()
         {
             InitializeComponent();
         }

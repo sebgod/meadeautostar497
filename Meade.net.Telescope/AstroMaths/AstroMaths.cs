@@ -1,38 +1,17 @@
 ﻿using System;
 using ASCOM.Utilities;
 
-namespace ASCOM.Meade.net
+namespace ASCOM.Meade.net.AstroMaths
 {
-    public class EquatorialCoordinates
-    {
-        public double RightAscension { get; set; }
-        public double Declination { get; set; }
-    }
-
-    public class HorizonCoordinates
-    {
-        public double Altitude { get; set; }
-        public double Azimuth { get; set; }
-    }
-
-
-    public class AltitudeData
-    {
-        public DateTime UtcDateTime { get; set; }
-        public double SiteLatitude { get; set; }
-        public double SiteLongitude { get; set; }
-        public EquatorialCoordinates equatorialCoordinates { get; set; }
-    }
-
-    public class AstroMaths
+    public class AstroMaths : IAstroMaths
     {
 
         //returns the decimal hour angle for given right ascension on a given datetime for a given logitude.
         public double RightAscensionToHourAngle(DateTime utcDateTime, double longitude, double rightAscension)
         {
             var ut = DateTimeToDecimalHours( utcDateTime);
-            var gst = UTtoGST( utcDateTime);
-            var lst = GSTtoLST( gst, longitude);
+            var gst = UTtoGst( utcDateTime);
+            var lst = GsTtoLst( gst, longitude);
             var raHours = rightAscension;
             var h1 = lst - raHours;
             var h = h1;
@@ -45,8 +24,8 @@ namespace ASCOM.Meade.net
 
         public double HourAngleToRightAscension(DateTime utcDateTime, double longitude, double hourAngle )
         {
-            var gst = UTtoGST(utcDateTime);
-            var lst = GSTtoLST( gst, longitude);
+            var gst = UTtoGst(utcDateTime);
+            var lst = GsTtoLst( gst, longitude);
             var raHours = hourAngle;
             var h1 = lst - raHours;
             var h = h1;
@@ -150,7 +129,7 @@ namespace ASCOM.Meade.net
         }
 
         //todo convert to extension method
-        public double UTtoGST(DateTime utcDateTime)
+        public double UTtoGst(DateTime utcDateTime)
         {
             Util util = new Util();
 
@@ -192,7 +171,7 @@ namespace ASCOM.Meade.net
             return t1;
         }
 
-        public double GSTtoLST(double gst, double longitude)
+        public double GsTtoLst(double gst, double longitude)
         {
             var l = longitude/ 15;
 

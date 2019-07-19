@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--EXTERNAL_PROPERTIES: outputDir-->
+<project name="Meade.net" default="publish">
+
+	<property name="solution.directory" value="${directory::get-current-directory()}"/>
+	<property name="build.output.directory" value="${solution.directory}\${outputDir}"/>
+
+	<target name="setup">
+		<delete dir="${build.output.directory}"/>
+		<mkdir dir="${build.output.directory}"/>
+	</target>
+
+	<target name="compile.application" depends="setup">
+		<!-- compilation handled by TeamCity-->
+	</target>
+
+	<target name="cleanup" depends="setup">
+		<!-- no cleanup necessary-->
+	</target>
+
+	<target name="publish" depends="cleanup">
+
+		<!-- publish -->
+		<copy todir="${build.output.directory}">
+			<fileset basedir="${solution.directory}\Meade.net.Setup\bin\${configuration}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		
+		<copy todir="${build.output.directory}">
+			<fileset basedir="${solution.directory}\bin\${configuration}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		
+		<foreach item="File" in="${build.output.directory}" property="fileName">
+			<if test="${string::to-lower(path::get-extension(fileName)) == '.msi'}">
+				<move file="${fileName}" tofile="${path::combine(path::get-directory-name(fileName), path::get-file-name-without-extension(fileName) + '.' + environment::get-variable('BUILD_NUMBER') + '.msi')}" />
+			</if>
+		</foreach>
+	</target>
+</project>

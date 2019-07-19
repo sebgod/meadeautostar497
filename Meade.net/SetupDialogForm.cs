@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using ASCOM.Utilities;
-using ASCOM.Meade.net;
 
 namespace ASCOM.Meade.net
 {
@@ -29,12 +24,12 @@ namespace ASCOM.Meade.net
             {
                 System.Diagnostics.Process.Start("http://ascom-standards.org/");
             }
-            catch (System.ComponentModel.Win32Exception noBrowser)
+            catch (Win32Exception noBrowser)
             {
                 if (noBrowser.ErrorCode == -2147467259)
                     MessageBox.Show(noBrowser.Message);
             }
-            catch (System.Exception other)
+            catch (Exception other)
             {
                 MessageBox.Show(other.Message);
             }

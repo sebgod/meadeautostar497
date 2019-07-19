@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using ASCOM.DeviceInterface;
 using System.Collections;
 using System.Threading;
@@ -21,10 +17,10 @@ namespace ASCOM.Meade.net
     [Guid("288838d1-bbf9-4ce0-9ee1-86ecf38b45c9")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class Rate : ASCOM.DeviceInterface.IRate
+    public class Rate : IRate
     {
-        private double maximum = 0;
-        private double minimum = 0;
+        private double _maximum = 0;
+        private double _minimum = 0;
 
         //
         // Default constructor - Internal prevents public creation
@@ -32,8 +28,8 @@ namespace ASCOM.Meade.net
         //
         internal Rate(double minimum, double maximum)
         {
-            this.maximum = maximum;
-            this.minimum = minimum;
+            _maximum = maximum;
+            _minimum = minimum;
         }
 
         #region Implementation of IRate
@@ -45,14 +41,14 @@ namespace ASCOM.Meade.net
 
         public double Maximum
         {
-            get { return this.maximum; }
-            set { this.maximum = value; }
+            get => _maximum;
+            set => _maximum = value;
         }
 
         public double Minimum
         {
-            get { return this.minimum; }
-            set { this.minimum = value; }
+            get => _minimum;
+            set => _minimum = value;
         }
 
         #endregion
@@ -74,8 +70,8 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class AxisRates : IAxisRates, IEnumerable
     {
-        private TelescopeAxes axis;
-        private readonly Rate[] rates;
+        private TelescopeAxes _axis;
+        private readonly Rate[] _rates;
 
         //
         // Constructor - Internal prevents public creation
@@ -83,7 +79,7 @@ namespace ASCOM.Meade.net
         //
         internal AxisRates(TelescopeAxes axis)
         {
-            this.axis = axis;
+            _axis = axis;
             //
             // This collection must hold zero or more Rate objects describing the 
             // rates of motion ranges for the Telescope.MoveAxis() method
@@ -100,26 +96,23 @@ namespace ASCOM.Meade.net
                     // TODO Initialize this array with any Primary axis rates that your driver may provide
                     // Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
                     //this.rates = new Rate[0];
-                    this.rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
+                    _rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
                     break;
                 case TelescopeAxes.axisSecondary:
                     // TODO Initialize this array with any Secondary axis rates that your driver may provide
                     //this.rates = new Rate[0];
-                    this.rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
+                    _rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
                     break;
                 case TelescopeAxes.axisTertiary:
                     // TODO Initialize this array with any Tertiary axis rates that your driver may provide
-                    this.rates = new Rate[0];
+                    _rates = new Rate[0];
                     break;
             }
         }
 
         #region IAxisRates Members
 
-        public int Count
-        {
-            get { return this.rates.Length; }
-        }
+        public int Count => _rates.Length;
 
         public void Dispose()
         {
@@ -128,13 +121,10 @@ namespace ASCOM.Meade.net
 
         public IEnumerator GetEnumerator()
         {
-            return rates.GetEnumerator();
+            return _rates.GetEnumerator();
         }
 
-        public IRate this[int index]
-        {
-            get { return this.rates[index - 1]; }	// 1-based
-        }
+        public IRate this[int index] => _rates[index - 1];
 
         #endregion
     }
@@ -159,11 +149,11 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class TrackingRates : ITrackingRates, IEnumerable, IEnumerator
     {
-        private readonly DriveRates[] trackingRates;
+        private readonly DriveRates[] _trackingRates;
 
         // this is used to make the index thread safe
-        private readonly ThreadLocal<int> pos = new ThreadLocal<int>(() => { return -1; });
-        private static readonly object lockObj = new object();
+        private readonly ThreadLocal<int> _pos = new ThreadLocal<int>(() => { return -1; });
+        private static readonly object LockObj = new object();
 
         //
         // Default constructor - Internal prevents public creation
@@ -176,20 +166,17 @@ namespace ASCOM.Meade.net
             // the tracking rates supported by your telescope. The one value
             // (tracking rate) that MUST be supported is driveSidereal!
             //
-            this.trackingRates = new[] { DriveRates.driveSidereal, DriveRates.driveLunar };
+            _trackingRates = new[] { DriveRates.driveSidereal, DriveRates.driveLunar };
             // TODO Initialize this array with any additional tracking rates that your driver may provide
         }
 
         #region ITrackingRates Members
 
-        public int Count
-        {
-            get { return this.trackingRates.Length; }
-        }
+        public int Count => _trackingRates.Length;
 
         public IEnumerator GetEnumerator()
         {
-            pos.Value = -1;
+            _pos.Value = -1;
             return this as IEnumerator;
         }
 
@@ -198,10 +185,7 @@ namespace ASCOM.Meade.net
             // TODO Add any required object cleanup here
         }
 
-        public DriveRates this[int index]
-        {
-            get { return this.trackingRates[index - 1]; }   // 1-based
-        }
+        public DriveRates this[int index] => _trackingRates[index - 1];
 
         #endregion
 
@@ -211,22 +195,22 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                lock (lockObj)
+                lock (LockObj)
                 {
-                    if (pos.Value < 0 || pos.Value >= trackingRates.Length)
+                    if (_pos.Value < 0 || _pos.Value >= _trackingRates.Length)
                     {
                         throw new System.InvalidOperationException();
                     }
-                    return trackingRates[pos.Value];
+                    return _trackingRates[_pos.Value];
                 }
             }
         }
 
         public bool MoveNext()
         {
-            lock (lockObj)
+            lock (LockObj)
             {
-                if (++pos.Value >= trackingRates.Length)
+                if (++_pos.Value >= _trackingRates.Length)
                 {
                     return false;
                 }
@@ -236,7 +220,7 @@ namespace ASCOM.Meade.net
 
         public void Reset()
         {
-            pos.Value = -1;
+            _pos.Value = -1;
         }
         #endregion
     }

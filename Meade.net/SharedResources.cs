@@ -15,19 +15,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
-using ASCOM;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
 {
-    public class ProfileProperties
-    {
-        // properies that are part of the profile
-        public string ComPort { get; set; }
-        public bool TraceLogger { get; set; }
-    }
-
     /// <summary>
     /// The resources shared by all drivers and devices, in this example it's a serial port with a shared SendMessage method
     /// an idea for locking the message and handling connecting is given.
@@ -39,10 +30,10 @@ namespace ASCOM.Meade.net
     public static class SharedResources
     {
         // object used for locking to prevent multiple drivers accessing common code at the same time
-        private static readonly object lockObject = new object();
+        private static readonly object LockObject = new object();
 
         // Shared serial port. This will allow multiple drivers to use one single serial port.
-        private static ASCOM.Utilities.Serial s_sharedSerial; // Shared serial port
+        private static Serial _sSharedSerial; // Shared serial port
 
         //
         // Public access to shared resources
@@ -67,7 +58,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Shared serial port
         /// </summary>
-        public static ASCOM.Utilities.Serial SharedSerial => s_sharedSerial ?? (s_sharedSerial = new ASCOM.Utilities.Serial());
+        public static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
 
         /// <summary>
         /// number of connections to the shared serial port
@@ -76,7 +67,7 @@ namespace ASCOM.Meade.net
 
         public static void SendBlind(string message)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
@@ -99,7 +90,7 @@ namespace ASCOM.Meade.net
         /// <returns></returns>
         public static string SendString(string message)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
@@ -109,7 +100,7 @@ namespace ASCOM.Meade.net
 
         public static string SendChar(string message)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
@@ -119,7 +110,7 @@ namespace ASCOM.Meade.net
 
         public static string ReadTerminated()
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 return SharedSerial.ReceiveTerminated("#");
             }
@@ -137,7 +128,7 @@ namespace ASCOM.Meade.net
         {
             set
             {
-                lock (lockObject)
+                lock (LockObject)
                 {
                     if (value)
                     {
@@ -155,47 +146,47 @@ namespace ASCOM.Meade.net
                     }
                 }
             }
-            get { return SharedSerial.Connected; }
+            get => SharedSerial.Connected;
         }
 
         #endregion
 
         #region Profile
 
-        internal static string driverID = "ASCOM.MeadeGeneric.Telescope";
+        private const string DriverId = "ASCOM.MeadeGeneric.Telescope";
 
         // Constants used for Profile persistence
-        internal static string comPortProfileName = "COM Port";
-        internal static string traceStateProfileName = "Trace Level";
+        private const string ComPortProfileName = "COM Port";
+        private const string TraceStateProfileName = "Trace Level";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 using (Profile driverProfile = new Profile())
                 {
                     driverProfile.DeviceType = "Telescope";
-                    driverProfile.WriteValue(driverID, traceStateProfileName, profileProperties.TraceLogger.ToString());
-                    driverProfile.WriteValue(driverID, comPortProfileName, profileProperties.ComPort);
+                    driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
+                    driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
                 }
             }
         }
 
-        private static readonly string comPortDefault = "COM1";
-        internal static string traceStateDefault = "false";
+        private const string ComPortDefault = "COM1";
+        private const string TraceStateDefault = "false";
 
         public static ProfileProperties ReadProfile()
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 ProfileProperties profileProperties = new ProfileProperties();
                 using (Profile driverProfile = new Profile())
                 {
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort =
-                        driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
-                    profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(driverID,
-                        traceStateProfileName, string.Empty, traceStateDefault));
+                        driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
+                    profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId,
+                        TraceStateProfileName, string.Empty, TraceStateDefault));
                 }
 
                 return profileProperties;
@@ -218,14 +209,14 @@ namespace ASCOM.Meade.net
 
             var profileProperties = ReadProfile();
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            using (SetupDialogForm f = new SetupDialogForm())
             {
-                F.SetProfile(profileProperties);
+                f.SetProfile(profileProperties);
                 
-                var result = F.ShowDialog();
+                var result = f.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    profileProperties = F.GetProfile();
+                    profileProperties = f.GetProfile();
 
                     WriteProfile(profileProperties); // Persist device configuration values to the ASCOM Profile store
                 }
@@ -233,15 +224,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        #region AutostarProducts
-
-        public const string AUTOSTAR497 = "Autostar";
-
-        public const string AUTOSTAR497_31EE = "31Ee";
-
-        #endregion
-
+        
         #region Multi Driver handling
 
         public static string ProductName { get; private set; } = string.Empty;
@@ -261,7 +244,7 @@ namespace ASCOM.Meade.net
         /// The Key is the connection number that identifies the device, it could be the COM port name,
         /// USB ID or IP Address, the Value is the DeviceHardware class
         /// </summary>
-        private static Dictionary<string, DeviceHardware> connectedDevices = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
 
         /// <summary>
         /// This is called in the driver Connect(true) property,
@@ -270,26 +253,26 @@ namespace ASCOM.Meade.net
         /// <param name="deviceId"></param>
         public static void Connect(string deviceId)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
-                if (!connectedDevices.ContainsKey(deviceId))
-                    connectedDevices.Add(deviceId, new DeviceHardware());
-                connectedDevices[deviceId].count++; // increment the value
+                if (!_connectedDevices.ContainsKey(deviceId))
+                    _connectedDevices.Add(deviceId, new DeviceHardware());
+                _connectedDevices[deviceId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
-                    if (connectedDevices[deviceId].count == 1)
+                    if (_connectedDevices[deviceId].Count == 1)
                     {
                         var profileProperties = ReadProfile();
-                        SharedResources.SharedSerial.PortName = profileProperties.ComPort;
-                        SharedResources.SharedSerial.DTREnable = false;
-                        SharedResources.SharedSerial.RTSEnable = false;
-                        SharedResources.SharedSerial.DataBits = 8;
-                        SharedResources.SharedSerial.StopBits = SerialStopBits.One;
-                        SharedResources.SharedSerial.Parity = SerialParity.None;
-                        SharedResources.SharedSerial.Speed = SerialSpeed.ps9600;
-                        SharedResources.SharedSerial.Handshake = SerialHandshake.None;
-                        SharedResources.SharedSerial.Connected = true;
+                        SharedSerial.PortName = profileProperties.ComPort;
+                        SharedSerial.DTREnable = false;
+                        SharedSerial.RTSEnable = false;
+                        SharedSerial.DataBits = 8;
+                        SharedSerial.StopBits = SerialStopBits.One;
+                        SharedSerial.Parity = SerialParity.None;
+                        SharedSerial.Speed = SerialSpeed.ps9600;
+                        SharedSerial.Handshake = SerialHandshake.None;
+                        SharedSerial.Connected = true;
 
                         ProductName = SendString(":GVP#");
                         FirmwareVersion = SendString(":GVN#");
@@ -300,17 +283,17 @@ namespace ASCOM.Meade.net
 
         public static void Disconnect(string deviceId)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
-                if (connectedDevices.ContainsKey(deviceId))
+                if (_connectedDevices.ContainsKey(deviceId))
                 {
-                    connectedDevices[deviceId].count--;
-                    if (connectedDevices[deviceId].count <= 0)
+                    _connectedDevices[deviceId].Count--;
+                    if (_connectedDevices[deviceId].Count <= 0)
                     {
-                        connectedDevices.Remove(deviceId);
+                        _connectedDevices.Remove(deviceId);
                         if (deviceId == "Serial")
                         {
-                            SharedResources.SharedSerial.Connected = false;
+                            SharedSerial.Connected = false;
                         }
                     }
                 }
@@ -319,8 +302,8 @@ namespace ASCOM.Meade.net
 
         public static bool IsConnected(string deviceId)
         {
-            if (connectedDevices.ContainsKey(deviceId))
-                return (connectedDevices[deviceId].count > 0);
+            if (_connectedDevices.ContainsKey(deviceId))
+                return (_connectedDevices[deviceId].Count > 0);
             else
                 return false;
         }
@@ -329,7 +312,7 @@ namespace ASCOM.Meade.net
 
         public static void Lock(Action action)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 action();
             }
@@ -337,7 +320,7 @@ namespace ASCOM.Meade.net
 
         public static T Lock<T>(Func<T> func)
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 return func();
             }
@@ -351,7 +334,7 @@ namespace ASCOM.Meade.net
         {
             private int _count;
 
-            internal int count
+            internal int Count
             {
                 set => _count = value;
                 get => _count;
@@ -359,7 +342,7 @@ namespace ASCOM.Meade.net
 
             internal DeviceHardware()
             {
-                count = 0;
+                Count = 0;
             }
         }
 

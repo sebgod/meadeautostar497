@@ -8,7 +8,7 @@ namespace ASCOM.Meade.net.Localization
     internal class LocalisationHelper
     {
         private const string LocalizationNamespace = "LocalisationTest.Localization.Resources.Localization";
-        ResourceManager _resourceManager;
+        private readonly ResourceManager _resourceManager;
 
         public LocalisationHelper()
         {
