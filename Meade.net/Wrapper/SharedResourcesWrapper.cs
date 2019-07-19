@@ -4,10 +4,10 @@ namespace ASCOM.Meade.net.Wrapper
 {
     public interface ISharedResourcesWrapper
     {
-        string AUTOSTAR497 { get; }
-        string AUTOSTAR497_31EE { get; }
+        string Autostar497 { get; }
+        string Autostar49731Ee { get; }
 
-        string AUTOSTAR497_43EG { get;}
+        string Autostar49743Eg { get;}
 
         void Connect(string deviceId);
         void Disconnect(string deviceId);
@@ -34,10 +34,10 @@ namespace ASCOM.Meade.net.Wrapper
     {
         #region AutostarProducts
 
-        public string AUTOSTAR497 => "Autostar";
+        public string Autostar497 => "Autostar";
 
-        public string AUTOSTAR497_31EE => "31Ee";
-        public string AUTOSTAR497_43EG => "43Eg";
+        public string Autostar49731Ee => "31Ee";
+        public string Autostar49743Eg => "43Eg";
 
         #endregion
 

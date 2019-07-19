@@ -37,9 +37,9 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
-            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497).Returns(() => "AUTOSTAR");
-            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_31EE).Returns(() => "31Ee");
-            _sharedResourcesWrapperMock.Setup(x => x.AUTOSTAR497_43EG) .Returns(() => "43Eg");
+            _sharedResourcesWrapperMock.Setup(x => x.Autostar497).Returns(() => "AUTOSTAR");
+            _sharedResourcesWrapperMock.Setup(x => x.Autostar49731Ee).Returns(() => "31Ee");
+            _sharedResourcesWrapperMock.Setup(x => x.Autostar49743Eg) .Returns(() => "43Eg");
 
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
@@ -56,8 +56,8 @@ namespace Meade.net.Telescope.UnitTests
 
         private void ConnectTelescope()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
             _telescope.Connected = true;
         }
 
@@ -238,8 +238,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(false)]
         public void Connected_Get_ReturnsExpectedValue(bool expectedConnected)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
             _telescope.Connected = expectedConnected;
 
             Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
@@ -275,8 +275,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_WhenFailsToConnect_ThenDisconnects()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497_31EE);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(It.IsAny<string>())).Throws(new Exception("TestFailed"));
 
@@ -999,7 +999,7 @@ namespace Meade.net.Telescope.UnitTests
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
             var duration = 0;
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.AUTOSTAR497);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => "31Ed");
             _telescope.Connected = true;
 

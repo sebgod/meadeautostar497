@@ -8,35 +8,35 @@ namespace ASCOM.Meade.net
     /// </summary>
     class GarbageCollection
     {
-        protected bool m_bContinueThread;
-        protected bool m_GCWatchStopped;
-        protected int m_iInterval;
-        protected ManualResetEvent m_EventThreadEnded;
+        protected bool MBContinueThread;
+        protected bool MGcWatchStopped;
+        protected int MIInterval;
+        protected ManualResetEvent MEventThreadEnded;
 
         public GarbageCollection(int iInterval)
         {
-            m_bContinueThread = true;
-            m_GCWatchStopped = false;
-            m_iInterval = iInterval;
-            m_EventThreadEnded = new ManualResetEvent(false);
+            MBContinueThread = true;
+            MGcWatchStopped = false;
+            MIInterval = iInterval;
+            MEventThreadEnded = new ManualResetEvent(false);
         }
 
-        public void GCWatch()
+        public void GcWatch()
         {
             // Pause for a moment to provide a delay to make threads more apparent.
             while (ContinueThread())
             {
                 GC.Collect();
-                Thread.Sleep(m_iInterval);
+                Thread.Sleep(MIInterval);
             }
-            m_EventThreadEnded.Set();
+            MEventThreadEnded.Set();
         }
 
         protected bool ContinueThread()
         {
             lock (this)
             {
-                return m_bContinueThread;
+                return MBContinueThread;
             }
         }
 
@@ -44,14 +44,14 @@ namespace ASCOM.Meade.net
         {
             lock (this)
             {
-                m_bContinueThread = false;
+                MBContinueThread = false;
             }
         }
 
         public void WaitForThreadToStop()
         {
-            m_EventThreadEnded.WaitOne();
-            m_EventThreadEnded.Reset();
+            MEventThreadEnded.WaitOne();
+            MEventThreadEnded.Reset();
         }
     }
 }

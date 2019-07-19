@@ -52,7 +52,7 @@ namespace AstroMath.UnitTests
         public void UTtoGST_book()
         {
             DateTime dateTime = new DateTime(1980, 04, 22, 14, 36, 51, 670, DateTimeKind.Utc);
-            double gst = _astroMath.UTtoGST(dateTime);
+            double gst = _astroMath.UTtoGst(dateTime);
 
             Assert.That(gst, Is.EqualTo(4.667932706211154));
         }
@@ -61,7 +61,7 @@ namespace AstroMath.UnitTests
         public void UTtoGst()
         {
             DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
-            double gst = _astroMath.UTtoGST(dateTime);
+            double gst = _astroMath.UTtoGst(dateTime);
 
             Assert.That(gst, Is.EqualTo(14.191879687876451));
         }
@@ -71,7 +71,7 @@ namespace AstroMath.UnitTests
         {
             double gst = 4.668119;
             var longitude = -64;
-            var lst = _astroMath.GSTtoLST(gst, longitude);
+            var lst = _astroMath.GsTtoLst(gst, longitude);
             Assert.That(lst, Is.EqualTo(0.4014523333333333));
         }
 
@@ -80,7 +80,7 @@ namespace AstroMath.UnitTests
         {
             double gst = 14.257589512545053;
             var longitude = -1.7833333333333332;
-            var lst = _astroMath.GSTtoLST(gst, longitude);
+            var lst = _astroMath.GsTtoLst(gst, longitude);
             Assert.That(lst, Is.EqualTo(14.138700623656163));
         }
 

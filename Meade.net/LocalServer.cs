@@ -31,52 +31,52 @@ namespace ASCOM.Meade.net
 
         #region Access to kernel32.dll, user32.dll, and ole32.dll functions
         [Flags]
-        enum CLSCTX : uint
+        enum Clsctx : uint
         {
-            CLSCTX_INPROC_SERVER = 0x1,
-            CLSCTX_INPROC_HANDLER = 0x2,
-            CLSCTX_LOCAL_SERVER = 0x4,
-            CLSCTX_INPROC_SERVER16 = 0x8,
-            CLSCTX_REMOTE_SERVER = 0x10,
-            CLSCTX_INPROC_HANDLER16 = 0x20,
-            CLSCTX_RESERVED1 = 0x40,
-            CLSCTX_RESERVED2 = 0x80,
-            CLSCTX_RESERVED3 = 0x100,
-            CLSCTX_RESERVED4 = 0x200,
-            CLSCTX_NO_CODE_DOWNLOAD = 0x400,
-            CLSCTX_RESERVED5 = 0x800,
-            CLSCTX_NO_CUSTOM_MARSHAL = 0x1000,
-            CLSCTX_ENABLE_CODE_DOWNLOAD = 0x2000,
-            CLSCTX_NO_FAILURE_LOG = 0x4000,
-            CLSCTX_DISABLE_AAA = 0x8000,
-            CLSCTX_ENABLE_AAA = 0x10000,
-            CLSCTX_FROM_DEFAULT_CONTEXT = 0x20000,
-            CLSCTX_INPROC = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER,
-            CLSCTX_SERVER = CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER,
-            CLSCTX_ALL = CLSCTX_SERVER | CLSCTX_INPROC_HANDLER
+            ClsctxInprocServer = 0x1,
+            ClsctxInprocHandler = 0x2,
+            ClsctxLocalServer = 0x4,
+            ClsctxInprocServer16 = 0x8,
+            ClsctxRemoteServer = 0x10,
+            ClsctxInprocHandler16 = 0x20,
+            ClsctxReserved1 = 0x40,
+            ClsctxReserved2 = 0x80,
+            ClsctxReserved3 = 0x100,
+            ClsctxReserved4 = 0x200,
+            ClsctxNoCodeDownload = 0x400,
+            ClsctxReserved5 = 0x800,
+            ClsctxNoCustomMarshal = 0x1000,
+            ClsctxEnableCodeDownload = 0x2000,
+            ClsctxNoFailureLog = 0x4000,
+            ClsctxDisableAaa = 0x8000,
+            ClsctxEnableAaa = 0x10000,
+            ClsctxFromDefaultContext = 0x20000,
+            ClsctxInproc = ClsctxInprocServer | ClsctxInprocHandler,
+            ClsctxServer = ClsctxInprocServer | ClsctxLocalServer | ClsctxRemoteServer,
+            ClsctxAll = ClsctxServer | ClsctxInprocHandler
         }
 
         [Flags]
-        enum COINIT : uint
+        enum Coinit : uint
         {
             /// Initializes the thread for multi-threaded object concurrency.
-            COINIT_MULTITHREADED = 0x0,
+            CoinitMultithreaded = 0x0,
             /// Initializes the thread for apartment-threaded object concurrency. 
-            COINIT_APARTMENTTHREADED = 0x2,
+            CoinitApartmentthreaded = 0x2,
             /// Disables DDE for Ole1 support.
-            COINIT_DISABLE_OLE1DDE = 0x4,
+            CoinitDisableOle1Dde = 0x4,
             /// Trades memory for speed.
-            COINIT_SPEED_OVER_MEMORY = 0x8
+            CoinitSpeedOverMemory = 0x8
         }
 
         [Flags]
-        enum REGCLS : uint
+        enum Regcls : uint
         {
-            REGCLS_SINGLEUSE = 0,
-            REGCLS_MULTIPLEUSE = 1,
-            REGCLS_MULTI_SEPARATE = 2,
-            REGCLS_SUSPENDED = 4,
-            REGCLS_SURROGATE = 8
+            RegclsSingleuse = 0,
+            RegclsMultipleuse = 1,
+            RegclsMultiSeparate = 2,
+            RegclsSuspended = 4,
+            RegclsSurrogate = 8
         }
 
 
@@ -94,7 +94,7 @@ namespace ASCOM.Meade.net
         // We will need this API to post a WM_QUIT message to the main 
         // thread in order to terminate this application.
         [DllImport("user32.dll")]
-        static extern bool PostThreadMessage(uint idThread, uint Msg, UIntPtr wParam,
+        static extern bool PostThreadMessage(uint idThread, uint msg, UIntPtr wParam,
             IntPtr lParam);
 
         // GetCurrentThreadId() allows us to obtain the thread id of the
@@ -105,21 +105,21 @@ namespace ASCOM.Meade.net
         #endregion
 
         #region Private Data
-        private static int objsInUse;                       // Keeps a count on the total number of objects alive.
-        private static int serverLocks;                     // Keeps a lock count on this application.
-        private static frmMain s_MainForm = null;               // Reference to our main form
-        private static ArrayList s_ComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
-        private static ArrayList s_ComObjectTypes;              // Served COM object types
-        private static ArrayList s_ClassFactories;              // Served COM object class factories
-        private static string s_appId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}";	// Our AppId
-        private static readonly Object lockObject = new object();
+        private static int _objsInUse;                       // Keeps a count on the total number of objects alive.
+        private static int _serverLocks;                     // Keeps a lock count on this application.
+        private static FrmMain _sMainForm = null;               // Reference to our main form
+        private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
+        private static ArrayList _sComObjectTypes;              // Served COM object types
+        private static ArrayList _sClassFactories;              // Served COM object class factories
+        private static string _sAppId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}";	// Our AppId
+        private static readonly Object LockObject = new object();
         #endregion
 
         // This property returns the main thread's id.
         public static uint MainThreadId { get; private set; }   // Stores the main thread's thread id.
 
         // Used to tell if started by COM or manually
-        public static bool StartedByCOM { get; private set; }   // True if server started by COM (-embedding)
+        public static bool StartedByCom { get; private set; }   // True if server started by COM (-embedding)
 
 
         #region Server Lock, Object Counting, and AutoQuit on COM startup
@@ -128,9 +128,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                lock (lockObject)
+                lock (LockObject)
                 {
-                    return objsInUse;
+                    return _objsInUse;
                 }
             }
         }
@@ -139,14 +139,14 @@ namespace ASCOM.Meade.net
         public static int CountObject()
         {
             // Increment the global count of objects.
-            return Interlocked.Increment(ref objsInUse);
+            return Interlocked.Increment(ref _objsInUse);
         }
 
         // This method performs a thread-safe decrementation the objects count.
         public static int UncountObject()
         {
             // Decrement the global count of objects.
-            return Interlocked.Decrement(ref objsInUse);
+            return Interlocked.Decrement(ref _objsInUse);
         }
 
         // Returns the current server lock count.
@@ -154,9 +154,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                lock (lockObject)
+                lock (LockObject)
                 {
-                    return serverLocks;
+                    return _serverLocks;
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace ASCOM.Meade.net
         public static int CountLock()
         {
             // Increment the global lock count of this server.
-            return Interlocked.Increment(ref serverLocks);
+            return Interlocked.Increment(ref _serverLocks);
         }
 
         // This method performs a thread-safe decrementation the 
@@ -174,7 +174,7 @@ namespace ASCOM.Meade.net
         public static int UncountLock()
         {
             // Decrement the global lock count of this server.
-            return Interlocked.Decrement(ref serverLocks);
+            return Interlocked.Decrement(ref _serverLocks);
         }
 
         // AttemptToTerminateServer() will check to see if the objects count and the server 
@@ -186,11 +186,11 @@ namespace ASCOM.Meade.net
         //
         public static void ExitIf()
         {
-            lock (lockObject)
+            lock (LockObject)
             {
                 if ((ObjectsCount <= 0) && (ServerLockCount <= 0))
                 {
-                    if (StartedByCOM)
+                    if (StartedByCom)
                     {
                         UIntPtr wParam = new UIntPtr(0);
                         IntPtr lParam = new IntPtr(0);
@@ -213,8 +213,8 @@ namespace ASCOM.Meade.net
         //
         private static bool LoadComObjectAssemblies()
         {
-            s_ComObjectAssys = new ArrayList();
-            s_ComObjectTypes = new ArrayList();
+            _sComObjectAssys = new ArrayList();
+            _sComObjectTypes = new ArrayList();
 
             // put everything into one folder, the same as the server.
             string assyPath = Assembly.GetEntryAssembly().Location;
@@ -243,8 +243,8 @@ namespace ASCOM.Meade.net
                         if (attrbutes.Length > 0)
                         {
                             //MessageBox.Show("Adding Type: " + type.Name + " " + type.FullName);
-                            s_ComObjectTypes.Add(type); //PWGS - much simpler
-                            s_ComObjectAssys.Add(so);
+                            _sComObjectTypes.Add(type); //PWGS - much simpler
+                            _sComObjectAssys.Add(so);
                         }
                     }
                 }
@@ -339,10 +339,10 @@ namespace ASCOM.Meade.net
                 //
                 // HKCR\APPID\appid
                 //
-                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey("APPID\\" + s_appId))
+                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey("APPID\\" + _sAppId))
                 {
                     key.SetValue(null, assyDescription);
-                    key.SetValue("AppID", s_appId);
+                    key.SetValue("AppID", _sAppId);
                     key.SetValue("AuthenticationLevel", 1, RegistryValueKind.DWord);
                 }
                 //
@@ -351,7 +351,7 @@ namespace ASCOM.Meade.net
                 using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("APPID\\{0}",
                             Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1))))
                 {
-                    key.SetValue("AppID", s_appId);
+                    key.SetValue("AppID", _sAppId);
                 }
             }
             catch (Exception ex)
@@ -367,7 +367,7 @@ namespace ASCOM.Meade.net
             //
             // For each of the driver assemblies
             //
-            foreach (Type type in s_ComObjectTypes)
+            foreach (Type type in _sComObjectTypes)
             {
                 bool bFail = false;
                 try
@@ -383,7 +383,7 @@ namespace ASCOM.Meade.net
                     using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("CLSID\\{0}", clsid)))
                     {
                         key.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
-                        key.SetValue("AppId", s_appId);
+                        key.SetValue("AppId", _sAppId);
                         using (RegistryKey key2 = key.CreateSubKey("Implemented Categories"))
                         {
                             key2.CreateSubKey("{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}");
@@ -417,10 +417,10 @@ namespace ASCOM.Meade.net
                     // Pull the display name from the ServedClassName attribute.
                     attr = Attribute.GetCustomAttribute(type, typeof(ServedClassNameAttribute)); //PWGS Changed to search type for attribute rather than assembly
                     string chooserName = ((ServedClassNameAttribute)attr).DisplayName ?? "MultiServer";
-                    using (var P = new Profile())
+                    using (var p = new Profile())
                     {
-                        P.DeviceType = deviceType;
-                        P.Register(progid, chooserName);
+                        p.DeviceType = deviceType;
+                        p.Register(progid, chooserName);
                     }
                 }
                 catch (Exception ex)
@@ -453,14 +453,14 @@ namespace ASCOM.Meade.net
             //
             // Local server's DCOM/AppID information
             //
-            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}", s_appId), false);
+            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}", _sAppId), false);
             Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}",
                     Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)), false);
 
             //
             // For each of the driver assemblies
             //
-            foreach (Type type in s_ComObjectTypes)
+            foreach (Type type in _sComObjectTypes)
             {
                 string clsid = Marshal.GenerateGuidForType(type).ToString("B");
                 string progid = Marshal.GenerateProgIdForType(type);
@@ -487,10 +487,10 @@ namespace ASCOM.Meade.net
                     //
                     // ASCOM
                     //
-                    using (var P = new Profile())
+                    using (var p = new Profile())
                     {
-                        P.DeviceType = deviceType;
-                        P.Unregister(progid);
+                        p.DeviceType = deviceType;
+                        p.Unregister(progid);
                     }
                 }
                 catch (Exception) { }
@@ -506,11 +506,11 @@ namespace ASCOM.Meade.net
         //
         private static bool RegisterClassFactories()
         {
-            s_ClassFactories = new ArrayList();
-            foreach (Type type in s_ComObjectTypes)
+            _sClassFactories = new ArrayList();
+            foreach (Type type in _sComObjectTypes)
             {
                 ClassFactory factory = new ClassFactory(type);                  // Use default context & flags
-                s_ClassFactories.Add(factory);
+                _sClassFactories.Add(factory);
                 if (!factory.RegisterClassObject())
                 {
                     MessageBox.Show("Failed to register class factory for " + type.Name,
@@ -525,7 +525,7 @@ namespace ASCOM.Meade.net
         private static void RevokeClassFactories()
         {
             ClassFactory.SuspendClassObjects();                                 // Prevent race conditions
-            foreach (ClassFactory factory in s_ClassFactories)
+            foreach (ClassFactory factory in _sClassFactories)
                 factory.RevokeClassObject();
         }
         #endregion
@@ -549,7 +549,7 @@ namespace ASCOM.Meade.net
                 switch (args[0].ToLower())
                 {
                     case "-embedding":
-                        StartedByCOM = true;                                        // Indicate COM started us
+                        StartedByCom = true;                                        // Indicate COM started us
                         break;
 
                     case "-register":
@@ -575,7 +575,7 @@ namespace ASCOM.Meade.net
                 }
             }
             else
-                StartedByCOM = false;
+                StartedByCom = false;
 
             return bRet;
         }
@@ -595,24 +595,24 @@ namespace ASCOM.Meade.net
             if (!ProcessArguments(args)) return;                        // Register/Unregister
 
             // Initialize critical member variables.
-            objsInUse = 0;
-            serverLocks = 0;
+            _objsInUse = 0;
+            _serverLocks = 0;
             MainThreadId = GetCurrentThreadId();
             Thread.CurrentThread.Name = "Main Thread";
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            s_MainForm = new frmMain();
-            if (StartedByCOM) s_MainForm.WindowState = FormWindowState.Minimized;
+            _sMainForm = new FrmMain();
+            if (StartedByCom) _sMainForm.WindowState = FormWindowState.Minimized;
 
             // Register the class factories of the served objects
             RegisterClassFactories();
 
             // Start up the garbage collection thread.
-            GarbageCollection GarbageCollector = new GarbageCollection(1000);
-            Thread GCThread = new Thread(new ThreadStart(GarbageCollector.GCWatch));
-            GCThread.Name = "Garbage Collection Thread";
-            GCThread.Start();
+            GarbageCollection garbageCollector = new GarbageCollection(1000);
+            Thread gcThread = new Thread(new ThreadStart(garbageCollector.GcWatch));
+            gcThread.Name = "Garbage Collection Thread";
+            gcThread.Start();
 
             //
             // Start the message loop. This serializes incoming calls to our
@@ -620,7 +620,7 @@ namespace ASCOM.Meade.net
             //
             try
             {
-                Application.Run(s_MainForm);
+                Application.Run(_sMainForm);
             }
             finally
             {
@@ -630,8 +630,8 @@ namespace ASCOM.Meade.net
                 RevokeClassFactories();
 
                 // Now stop the Garbage Collector thread.
-                GarbageCollector.StopThread();
-                GarbageCollector.WaitForThreadToStop();
+                garbageCollector.StopThread();
+                garbageCollector.WaitForThreadToStop();
             }
         }
         #endregion

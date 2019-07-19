@@ -39,15 +39,15 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Telescope";
-        private static readonly string driverID = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
 
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static readonly string driverDescription = "Meade Generic";
+        private static readonly string DriverDescription = "Meade Generic";
 
-        private static string comPort; // Variables to hold the currrent device configuration
+        private static string _comPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -65,7 +65,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        private TraceLogger tl;
+        private TraceLogger _tl;
 
         private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -100,7 +100,7 @@ namespace ASCOM.Meade.net
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
-            tl = new TraceLogger("", "Meade.net.Telescope");
+            _tl = new TraceLogger("", "Meade.net.Telescope");
             LogMessage("Telescope", "Starting initialisation");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
@@ -279,9 +279,9 @@ namespace ASCOM.Meade.net
                 Connected = false;
 
             // Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
+            _tl.Enabled = false;
+            _tl.Dispose();
+            _tl = null;
         }
 
         public bool Connected
@@ -299,18 +299,18 @@ namespace ASCOM.Meade.net
 
                 if (value)
                 {
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
+                    LogMessage("Connected Set", "Connecting to port {0}", _comPort);
                     try
                     {
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
-                            LogMessage("Connected Set", $"Connected to port {comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
+                            LogMessage("Connected Set", $"Connected to port {_comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
 
                             SetLongFormat(true);
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
-                            _targetDeclination = INVALID_PARAMETER;
-                            _targetRightAscension = INVALID_PARAMETER;
+                            _targetDeclination = InvalidParameter;
+                            _targetRightAscension = InvalidParameter;
                             _tracking = true;
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
@@ -324,12 +324,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", comPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _comPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
                     _sharedResourcesWrapper.Disconnect("Serial");
                     IsConnected = false;
                 }
@@ -338,9 +338,9 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            if (_sharedResourcesWrapper.ProductName == _sharedResourcesWrapper.AUTOSTAR497)
+            if (_sharedResourcesWrapper.ProductName == _sharedResourcesWrapper.Autostar497)
             {
-                return FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_31EE);
+                return FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49731Ee);
             }
 
             return false;
@@ -395,8 +395,8 @@ namespace ASCOM.Meade.net
             // TODO customise this device description
             get
             {
-                LogMessage("Description Get", driverDescription);
-                return driverDescription;
+                LogMessage("Description Get", DriverDescription);
+                return DriverDescription;
             }
         }
 
@@ -447,7 +447,7 @@ namespace ASCOM.Meade.net
                 ////Returns: dd.d#
 
                 //string name = $"{telescopeProduceName} - {firmwareVersion}";
-                string name = driverDescription;
+                string name = DriverDescription;
                 LogMessage("Name Get", name);
                 return name;
             }
@@ -525,7 +525,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_43EG))
+                if (!FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49743Eg))
                     throw new PropertyNotImplementedException("AlignmentMode",true );
 
                 //todo make this only try with Autostar 43Eg and above.
@@ -636,10 +636,10 @@ namespace ASCOM.Meade.net
             private set => _atPark = value;
         }
 
-        public IAxisRates AxisRates(TelescopeAxes Axis)
+        public IAxisRates AxisRates(TelescopeAxes axis)
         {
-            LogMessage("AxisRates", "Get - " + Axis.ToString());
-            return new AxisRates(Axis);
+            LogMessage("AxisRates", "Get - " + axis.ToString());
+            return new AxisRates(axis);
         }
 
         public double Azimuth
@@ -673,15 +673,15 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public bool CanMoveAxis(TelescopeAxes Axis)
+        public bool CanMoveAxis(TelescopeAxes axis)
         {
-            LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
-            switch (Axis)
+            LogMessage("CanMoveAxis", "Get - " + axis.ToString());
+            switch (axis)
             {
                 case TelescopeAxes.axisPrimary: return true; //RA or AZ
                 case TelescopeAxes.axisSecondary: return true; //Dev or Alt
                 case TelescopeAxes.axisTertiary: return false; //rotator / derotator
-                default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
+                default: throw new InvalidValueException("CanMoveAxis", axis.ToString(), "0 to 2");
             }
         }
 
@@ -1538,19 +1538,19 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private const double INVALID_PARAMETER = -1000;
+        private const double InvalidParameter = -1000;
 
         public void SlewToTargetAsync()
         {
             CheckConnected("SlewToTargetAsync");
 
-            if (TargetDeclination == INVALID_PARAMETER || TargetRightAscension == INVALID_PARAMETER)
+            if (TargetDeclination == InvalidParameter || TargetRightAscension == InvalidParameter)
                 throw new InvalidOperationException("No target selected to slew to.");
 
             DoSlewAsync(true);
         }
 
-        private bool movingAxis()
+        private bool MovingAxis()
         {
             return _movingPrimary || _movingSecondary;
         }
@@ -1562,7 +1562,7 @@ namespace ASCOM.Meade.net
                 if (!Connected) return false;
 
 
-                if (movingAxis())
+                if (MovingAxis())
                     return true;
 
                 CheckConnected("Slewing Get");
@@ -1620,12 +1620,12 @@ namespace ASCOM.Meade.net
                 throw new InvalidOperationException("Unable to perform sync");
         }
 
-        private double _targetDeclination = INVALID_PARAMETER;
+        private double _targetDeclination = InvalidParameter;
         public double TargetDeclination
         {
             get
             {
-                if (_targetDeclination == INVALID_PARAMETER)
+                if (_targetDeclination == InvalidParameter)
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gd#", "#");
@@ -1675,12 +1675,12 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private double _targetRightAscension = INVALID_PARAMETER;
+        private double _targetRightAscension = InvalidParameter;
         public double TargetRightAscension
         {
             get
             {
-                if (_targetRightAscension == INVALID_PARAMETER)
+                if (_targetRightAscension == InvalidParameter)
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gr#", "#");
@@ -1820,9 +1820,9 @@ namespace ASCOM.Meade.net
 
         public class TelescopeDateDetails
         {
-            public string telescopeDate { get; set; }
-            public string telescopeTime { get; set; }
-            public TimeSpan utcCorrection { get; set; }
+            public string TelescopeDate { get; set; }
+            public string TelescopeTime { get; set; }
+            public TimeSpan UtcCorrection { get; set; }
         }
 
         public DateTime UTCDate
@@ -1836,34 +1836,34 @@ namespace ASCOM.Meade.net
                 TelescopeDateDetails telescopeDateDetails = _sharedResourcesWrapper.Lock(() =>
                 {
                     TelescopeDateDetails tdd = new TelescopeDateDetails();
-                    tdd.telescopeDate = _sharedResourcesWrapper.SendString(":GC#");
+                    tdd.TelescopeDate = _sharedResourcesWrapper.SendString(":GC#");
                     //:GC# Get current date.
                     //Returns: MM/DD/YY#
                     //The current local calendar date for the telescope.
-                    tdd.telescopeTime = _sharedResourcesWrapper.SendString(":GL#");
+                    tdd.TelescopeTime = _sharedResourcesWrapper.SendString(":GL#");
                     //:GL# Get Local Time in 24 hour format
                     //Returns: HH:MM:SS#
                     //The Local Time in 24 - hour Format
-                    tdd.utcCorrection = GetUtcCorrection();
+                    tdd.UtcCorrection = GetUtcCorrection();
 
                     return tdd;
                 });
 
-                int month = telescopeDateDetails.telescopeDate.Substring(0, 2).ToInteger();
-                int day = telescopeDateDetails.telescopeDate.Substring(3, 2).ToInteger();
-                int year = telescopeDateDetails.telescopeDate.Substring(6, 2).ToInteger();
+                int month = telescopeDateDetails.TelescopeDate.Substring(0, 2).ToInteger();
+                int day = telescopeDateDetails.TelescopeDate.Substring(3, 2).ToInteger();
+                int year = telescopeDateDetails.TelescopeDate.Substring(6, 2).ToInteger();
 
                 if (year < 2000) //todo fix this hack that will create a Y2K100 bug
                 {
                     year = year + 2000;
                 }
 
-                int hour = telescopeDateDetails.telescopeTime.Substring(0, 2).ToInteger();
-                int minute = telescopeDateDetails.telescopeTime.Substring(3, 2).ToInteger();
-                int second = telescopeDateDetails.telescopeTime.Substring(6, 2).ToInteger();
+                int hour = telescopeDateDetails.TelescopeTime.Substring(0, 2).ToInteger();
+                int minute = telescopeDateDetails.TelescopeTime.Substring(3, 2).ToInteger();
+                int second = telescopeDateDetails.TelescopeTime.Substring(6, 2).ToInteger();
 
                 var utcDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) +
-                              telescopeDateDetails.utcCorrection;
+                              telescopeDateDetails.UtcCorrection;
 
                 LogMessage("UTCDate", "Get - " + utcDate.ToString("MM/dd/yy HH:mm:ss"));
 
@@ -1934,18 +1934,18 @@ namespace ASCOM.Meade.net
         /// This is harmless if the driver is already registered/unregistered.
         /// </summary>
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
-        private static void RegUnregASCOM(bool bRegister)
+        private static void RegUnregAscom(bool bRegister)
         {
-            using (var P = new Profile())
+            using (var p = new Profile())
             {
-                P.DeviceType = "Telescope";
+                p.DeviceType = "Telescope";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    p.Register(DriverId, DriverDescription);
                 }
                 else
                 {
-                    P.Unregister(driverID);
+                    p.Unregister(DriverId);
                 }
             }
         }
@@ -1968,9 +1968,9 @@ namespace ASCOM.Meade.net
         /// This technique should mean that it is never necessary to manually register a driver with ASCOM.
         /// </remarks>
         [ComRegisterFunction]
-        public static void RegisterASCOM(Type t)
+        public static void RegisterAscom(Type t)
         {
-            RegUnregASCOM(true);
+            RegUnregAscom(true);
         }
 
         /// <summary>
@@ -1991,9 +1991,9 @@ namespace ASCOM.Meade.net
         /// This technique should mean that it is never necessary to manually unregister a driver from ASCOM.
         /// </remarks>
         [ComUnregisterFunction]
-        public static void UnregisterASCOM(Type t)
+        public static void UnregisterAscom(Type t)
         {
-            RegUnregASCOM(false);
+            RegUnregAscom(false);
         }
 
         #endregion
@@ -2021,8 +2021,8 @@ namespace ASCOM.Meade.net
         internal void ReadProfile()
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            tl.Enabled = profileProperties.TraceLogger;
-            comPort = profileProperties.ComPort;
+            _tl.Enabled = profileProperties.TraceLogger;
+            _comPort = profileProperties.ComPort;
         }
 
         /// <summary>
@@ -2034,7 +2034,7 @@ namespace ASCOM.Meade.net
         internal void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
-            tl.LogMessage(identifier, msg);
+            _tl.LogMessage(identifier, msg);
         }
         #endregion
     }

@@ -10,8 +10,8 @@ namespace ASCOM.Meade.net.AstroMaths
         public double RightAscensionToHourAngle(DateTime utcDateTime, double longitude, double rightAscension)
         {
             var ut = DateTimeToDecimalHours( utcDateTime);
-            var gst = UTtoGST( utcDateTime);
-            var lst = GSTtoLST( gst, longitude);
+            var gst = UTtoGst( utcDateTime);
+            var lst = GsTtoLst( gst, longitude);
             var raHours = rightAscension;
             var h1 = lst - raHours;
             var h = h1;
@@ -24,8 +24,8 @@ namespace ASCOM.Meade.net.AstroMaths
 
         public double HourAngleToRightAscension(DateTime utcDateTime, double longitude, double hourAngle )
         {
-            var gst = UTtoGST(utcDateTime);
-            var lst = GSTtoLST( gst, longitude);
+            var gst = UTtoGst(utcDateTime);
+            var lst = GsTtoLst( gst, longitude);
             var raHours = hourAngle;
             var h1 = lst - raHours;
             var h = h1;
@@ -129,7 +129,7 @@ namespace ASCOM.Meade.net.AstroMaths
         }
 
         //todo convert to extension method
-        public double UTtoGST(DateTime utcDateTime)
+        public double UTtoGst(DateTime utcDateTime)
         {
             Util util = new Util();
 
@@ -171,7 +171,7 @@ namespace ASCOM.Meade.net.AstroMaths
             return t1;
         }
 
-        public double GSTtoLST(double gst, double longitude)
+        public double GsTtoLst(double gst, double longitude)
         {
             var l = longitude/ 15;
 

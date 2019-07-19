@@ -11,7 +11,7 @@ namespace ASCOM.Meade.net.AstroMaths
         double DegreesToRadians(double degrees);
         double RadiansToDegrees(double radians);
         double DateTimeToDecimalHours( DateTime utcDateTime);
-        double UTtoGST(DateTime utcDateTime);
-        double GSTtoLST(double gst, double longitude);
+        double UTtoGst(DateTime utcDateTime);
+        double GsTtoLst(double gst, double longitude);
     }
 }

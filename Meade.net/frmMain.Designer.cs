@@ -2,7 +2,7 @@ using System;
 
 namespace ASCOM.Meade.net
 {
-    partial class frmMain
+    partial class FrmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -48,7 +48,7 @@ namespace ASCOM.Meade.net
             this.ClientSize = new System.Drawing.Size(233, 52);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Name = "frmMain";
+            this.Name = "FrmMain";
             this.Text = "Meade.net Driver Server";
             this.ResumeLayout(false);
 

@@ -38,14 +38,14 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Focuser";
-        internal static string driverID = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        internal static string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "Meade Generic";
+        private static string _driverDescription = "Meade Generic";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        internal static string ComPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -55,7 +55,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        internal static TraceLogger tl;
+        internal static TraceLogger Tl;
 
         private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -74,14 +74,14 @@ namespace ASCOM.Meade.net
 
         private void Initialise()
         {
-            tl = new TraceLogger("", "Meade.net.focusser");
+            Tl = new TraceLogger("", "Meade.net.focusser");
 
-            tl.LogMessage("Focuser", "Starting initialisation");
+            Tl.LogMessage("Focuser", "Starting initialisation");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
 
-            tl.LogMessage("Focuser", "Completed initialisation");
+            Tl.LogMessage("Focuser", "Completed initialisation");
         }
 
 
@@ -99,17 +99,17 @@ namespace ASCOM.Meade.net
         /// </summary>
         public void SetupDialog()
         {
-            tl.LogMessage("SetupDialog", "Opening setup dialog");
+            Tl.LogMessage("SetupDialog", "Opening setup dialog");
             _sharedResourcesWrapper.SetupDialog();
             ReadProfile();
-            tl.LogMessage("SetupDialog", "complete");
+            Tl.LogMessage("SetupDialog", "complete");
         }
 
         public ArrayList SupportedActions
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                Tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -155,9 +155,9 @@ namespace ASCOM.Meade.net
         public void Dispose()
         {
             // Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
+            Tl.Enabled = false;
+            Tl.Dispose();
+            Tl = null;
         }
 
         public bool Connected
@@ -169,7 +169,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                tl.LogMessage("Connected", "Set {0}", value);
+                Tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
 
@@ -193,12 +193,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", comPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
                     _sharedResourcesWrapper.Disconnect("Serial");
                     IsConnected = false;
                 }
@@ -241,8 +241,8 @@ namespace ASCOM.Meade.net
             // TODO customise this device description
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
-                return driverDescription;
+                Tl.LogMessage("Description Get", _driverDescription);
+                return _driverDescription;
             }
         }
 
@@ -253,7 +253,7 @@ namespace ASCOM.Meade.net
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
+                Tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
         }
@@ -264,7 +264,7 @@ namespace ASCOM.Meade.net
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
+                Tl.LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
         }
@@ -284,8 +284,8 @@ namespace ASCOM.Meade.net
             get
             {
                 //string name = "Short driver name - please customise";
-                string name = driverDescription;
-                tl.LogMessage("Name Get", name);
+                string name = _driverDescription;
+                Tl.LogMessage("Name Get", name);
                 return name;
             }
         }
@@ -298,14 +298,14 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("Absolute Get", false.ToString());
+                Tl.LogMessage("Absolute Get", false.ToString());
                 return false; // This is a relative focuser
             }
         }
 
         public void Halt()
         {
-            tl.LogMessage("Halt", "Halting");
+            Tl.LogMessage("Halt", "Halting");
 
             CheckConnected("Halt");
 
@@ -325,7 +325,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("IsMoving Get", false.ToString());
+                Tl.LogMessage("IsMoving Get", false.ToString());
                 return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
             }
         }
@@ -334,12 +334,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("Link Get", Connected.ToString());
+                Tl.LogMessage("Link Get", Connected.ToString());
                 return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
-                tl.LogMessage("Link Set", value.ToString());
+                Tl.LogMessage("Link Set", value.ToString());
                 Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
         }
@@ -349,7 +349,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
+                Tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
                 return _maxIncrement; // Maximum change in one move
             }
         }
@@ -359,37 +359,37 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("MaxStep Get", _maxStep.ToString());
+                Tl.LogMessage("MaxStep Get", _maxStep.ToString());
                 return _maxStep;
             }
         }
 
-        public void Move(int Position)
+        public void Move(int position)
         {
-            tl.LogMessage("Move", Position.ToString());
+            Tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
 
             //todo implement backlash compensation
             //todo implement direction reverse
             //todo implement dynamic braking
 
-            if (Position < -MaxIncrement || Position > MaxIncrement)
+            if (position < -MaxIncrement || position > MaxIncrement)
             {
-                throw new InvalidValueException($"position out of range {-MaxIncrement} < {Position} < {MaxIncrement}");
+                throw new InvalidValueException($"position out of range {-MaxIncrement} < {position} < {MaxIncrement}");
             }
 
-            if (Position == 0)
+            if (position == 0)
                 return;
 
-            if (Position > 0)
+            if (position > 0)
             {
                 //desired move direction is out
-                MoveFocuser(true, Math.Abs(Position));
+                MoveFocuser(true, Math.Abs(position));
             }
             else
             {
                 //desired move direction is in
-                MoveFocuser(false, Math.Abs(Position));
+                MoveFocuser(false, Math.Abs(position));
             }
         }
 
@@ -436,7 +436,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("StepSize Get", "Not implemented");
+                Tl.LogMessage("StepSize Get", "Not implemented");
                 throw new PropertyNotImplementedException("StepSize", false);
             }
         }
@@ -445,12 +445,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("TempComp Get", false.ToString());
+                Tl.LogMessage("TempComp Get", false.ToString());
                 return false;
             }
             set
             {
-                tl.LogMessage("TempComp Set", "Not implemented");
+                Tl.LogMessage("TempComp Set", "Not implemented");
                 throw new PropertyNotImplementedException("TempComp", false);
             }
         }
@@ -459,7 +459,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("TempCompAvailable Get", false.ToString());
+                Tl.LogMessage("TempCompAvailable Get", false.ToString());
                 return false; // Temperature compensation is not available in this driver
             }
         }
@@ -468,7 +468,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("Temperature Get", "Not implemented");
+                Tl.LogMessage("Temperature Get", "Not implemented");
                 throw new PropertyNotImplementedException("Temperature", false);
             }
         }
@@ -489,18 +489,18 @@ namespace ASCOM.Meade.net
         /// This is harmless if the driver is already registered/unregistered.
         /// </summary>
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
-        private static void RegUnregASCOM(bool bRegister)
+        private static void RegUnregAscom(bool bRegister)
         {
-            using (var P = new Profile())
+            using (var p = new Profile())
             {
-                P.DeviceType = "Focuser";
+                p.DeviceType = "Focuser";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    p.Register(DriverId, _driverDescription);
                 }
                 else
                 {
-                    P.Unregister(driverID);
+                    p.Unregister(DriverId);
                 }
             }
         }
@@ -523,9 +523,9 @@ namespace ASCOM.Meade.net
         /// This technique should mean that it is never necessary to manually register a driver with ASCOM.
         /// </remarks>
         [ComRegisterFunction]
-        public static void RegisterASCOM(Type t)
+        public static void RegisterAscom(Type t)
         {
-            RegUnregASCOM(true);
+            RegUnregAscom(true);
         }
 
         /// <summary>
@@ -546,9 +546,9 @@ namespace ASCOM.Meade.net
         /// This technique should mean that it is never necessary to manually unregister a driver from ASCOM.
         /// </remarks>
         [ComUnregisterFunction]
-        public static void UnregisterASCOM(Type t)
+        public static void UnregisterAscom(Type t)
         {
-            RegUnregASCOM(false);
+            RegUnregAscom(false);
         }
 
         #endregion
@@ -576,8 +576,8 @@ namespace ASCOM.Meade.net
         internal void ReadProfile()
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            tl.Enabled = profileProperties.TraceLogger;
-            comPort = profileProperties.ComPort;
+            Tl.Enabled = profileProperties.TraceLogger;
+            ComPort = profileProperties.ComPort;
         }
 
         /// <summary>
@@ -589,7 +589,7 @@ namespace ASCOM.Meade.net
         internal static void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
-            tl.LogMessage(identifier, msg);
+            Tl.LogMessage(identifier, msg);
         }
         #endregion
     }
