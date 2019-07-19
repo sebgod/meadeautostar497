@@ -230,12 +230,12 @@ namespace ASCOM.Meade.net
                             break;
                         default:
                             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                            throw new ASCOM.ActionNotImplementedException($"{actionName}({actionParameters})");
+                            throw new ActionNotImplementedException($"{actionName}({actionParameters})");
                     }
                     break;
                 default:
                     LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                    throw new ASCOM.ActionNotImplementedException($"{actionName}");
+                    throw new ActionNotImplementedException($"{actionName}");
             }
 
             return string.Empty;
@@ -258,7 +258,7 @@ namespace ASCOM.Meade.net
             //string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
         }
 
@@ -414,7 +414,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
                 LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
@@ -580,13 +580,13 @@ namespace ASCOM.Meade.net
         {
             var altitudeData = _sharedResourcesWrapper.Lock(() => new AltitudeData
             {
-                UtcDateTime = this.UTCDate,
-                SiteLongitude = this.SiteLongitude,
-                SiteLatitude = this.SiteLatitude,
+                UtcDateTime = UTCDate,
+                SiteLongitude = SiteLongitude,
+                SiteLatitude = SiteLatitude,
                 equatorialCoordinates = new EquatorialCoordinates()
                 {
-                    RightAscension = this.RightAscension,
-                    Declination = this.Declination
+                    RightAscension = RightAscension,
+                    Declination = Declination
                 }
             });
 
@@ -601,7 +601,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("ApertureArea Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("ApertureArea", false);
+                throw new PropertyNotImplementedException("ApertureArea", false);
             }
         }
 
@@ -610,7 +610,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("ApertureDiameter Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("ApertureDiameter", false);
+                throw new PropertyNotImplementedException("ApertureDiameter", false);
             }
         }
 
@@ -848,14 +848,14 @@ namespace ASCOM.Meade.net
             set
             {
                 LogMessage("DeclinationRate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DeclinationRate", true);
+                throw new PropertyNotImplementedException("DeclinationRate", true);
             }
         }
 
         public PierSide DestinationSideOfPier(double rightAscension, double declination)
         {
             LogMessage("DestinationSideOfPier Get", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("DestinationSideOfPier");
+            throw new MethodNotImplementedException("DestinationSideOfPier");
         }
 
         public bool DoesRefraction
@@ -863,12 +863,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("DoesRefraction Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction", false);
+                throw new PropertyNotImplementedException("DoesRefraction", false);
             }
             set
             {
                 LogMessage("DoesRefraction Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction", true);
+                throw new PropertyNotImplementedException("DoesRefraction", true);
             }
         }
 
@@ -885,7 +885,7 @@ namespace ASCOM.Meade.net
         public void FindHome()
         {
             LogMessage("FindHome", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("FindHome");
+            throw new MethodNotImplementedException("FindHome");
         }
 
         public double FocalLength
@@ -893,7 +893,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("FocalLength Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("FocalLength", false);
+                throw new PropertyNotImplementedException("FocalLength", false);
             }
         }
 
@@ -902,12 +902,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("GuideRateDeclination Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
+                throw new PropertyNotImplementedException("GuideRateDeclination", false);
             }
             set
             {
                 LogMessage("GuideRateDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
+                throw new PropertyNotImplementedException("GuideRateDeclination", true);
             }
         }
 
@@ -916,12 +916,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("GuideRateRightAscension Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
+                throw new PropertyNotImplementedException("GuideRateRightAscension", false);
             }
             set
             {
                 LogMessage("GuideRateRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
+                throw new PropertyNotImplementedException("GuideRateRightAscension", true);
             }
         }
 
@@ -972,7 +972,7 @@ namespace ASCOM.Meade.net
                     //Returns: Nothing
                     break;
                 default:
-                    throw new ASCOM.InvalidValueException($"Rate {rate} not supported");
+                    throw new InvalidValueException($"Rate {rate} not supported");
             }
 
             switch (axis)
@@ -1032,7 +1032,7 @@ namespace ASCOM.Meade.net
 
                     break;
                 default:
-                    throw new ASCOM.InvalidValueException("Can not move this axis.");
+                    throw new InvalidValueException("Can not move this axis.");
             }
         }
 
@@ -1147,14 +1147,14 @@ namespace ASCOM.Meade.net
             set
             {
                 LogMessage("RightAscensionRate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
+                throw new PropertyNotImplementedException("RightAscensionRate", true);
             }
         }
 
         public void SetPark()
         {
             LogMessage("SetPark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SetPark");
+            throw new MethodNotImplementedException("SetPark");
         }
 
         public PierSide SideOfPier
@@ -1162,12 +1162,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("SideOfPier Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", false);
+                throw new PropertyNotImplementedException("SideOfPier", false);
             }
             set
             {
                 LogMessage("SideOfPier Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
+                throw new PropertyNotImplementedException("SideOfPier", true);
             }
         }
 
@@ -1177,13 +1177,13 @@ namespace ASCOM.Meade.net
             {
                 // Now using NOVAS 3.1
                 double siderealTime = 0.0;
-                using (var novas = new ASCOM.Astrometry.NOVAS.NOVAS31())
+                using (var novas = new Astrometry.NOVAS.NOVAS31())
                 {
                     var jd = _utilities.DateUTCToJulian(DateTime.UtcNow);
                     novas.SiderealTime(jd, 0, novas.DeltaT(jd),
-                        ASCOM.Astrometry.GstType.GreenwichApparentSiderealTime,
-                        ASCOM.Astrometry.Method.EquinoxBased,
-                        ASCOM.Astrometry.Accuracy.Reduced, ref siderealTime);
+                        Astrometry.GstType.GreenwichApparentSiderealTime,
+                        Astrometry.Method.EquinoxBased,
+                        Astrometry.Accuracy.Reduced, ref siderealTime);
                 }
 
                 // Allow for the longitude
@@ -1202,12 +1202,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("SiteElevation Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteElevation", false);
+                throw new PropertyNotImplementedException("SiteElevation", false);
             }
             set
             {
                 LogMessage("SiteElevation Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteElevation", true);
+                throw new PropertyNotImplementedException("SiteElevation", true);
             }
         }
 
@@ -1316,12 +1316,12 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("SlewSettleTime Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
+                throw new PropertyNotImplementedException("SlewSettleTime", false);
             }
             set
             {
                 LogMessage("SlewSettleTime Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
+                throw new PropertyNotImplementedException("SlewSettleTime", true);
             }
         }
 
@@ -1343,10 +1343,10 @@ namespace ASCOM.Meade.net
             set
             {
                 if (value > 90)
-                    throw new ASCOM.InvalidValueException("Altitude cannot be greater than 90.");
+                    throw new InvalidValueException("Altitude cannot be greater than 90.");
 
                 if (value < 0)
-                    throw new ASCOM.InvalidValueException("Altitide cannot be less than 0.");
+                    throw new InvalidValueException("Altitide cannot be less than 0.");
 
                 CheckConnected("TargetAltitude Set");
 
@@ -1363,7 +1363,7 @@ namespace ASCOM.Meade.net
                 //0 Object out of slew range
 
                 if (result == "0")
-                    throw new ASCOM.InvalidOperationException("Target altitude out of slew range");
+                    throw new InvalidOperationException("Target altitude out of slew range");
             }
         }
 
@@ -1372,10 +1372,10 @@ namespace ASCOM.Meade.net
             set
             {
                 if (value >= 360)
-                    throw new ASCOM.InvalidValueException("Azimuth cannot be 360 or higher.");
+                    throw new InvalidValueException("Azimuth cannot be 360 or higher.");
 
                 if (value < 0)
-                    throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
+                    throw new InvalidValueException("Azimuth cannot be less than 0.");
 
                 CheckConnected("TargetAzimuth Set");
 
@@ -1391,7 +1391,7 @@ namespace ASCOM.Meade.net
                 //1 - Valid
 
                 if (result == "0")
-                    throw new ASCOM.InvalidOperationException("Target Azimuth out of slew range");
+                    throw new InvalidOperationException("Target Azimuth out of slew range");
 
             }
         }
@@ -1401,16 +1401,16 @@ namespace ASCOM.Meade.net
             CheckConnected("SlewToAltAzAsync");
 
             if (altitude > 90)
-                throw new ASCOM.InvalidValueException("Altitude cannot be greater than 90.");
+                throw new InvalidValueException("Altitude cannot be greater than 90.");
 
             if (altitude < 0)
-                throw new ASCOM.InvalidValueException("Altitide cannot be less than 0.");
+                throw new InvalidValueException("Altitide cannot be less than 0.");
 
             if (azimuth >= 360)
-                throw new ASCOM.InvalidValueException("Azimuth cannot be 360 or higher.");
+                throw new InvalidValueException("Azimuth cannot be 360 or higher.");
 
             if (azimuth < 0)
-                throw new ASCOM.InvalidValueException("Azimuth cannot be less than 0.");
+                throw new InvalidValueException("Azimuth cannot be less than 0.");
 
             LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
             
@@ -1464,15 +1464,15 @@ namespace ASCOM.Meade.net
                                 //Below Horizon 
                                 string belowHorizonMessage = _sharedResourcesWrapper.ReadTerminated();
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
-                                throw new ASCOM.InvalidOperationException(belowHorizonMessage);
+                                throw new InvalidOperationException(belowHorizonMessage);
                             case "2":
                                 //Below Horizon 
                                 string belowMinimumElevationMessage = _sharedResourcesWrapper.ReadTerminated();
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
-                                throw new ASCOM.InvalidOperationException(belowMinimumElevationMessage);
+                                throw new InvalidOperationException(belowMinimumElevationMessage);
                             default:
                                 LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
-                                throw new ASCOM.DriverException("This error should not happen");
+                                throw new DriverException("This error should not happen");
 
                         }
 
@@ -1487,7 +1487,7 @@ namespace ASCOM.Meade.net
 
                         if (maResponse == "1")
                         {
-                            throw new ASCOM.InvalidOperationException("fault");
+                            throw new InvalidOperationException("fault");
                         }
 
                         break;
@@ -1544,7 +1544,7 @@ namespace ASCOM.Meade.net
             CheckConnected("SlewToTargetAsync");
 
             if (TargetDeclination == INVALID_PARAMETER || TargetRightAscension == INVALID_PARAMETER)
-                throw new ASCOM.InvalidOperationException("No target selected to slew to.");
+                throw new InvalidOperationException("No target selected to slew to.");
 
             DoSlewAsync(true);
         }
@@ -1587,7 +1587,7 @@ namespace ASCOM.Meade.net
         public void SyncToAltAz(double azimuth, double altitude)
         {
             LogMessage("SyncToAltAz", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToAltAz");
+            throw new MethodNotImplementedException("SyncToAltAz");
         }
 
         public void SyncToCoordinates(double rightAscension, double declination)
@@ -1616,7 +1616,7 @@ namespace ASCOM.Meade.net
             //    Autostars & Autostar II - A static string: " M31 EX GAL MAG 3.5 SZ178.0'#"
 
             if (result == string.Empty)
-                throw new ASCOM.InvalidOperationException("Unable to perform sync");
+                throw new InvalidOperationException("Unable to perform sync");
         }
 
         private double _targetDeclination = INVALID_PARAMETER;
@@ -1625,7 +1625,7 @@ namespace ASCOM.Meade.net
             get
             {
                 if (_targetDeclination == INVALID_PARAMETER)
-                    throw new ASCOM.InvalidOperationException("Target not set");
+                    throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gd#", "#");
                 ////:Gd# Get Currently Selected Object/Target Declination
@@ -1647,10 +1647,10 @@ namespace ASCOM.Meade.net
 
                 //todo implement low precision version of this.
                 if (value > 90)
-                    throw new ASCOM.InvalidValueException("Declination cannot be greater than 90.");
+                    throw new InvalidValueException("Declination cannot be greater than 90.");
 
                 if (value < -90)
-                    throw new ASCOM.InvalidValueException("Declination cannot be less than -90.");
+                    throw new InvalidValueException("Declination cannot be less than -90.");
                 
                 var dms = _utilities.DegreesToDMS(value, "*", ":", ":", 2);
                 var s = value < 0 ? string.Empty : "+";
@@ -1667,7 +1667,7 @@ namespace ASCOM.Meade.net
 
                 if (result == "0")
                 {
-                    throw new ASCOM.InvalidOperationException("Target declination invalid");
+                    throw new InvalidOperationException("Target declination invalid");
                 }
 
                 _targetDeclination = value;
@@ -1680,7 +1680,7 @@ namespace ASCOM.Meade.net
             get
             {
                 if (_targetRightAscension == INVALID_PARAMETER)
-                    throw new ASCOM.InvalidOperationException("Target not set");
+                    throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gr#", "#");
                 ////:Gr# Get current/target object RA
@@ -1914,7 +1914,7 @@ namespace ASCOM.Meade.net
         public void Unpark()
         {
             LogMessage("Unpark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Unpark");
+            throw new MethodNotImplementedException("Unpark");
         }
 
         #endregion
@@ -1935,7 +1935,7 @@ namespace ASCOM.Meade.net
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            using (var P = new ASCOM.Utilities.Profile())
+            using (var P = new Profile())
             {
                 P.DeviceType = "Telescope";
                 if (bRegister)
@@ -2010,7 +2010,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new ASCOM.NotConnectedException($"Not connected to telescope when trying to execute: {message}");
+                throw new NotConnectedException($"Not connected to telescope when trying to execute: {message}");
             }
         }
 

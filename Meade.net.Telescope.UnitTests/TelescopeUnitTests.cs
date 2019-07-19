@@ -1200,7 +1200,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
-            var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescope.SiteLatitude = siteLatitude; });
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLatitude = siteLatitude; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
         }

@@ -35,7 +35,7 @@ namespace ASCOM.Meade.net
         private static readonly object lockObject = new object();
 
         // Shared serial port. This will allow multiple drivers to use one single serial port.
-        private static ASCOM.Utilities.Serial s_sharedSerial; // Shared serial port
+        private static Serial s_sharedSerial; // Shared serial port
 
         //
         // Public access to shared resources
@@ -60,7 +60,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Shared serial port
         /// </summary>
-        public static ASCOM.Utilities.Serial SharedSerial => s_sharedSerial ?? (s_sharedSerial = new ASCOM.Utilities.Serial());
+        public static Serial SharedSerial => s_sharedSerial ?? (s_sharedSerial = new Serial());
 
         /// <summary>
         /// number of connections to the shared serial port
@@ -266,15 +266,15 @@ namespace ASCOM.Meade.net
                     if (connectedDevices[deviceId].count == 1)
                     {
                         var profileProperties = ReadProfile();
-                        SharedResources.SharedSerial.PortName = profileProperties.ComPort;
-                        SharedResources.SharedSerial.DTREnable = false;
-                        SharedResources.SharedSerial.RTSEnable = false;
-                        SharedResources.SharedSerial.DataBits = 8;
-                        SharedResources.SharedSerial.StopBits = SerialStopBits.One;
-                        SharedResources.SharedSerial.Parity = SerialParity.None;
-                        SharedResources.SharedSerial.Speed = SerialSpeed.ps9600;
-                        SharedResources.SharedSerial.Handshake = SerialHandshake.None;
-                        SharedResources.SharedSerial.Connected = true;
+                        SharedSerial.PortName = profileProperties.ComPort;
+                        SharedSerial.DTREnable = false;
+                        SharedSerial.RTSEnable = false;
+                        SharedSerial.DataBits = 8;
+                        SharedSerial.StopBits = SerialStopBits.One;
+                        SharedSerial.Parity = SerialParity.None;
+                        SharedSerial.Speed = SerialSpeed.ps9600;
+                        SharedSerial.Handshake = SerialHandshake.None;
+                        SharedSerial.Connected = true;
 
                         ProductName = SendString(":GVP#");
                         FirmwareVersion = SendString(":GVN#");
@@ -295,7 +295,7 @@ namespace ASCOM.Meade.net
                         connectedDevices.Remove(deviceId);
                         if (deviceId == "Serial")
                         {
-                            SharedResources.SharedSerial.Connected = false;
+                            SharedSerial.Connected = false;
                         }
                     }
                 }

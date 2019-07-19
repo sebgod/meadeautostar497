@@ -24,11 +24,11 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Focuser.Choose("ASCOM.MeadeGeneric.Focuser");
+            string id = Focuser.Choose("ASCOM.MeadeGeneric.Focuser");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
-            ASCOM.DriverAccess.Focuser device = new ASCOM.DriverAccess.Focuser(id);
+            Focuser device = new Focuser(id);
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
             ASCOM.DriverAccess.Telescope device = new ASCOM.DriverAccess.Telescope("ASCOM.MeadeGeneric.Telescope");

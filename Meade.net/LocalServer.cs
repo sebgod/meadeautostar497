@@ -420,7 +420,7 @@ namespace ASCOM.Meade.net
                     // Pull the display name from the ServedClassName attribute.
                     attr = Attribute.GetCustomAttribute(type, typeof(ServedClassNameAttribute)); //PWGS Changed to search type for attribute rather than assembly
                     string chooserName = ((ServedClassNameAttribute)attr).DisplayName ?? "MultiServer";
-                    using (var P = new ASCOM.Utilities.Profile())
+                    using (var P = new Profile())
                     {
                         P.DeviceType = deviceType;
                         P.Register(progid, chooserName);
@@ -490,7 +490,7 @@ namespace ASCOM.Meade.net
                     //
                     // ASCOM
                     //
-                    using (var P = new ASCOM.Utilities.Profile())
+                    using (var P = new Profile())
                     {
                         P.DeviceType = deviceType;
                         P.Unregister(progid);

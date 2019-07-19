@@ -22,11 +22,11 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Telescope.Choose("ASCOM.MeadeGeneric.Telescope");
+            string id = DriverAccess.Telescope.Choose("ASCOM.MeadeGeneric.Telescope");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
-            ASCOM.DriverAccess.Telescope device = new ASCOM.DriverAccess.Telescope(id);
+            DriverAccess.Telescope device = new DriverAccess.Telescope(id);
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
             ASCOM.DriverAccess.Telescope device = new ASCOM.DriverAccess.Telescope("ASCOM.Meade.net.Telescope");

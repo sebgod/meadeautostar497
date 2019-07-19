@@ -117,7 +117,7 @@ namespace ASCOM.Meade.net
         public string Action(string actionName, string actionParameters)
         {
             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            throw new ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
         }
 
         public void CommandBlind(string command, bool raw)
@@ -137,7 +137,7 @@ namespace ASCOM.Meade.net
             //string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
         }
 
@@ -149,7 +149,7 @@ namespace ASCOM.Meade.net
             // you need something to ensure that only one command is in progress at a time
             return _sharedResourcesWrapper.SendString(command);
 
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            throw new MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -250,7 +250,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
@@ -262,7 +262,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
@@ -334,13 +334,13 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                tl.LogMessage("Link Get", this.Connected.ToString());
-                return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
+                tl.LogMessage("Link Get", Connected.ToString());
+                return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
                 tl.LogMessage("Link Set", value.ToString());
-                this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
+                Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
         }
 
@@ -375,7 +375,7 @@ namespace ASCOM.Meade.net
 
             if (Position < -MaxIncrement || Position > MaxIncrement)
             {
-                throw new ASCOM.InvalidValueException($"position out of range {-MaxIncrement} < {Position} < {MaxIncrement}");
+                throw new InvalidValueException($"position out of range {-MaxIncrement} < {Position} < {MaxIncrement}");
             }
 
             if (Position == 0)
@@ -434,7 +434,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                throw new ASCOM.PropertyNotImplementedException("Position", false);
+                throw new PropertyNotImplementedException("Position", false);
                 //return focuserPosition; // Return the focuser position
             }
         }
@@ -444,7 +444,7 @@ namespace ASCOM.Meade.net
             get
             {
                 tl.LogMessage("StepSize Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+                throw new PropertyNotImplementedException("StepSize", false);
             }
         }
 
@@ -458,7 +458,7 @@ namespace ASCOM.Meade.net
             set
             {
                 tl.LogMessage("TempComp Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TempComp", false);
+                throw new PropertyNotImplementedException("TempComp", false);
             }
         }
 
@@ -476,7 +476,7 @@ namespace ASCOM.Meade.net
             get
             {
                 tl.LogMessage("Temperature Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Temperature", false);
+                throw new PropertyNotImplementedException("Temperature", false);
             }
         }
 
@@ -498,7 +498,7 @@ namespace ASCOM.Meade.net
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            using (var P = new ASCOM.Utilities.Profile())
+            using (var P = new Profile())
             {
                 P.DeviceType = "Focuser";
                 if (bRegister)
@@ -573,7 +573,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new ASCOM.NotConnectedException(message);
+                throw new NotConnectedException(message);
             }
         }
 
