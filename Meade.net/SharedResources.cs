@@ -146,7 +146,7 @@ namespace ASCOM.Meade.net
                     }
                 }
             }
-            get { return SharedSerial.Connected; }
+            get => SharedSerial.Connected;
         }
 
         #endregion

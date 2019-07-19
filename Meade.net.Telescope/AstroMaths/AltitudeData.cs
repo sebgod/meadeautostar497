@@ -7,6 +7,6 @@ namespace ASCOM.Meade.net.AstroMaths
         public DateTime UtcDateTime { get; set; }
         public double SiteLatitude { get; set; }
         public double SiteLongitude { get; set; }
-        public EquatorialCoordinates equatorialCoordinates { get; set; }
+        public EquatorialCoordinates EquatorialCoordinates { get; set; }
     }
 }

@@ -109,9 +109,9 @@ namespace ASCOM.Meade.net
 
         #region Constructor and Private ClassFactory Data
 
-        protected Type m_ClassType;
+        protected readonly Type m_ClassType;
         protected Guid m_ClassId;
-        protected ArrayList m_InterfaceTypes;
+        protected readonly ArrayList m_InterfaceTypes;
         protected uint m_ClassContext;
         protected uint m_Flags;
         protected UInt32 m_locked = 0;
@@ -140,20 +140,20 @@ namespace ASCOM.Meade.net
         #region Common ClassFactory Methods
         public uint ClassContext
         {
-            get { return m_ClassContext; }
-            set { m_ClassContext = value; }
+            get => m_ClassContext;
+            set => m_ClassContext = value;
         }
 
         public Guid ClassId
         {
-            get { return m_ClassId; }
-            set { m_ClassId = value; }
+            get => m_ClassId;
+            set => m_ClassId = value;
         }
 
         public uint Flags
         {
-            get { return m_Flags; }
-            set { m_Flags = value; }
+            get => m_Flags;
+            set => m_Flags = value;
         }
 
         public bool RegisterClassObject()

@@ -430,14 +430,7 @@ namespace ASCOM.Meade.net
             });
         }
 
-        public int Position
-        {
-            get
-            {
-                throw new PropertyNotImplementedException("Position", false);
-                //return focuserPosition; // Return the focuser position
-            }
-        }
+        public int Position => throw new PropertyNotImplementedException("Position", false);
 
         public double StepSize
         {

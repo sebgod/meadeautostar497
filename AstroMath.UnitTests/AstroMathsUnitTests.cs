@@ -58,7 +58,7 @@ namespace AstroMath.UnitTests
         }
 
         [Test]
-        public void UTtoGST()
+        public void UTtoGst()
         {
             DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
             double gst = _astroMath.UTtoGST(dateTime);
@@ -76,7 +76,7 @@ namespace AstroMath.UnitTests
         }
 
         [Test]
-        public void GSTtoLST()
+        public void GsTtoLst()
         {
             double gst = 14.257589512545053;
             var longitude = -1.7833333333333332;

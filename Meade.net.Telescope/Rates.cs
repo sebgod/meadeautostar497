@@ -19,8 +19,8 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Rate : IRate
     {
-        private double maximum = 0;
-        private double minimum = 0;
+        private double _maximum = 0;
+        private double _minimum = 0;
 
         //
         // Default constructor - Internal prevents public creation
@@ -28,8 +28,8 @@ namespace ASCOM.Meade.net
         //
         internal Rate(double minimum, double maximum)
         {
-            this.maximum = maximum;
-            this.minimum = minimum;
+            _maximum = maximum;
+            _minimum = minimum;
         }
 
         #region Implementation of IRate
@@ -41,14 +41,14 @@ namespace ASCOM.Meade.net
 
         public double Maximum
         {
-            get { return maximum; }
-            set { maximum = value; }
+            get => _maximum;
+            set => _maximum = value;
         }
 
         public double Minimum
         {
-            get { return minimum; }
-            set { minimum = value; }
+            get => _minimum;
+            set => _minimum = value;
         }
 
         #endregion
@@ -112,10 +112,7 @@ namespace ASCOM.Meade.net
 
         #region IAxisRates Members
 
-        public int Count
-        {
-            get { return rates.Length; }
-        }
+        public int Count => rates.Length;
 
         public void Dispose()
         {
@@ -127,10 +124,7 @@ namespace ASCOM.Meade.net
             return rates.GetEnumerator();
         }
 
-        public IRate this[int index]
-        {
-            get { return rates[index - 1]; }	// 1-based
-        }
+        public IRate this[int index] => rates[index - 1];
 
         #endregion
     }
@@ -178,10 +172,7 @@ namespace ASCOM.Meade.net
 
         #region ITrackingRates Members
 
-        public int Count
-        {
-            get { return trackingRates.Length; }
-        }
+        public int Count => trackingRates.Length;
 
         public IEnumerator GetEnumerator()
         {
@@ -194,10 +185,7 @@ namespace ASCOM.Meade.net
             // TODO Add any required object cleanup here
         }
 
-        public DriveRates this[int index]
-        {
-            get { return trackingRates[index - 1]; }   // 1-based
-        }
+        public DriveRates this[int index] => trackingRates[index - 1];
 
         #endregion
 

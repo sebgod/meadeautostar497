@@ -6,6 +6,7 @@ using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Collections;
+using System.Globalization;
 using System.Reflection;
 using ASCOM.Meade.net.AstroMaths;
 using ASCOM.Meade.net.Wrapper;
@@ -38,15 +39,15 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Telescope";
-        internal static string driverID = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string driverID = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
 
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "Meade Generic";
+        private static readonly string driverDescription = "Meade Generic";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        private static string comPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -583,7 +584,7 @@ namespace ASCOM.Meade.net
                 UtcDateTime = UTCDate,
                 SiteLongitude = SiteLongitude,
                 SiteLatitude = SiteLatitude,
-                equatorialCoordinates = new EquatorialCoordinates()
+                EquatorialCoordinates = new EquatorialCoordinates()
                 {
                     RightAscension = RightAscension,
                     Declination = Declination
@@ -591,8 +592,8 @@ namespace ASCOM.Meade.net
             });
 
             double hourAngle = _astroMaths.RightAscensionToHourAngle(altitudeData.UtcDateTime, altitudeData.SiteLongitude,
-                altitudeData.equatorialCoordinates.RightAscension);
-            var altAz = _astroMaths.ConvertEqToHoz(hourAngle, altitudeData.SiteLatitude, altitudeData.equatorialCoordinates);
+                altitudeData.EquatorialCoordinates.RightAscension);
+            var altAz = _astroMaths.ConvertEqToHoz(hourAngle, altitudeData.SiteLatitude, altitudeData.EquatorialCoordinates);
             return altAz;
         }
 
@@ -632,7 +633,7 @@ namespace ASCOM.Meade.net
                 LogMessage("AtPark", "Get - " + _atPark);
                 return _atPark;
             }
-            private set { _atPark = value; }
+            private set => _atPark = value;
         }
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
@@ -842,7 +843,7 @@ namespace ASCOM.Meade.net
             get
             {
                 double declination = 0.0;
-                LogMessage("DeclinationRate", "Get - " + declination.ToString());
+                LogMessage("DeclinationRate", "Get - " + declination.ToString(CultureInfo.InvariantCulture));
                 return declination;
             }
             set
@@ -1141,7 +1142,7 @@ namespace ASCOM.Meade.net
             get
             {
                 double rightAscensionRate = 0.0;
-                LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
+                LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString(CultureInfo.InvariantCulture));
                 return rightAscensionRate;
             }
             set
@@ -1192,7 +1193,7 @@ namespace ASCOM.Meade.net
                 // Reduce to the range 0 to 24 hours
                 siderealTime = _astroUtilities.ConditionRA(siderealTime);
 
-                LogMessage("SiderealTime", "Get - " + siderealTime.ToString());
+                LogMessage("SiderealTime", "Get - " + siderealTime.ToString(CultureInfo.InvariantCulture));
                 return siderealTime;
             }
         }
