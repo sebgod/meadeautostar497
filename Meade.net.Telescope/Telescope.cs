@@ -914,8 +914,13 @@ namespace ASCOM.Meade.net
             set
             {
                 LogMessage("GuideRateDeclination Set", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateDeclination", true);
-            }
+                throw new PropertyNotImplementedException("GuideRateDeclination", true)
+                //:RgSS.S#
+                //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+                //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+                //sidereal speed(approx 15.0417”/ sec)[Autostar II only]
+                //Returns: Nothing
+        }
         }
 
         public double GuideRateRightAscension
@@ -929,6 +934,11 @@ namespace ASCOM.Meade.net
             {
                 LogMessage("GuideRateRightAscension Set", "Not implemented");
                 throw new PropertyNotImplementedException("GuideRateRightAscension", true);
+                //:RgSS.S#
+                //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+                //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+                //sidereal speed(approx 15.0417”/ sec)[Autostar II only]
+                //Returns: Nothing
             }
         }
 
