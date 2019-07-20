@@ -104,7 +104,7 @@ namespace ASCOM.Meade.net
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
-            _tl = new TraceLogger("", "Meade.net.Telescope");
+            _tl = new TraceLogger("", "Meade.Generic.Telescope");
             LogMessage("Telescope", "Starting initialisation");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store

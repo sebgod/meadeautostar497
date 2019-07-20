@@ -74,7 +74,7 @@ namespace ASCOM.Meade.net
 
         private void Initialise()
         {
-            Tl = new TraceLogger("", "Meade.net.focusser");
+            Tl = new TraceLogger("", "Meade.Generic.focusser");
 
             Tl.LogMessage("Focuser", "Starting initialisation");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
