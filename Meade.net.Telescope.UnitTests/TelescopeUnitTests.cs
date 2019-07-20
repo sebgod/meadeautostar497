@@ -87,8 +87,9 @@ namespace Meade.net.Telescope.UnitTests
             var supportedActions = _telescope.SupportedActions;
 
             Assert.That(supportedActions, Is.Not.Null);
-            Assert.That(supportedActions.Count, Is.EqualTo(1));
+            Assert.That(supportedActions.Count, Is.EqualTo(2));
             Assert.That(supportedActions.Contains("handbox"), Is.True);
+            Assert.That(supportedActions.Contains("site"), Is.True);
         }
 
         [Test]
@@ -132,13 +133,37 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("back", ":EK87#")]
         [TestCase("forward", ":EK69#")]
         [TestCase("?", ":EK63#")]
-        public void Action_Handbox_blindCommands(string action, string expectedString)
+        public void Action_Handbox_WhenCalling_ThenSendsAppropriateBlindCommands(string action, string expectedString)
         {
             ConnectTelescope();
 
             _telescope.Action("handbox", action);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedString), Times.Once);
+        }
+
+        [TestCase("1")]
+        [TestCase("2")]
+        [TestCase("3")]
+        [TestCase("4")]
+        public void Action_Site_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site)
+        {
+            ConnectTelescope();
+
+            _telescope.Action("site", site);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", site); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {site} not allowed must be between 1 and 4"));
         }
 
         [Test]
@@ -336,8 +361,17 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
+        public void SelectSite_Get_WhenNotConnected_ThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SelectSite(1); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SelectSite"));
+        }
+
+        [Test]
         public void SelectSite_WhenNewSiteToLow_ThenThrowsException()
         {
+            ConnectTelescope();
+
             var site = 0;
             var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
 
@@ -347,6 +381,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SelectSite_WhenNewSiteToHigh_ThenThrowsException()
         {
+            ConnectTelescope();
+
             var site = 5;
             var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
 
@@ -359,6 +395,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(4)]
         public void SelectSite_WhenNewSiteToHigh_ThenThrowsException(int site)
         {
+            ConnectTelescope();
+
             _telescope.SelectSite(site);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);

@@ -157,6 +157,7 @@ namespace ASCOM.Meade.net
                 LogMessage("SupportedActions Get", "Returning empty arraylist");
                 var supportedActions = new ArrayList();
                 supportedActions.Add("handbox");
+                supportedActions.Add("site");
                 return supportedActions;
             }
         }
@@ -239,6 +240,23 @@ namespace ASCOM.Meade.net
                             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
                             throw new ActionNotImplementedException($"{actionName}({actionParameters})");
                     }
+
+                    break;
+                case "site":
+                    switch (actionParameters.ToLower())
+                    {
+                        case "1":
+                        case "2":
+                        case "3":
+                        case "4":
+                            SelectSite(actionParameters.ToInteger());
+                            break;
+                        default:
+                            LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
+                            throw new InvalidValueException($"Site {actionParameters} not allowed must be between 1 and 4");
+
+                    }
+
                     break;
                 default:
                     LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
@@ -396,9 +414,10 @@ namespace ASCOM.Meade.net
             });
         }
 
-        //todo hook this up to a custom action
         public void SelectSite(int site)
         {
+            CheckConnected("SelectSite");
+
             if (site < 1)
                 throw new ArgumentOutOfRangeException("site",site,"Site cannot be lower than 1");
             else if (site > 4)
