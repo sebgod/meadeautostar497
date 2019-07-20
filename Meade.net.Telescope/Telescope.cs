@@ -1118,6 +1118,7 @@ namespace ASCOM.Meade.net
 
             if (_userNewerPulseGuiding && duration < 10000)
             {
+                LogMessage("PulseGuide", $"Using new pulse guiding technique");
                 _sharedResourcesWrapper.SendBlind($":Mg{d}{duration:0000}#");
                 //:MgnDDDD#
                 //:MgsDDDD#
@@ -1131,6 +1132,7 @@ namespace ASCOM.Meade.net
             }
             else
             {
+                LogMessage("PulseGuide", $"Using old pulse guiding technique");
                 _sharedResourcesWrapper.Lock(() =>
                 {
                     _sharedResourcesWrapper.SendBlind(":RG#"); //Make sure we are at guide rate
