@@ -4,11 +4,6 @@ namespace ASCOM.Meade.net.Wrapper
 {
     public interface ISharedResourcesWrapper
     {
-        string Autostar497 { get; }
-        string Autostar49731Ee { get; }
-
-        string Autostar49743Eg { get;}
-
         void Connect(string deviceId);
         void Disconnect(string deviceId);
 
@@ -32,15 +27,6 @@ namespace ASCOM.Meade.net.Wrapper
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
     {
-        #region AutostarProducts
-
-        public string Autostar497 => "Autostar";
-
-        public string Autostar49731Ee => "31Ee";
-        public string Autostar49743Eg => "43Eg";
-
-        #endregion
-
         public void Connect(string deviceId)
         {
             SharedResources.Connect( deviceId);

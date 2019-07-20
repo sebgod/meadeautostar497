@@ -112,7 +112,6 @@ namespace ASCOM.Meade.net
         private readonly Type _mClassType;
         private Guid _mClassId;
         private readonly ArrayList _mInterfaceTypes;
-        private UInt32 _mLocked = 0;
         private uint _mCookie;
         private readonly string _mProgid;
 

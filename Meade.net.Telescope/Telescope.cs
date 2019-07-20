@@ -344,11 +344,25 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            if (_sharedResourcesWrapper.ProductName == _sharedResourcesWrapper.Autostar497)
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
             {
-                return FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49731Ee);
+                return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
             }
 
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsGuideRateSettingSupported()
+        {
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -495,7 +509,7 @@ namespace ASCOM.Meade.net
                 //P If scope in Polar Mode
 
                 //todo implement GW Command - Supported in Autostar 43Eg and above
-                //if FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_43EG)
+                //if FirmwareIsGreaterThan(TelescopeList.Autostar497_43EG)
                 //{
                     //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
                     //:GW# Get Scope Alignment Status
@@ -531,7 +545,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49743Eg))
+                if (!FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
                     throw new PropertyNotImplementedException("AlignmentMode",true );
 
                 //todo make this only try with Autostar 43Eg and above.
@@ -904,6 +918,29 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private void SetNewGuideRate(double value, string propertyName)
+        {
+            if (!IsGuideRateSettingSupported())
+            {
+                LogMessage("GuideRateDeclination Set", "Not implemented");
+                throw new PropertyNotImplementedException(propertyName, true);
+            }
+
+            if (!value.InRange(0, 15.0417))
+            {
+                throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
+            }
+
+            _sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
+            //:RgSS.S#
+            //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+            //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+            //sidereal speed(approx 15.0417”/sec)[Autostar II only]
+            //Returns: Nothing
+
+                _guideRate = value;
+        }
+
         public double GuideRateDeclination
         {
             get
@@ -913,16 +950,10 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                LogMessage("GuideRateDeclination Set", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateDeclination", true);
-                //:RgSS.S#
-                //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
-                //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
-                //sidereal speed(approx 15.0417”/ sec)[Autostar II only]
-                //Returns: Nothing
+                SetNewGuideRate(value, "GuideRateDeclination");
             }
         }
-
+        
         public double GuideRateRightAscension
         {
             get
@@ -932,13 +963,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                LogMessage("GuideRateRightAscension Set", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateRightAscension", true);
-                //:RgSS.S#
-                //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
-                //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
-                //sidereal speed(approx 15.0417”/ sec)[Autostar II only]
-                //Returns: Nothing
+                SetNewGuideRate(value, "GuideRateRightAscension");
             }
         }
 

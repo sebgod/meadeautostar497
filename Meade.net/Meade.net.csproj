@@ -133,6 +133,7 @@
     <Compile Include="LocalServer.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TelescopeList.cs" />
     <Compile Include="Wrapper\SharedResourcesWrapper.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <SubType>Designer</SubType>
