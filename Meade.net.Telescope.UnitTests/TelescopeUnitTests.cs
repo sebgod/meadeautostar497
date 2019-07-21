@@ -163,7 +163,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", site); });
 
-            Assert.That(exception.Message, Is.EqualTo($"Site {site} not allowed must be between 1 and 4"));
+            Assert.That(exception.Message, Is.EqualTo($"Site {site} not allowed, must be between 1 and 4"));
         }
 
         [Test]
@@ -618,11 +618,32 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void CanSetGuideRates_Get_ReturnsFalse()
+        public void CanSetGuideRates_Get_WhenNotConnected_ThenThrowsException()
         {
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.CanSetGuideRates; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CanSetGuideRates Get"));
+        }
+        
+        [Test]
+        public void CanSetGuideRates_Get_WhenConnectedToAutostar_ThenReturnsFalse()
+        {
+            ConnectTelescope();
+
             var result = _telescope.CanSetGuideRates;
 
             Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetGuideRates_Get_WhenConnectedToLX200GPS_ThenReturnsTrue()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.LX200GPS_42G);
+            _telescope.Connected = true;
+
+            var result = _telescope.CanSetGuideRates;
+
+            Assert.That(result, Is.True);
         }
 
         [Test]

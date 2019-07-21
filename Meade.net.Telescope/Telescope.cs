@@ -253,7 +253,7 @@ namespace ASCOM.Meade.net
                             break;
                         default:
                             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                            throw new InvalidValueException($"Site {actionParameters} not allowed must be between 1 and 4");
+                            throw new InvalidValueException($"Site {actionParameters} not allowed, must be between 1 and 4");
 
                     }
 
@@ -755,8 +755,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetGuideRates", "Get - " + false.ToString());
-                return false;
+                CheckConnected("CanSetGuideRates Get");
+
+                var canSetGuideRate = IsGuideRateSettingSupported();
+
+                LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate.ToString());
+                return canSetGuideRate;
             }
         }
 
