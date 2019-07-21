@@ -375,14 +375,15 @@ namespace ASCOM.Meade.net
             return false;
         }
 
-        private bool IsGuideRateSettingSupported()
-        {
-            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-            {
-                return true;
-            }
-            return false;
-        }
+        //todo implement ability to read and write the guide rate from the telescope.
+        //private bool IsGuideRateSettingSupported()
+        //{
+        //    if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
         private bool FirmwareIsGreaterThan(string minVersion)
         {
@@ -757,7 +758,8 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("CanSetGuideRates Get");
 
-                var canSetGuideRate = IsGuideRateSettingSupported();
+                //var canSetGuideRate = IsGuideRateSettingSupported();
+                var canSetGuideRate = false;
 
                 LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate.ToString());
                 return canSetGuideRate;
@@ -943,25 +945,25 @@ namespace ASCOM.Meade.net
 
         private void SetNewGuideRate(double value, string propertyName)
         {
-            if (!IsGuideRateSettingSupported())
-            {
+            //if (!IsGuideRateSettingSupported())
+            //{
                 LogMessage("GuideRateDeclination Set", "Not implemented");
                 throw new PropertyNotImplementedException(propertyName, true);
-            }
+            //}
 
-            if (!value.InRange(0, 15.0417))
-            {
-                throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
-            }
+            //if (!value.InRange(0, 15.0417))
+            //{
+            //    throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
+            //}
 
-            _sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
-            //:RgSS.S#
-            //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
-            //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
-            //sidereal speed(approx 15.0417”/sec)[Autostar II only]
-            //Returns: Nothing
+            //_sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
+            ////:RgSS.S#
+            ////Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+            ////Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+            ////sidereal speed(approx 15.0417”/sec)[Autostar II only]
+            ////Returns: Nothing
 
-                _guideRate = value;
+            //    _guideRate = value;
         }
 
         public double GuideRateDeclination

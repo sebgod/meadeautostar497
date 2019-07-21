@@ -643,7 +643,8 @@ namespace Meade.net.Telescope.UnitTests
 
             var result = _telescope.CanSetGuideRates;
 
-            Assert.That(result, Is.True);
+            //Assert.That(result, Is.True);
+            Assert.That(result, Is.False);
         }
 
         [Test]
@@ -832,7 +833,7 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void GuideRateDeclination_Set_ThenThrowsException()
+        public void GuideRateDeclination_Set_WhenNotSupported_ThenThrowsException()
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
 
@@ -842,19 +843,19 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.AccessorSet, Is.True);
         }
 
-        [Test]
-        public void GuideRateDeclination_Set_WhenIsSupported_ThenSetsNewGuideRate()
-        {
-            var newGuideRate = 10;
+        //[Test]
+        //public void GuideRateDeclination_Set_WhenIsSupported_ThenSetsNewGuideRate()
+        //{
+        //    var newGuideRate = 10;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+        //    _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
 
-            _telescope.GuideRateDeclination = newGuideRate;
+        //    _telescope.GuideRateDeclination = newGuideRate;
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":Rg10.0#"),Times.Once);
+        //    _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":Rg10.0#"),Times.Once);
 
-            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
-        }
+        //    Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
+        //}
 
         [Test]
         public void GuideRateRightAscension_Get_ThenThrowsException()
@@ -865,7 +866,7 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void GuideRateRightAscension_Set_ThenThrowsException()
+        public void GuideRateRightAscension_Set_WhenNotSupported_ThenThrowsException()
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
 
@@ -875,19 +876,19 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.AccessorSet, Is.True);
         }
 
-        [Test]
-        public void GuideRateRightAscension_Set_WhenIsSupported_ThenSetsNewGuideRate()
-        {
-            var newGuideRate = 10;
+        //[Test]
+        //public void GuideRateRightAscension_Set_WhenIsSupported_ThenSetsNewGuideRate()
+        //{
+        //    var newGuideRate = 10;
 
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+        //    _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
 
-            _telescope.GuideRateRightAscension = newGuideRate;
+        //    _telescope.GuideRateRightAscension = newGuideRate;
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg10.0#"), Times.Once);
+        //    _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg10.0#"), Times.Once);
 
-            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
-        }
+        //    Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
+        //}
 
         [Test]
         public void IsPulseGuiding_Get_ReturnsFalse()
