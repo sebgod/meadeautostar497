@@ -30,6 +30,7 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties = new ProfileProperties();
             _profileProperties.TraceLogger = false;
             _profileProperties.ComPort = "TestCom1";
+            _profileProperties.GuideRateArcSecondsPerSecond = 1.23;
 
             _utilMock = new Mock<IUtil>();
             _utilExtraMock = new Mock<IUtilExtra>();
@@ -37,7 +38,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
-            
+
+            _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>((func) => func());
@@ -643,8 +645,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var result = _telescope.CanSetGuideRates;
 
-            //Assert.That(result, Is.True);
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -829,7 +830,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var result = _telescope.GuideRateDeclination;
 
-            Assert.That(result, Is.EqualTo(0.004178074616551509));
+            Assert.That(result, Is.EqualTo(0.00034166666666666666));
         }
 
         [Test]
@@ -843,26 +844,26 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.AccessorSet, Is.True);
         }
 
-        //[Test]
-        //public void GuideRateDeclination_Set_WhenIsSupported_ThenSetsNewGuideRate()
-        //{
-        //    var newGuideRate = 10;
+        [Test]
+        public void GuideRateDeclination_Set_WhenIsSupported_ThenSetsNewGuideRate()
+        {
+            var newGuideRate = 0.00034166666666666666;
 
-        //    _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
 
-        //    _telescope.GuideRateDeclination = newGuideRate;
+            _telescope.GuideRateDeclination = newGuideRate;
 
-        //    _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":Rg10.0#"),Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
 
-        //    Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
-        //}
+            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
+        }
 
         [Test]
         public void GuideRateRightAscension_Get_ThenThrowsException()
         {
             var result = _telescope.GuideRateRightAscension;
 
-            Assert.That(result, Is.EqualTo(0.004178074616551509));
+            Assert.That(result, Is.EqualTo(0.00034166666666666666));
         }
 
         [Test]
@@ -876,19 +877,19 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.AccessorSet, Is.True);
         }
 
-        //[Test]
-        //public void GuideRateRightAscension_Set_WhenIsSupported_ThenSetsNewGuideRate()
-        //{
-        //    var newGuideRate = 10;
+        [Test]
+        public void GuideRateRightAscension_Set_WhenIsSupported_ThenSetsNewGuideRate()
+        {
+            var newGuideRate = 0.00034166666666666666;
 
-        //    _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
 
-        //    _telescope.GuideRateRightAscension = newGuideRate;
+            _telescope.GuideRateRightAscension = newGuideRate;
 
-        //    _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg10.0#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
 
-        //    Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
-        //}
+            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
+        }
 
         [Test]
         public void IsPulseGuiding_Get_ReturnsFalse()

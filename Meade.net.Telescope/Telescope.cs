@@ -111,9 +111,7 @@ namespace ASCOM.Meade.net
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
-
-            _guideRate = 15.0 * (1.0 / 3600.0) / SIDRATE;
-
+            
             LogMessage("Telescope", "Completed initialisation");
         }
 
@@ -376,15 +374,14 @@ namespace ASCOM.Meade.net
             return false;
         }
 
-        //todo implement ability to read and write the guide rate from the telescope.
-        //private bool IsGuideRateSettingSupported()
-        //{
-        //    if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-        //    {
-        //        return true;
-        //    }
-        //    return false;
-        //}
+        private bool IsGuideRateSettingSupported()
+        {
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
+                return true;
+            }
+            return false;
+        }
 
         private bool FirmwareIsGreaterThan(string minVersion)
         {
@@ -759,8 +756,7 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("CanSetGuideRates Get");
 
-                //var canSetGuideRate = IsGuideRateSettingSupported();
-                var canSetGuideRate = false;
+                var canSetGuideRate = IsGuideRateSettingSupported();
 
                 LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate.ToString());
                 return canSetGuideRate;
@@ -946,33 +942,48 @@ namespace ASCOM.Meade.net
 
         private void SetNewGuideRate(double value, string propertyName)
         {
-            //if (!IsGuideRateSettingSupported())
-            //{
+            if (!IsGuideRateSettingSupported())
+            {
                 LogMessage("GuideRateDeclination Set", "Not implemented");
                 throw new PropertyNotImplementedException(propertyName, true);
-            //}
+            }
 
-            //if (!value.InRange(0, 15.0417))
-            //{
-            //    throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
-            //}
+            var valueInArcSecondsPerSecond = DegreesPerSecondToArcSecondPerSecond(value);
 
-            //_sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
-            ////:RgSS.S#
-            ////Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
-            ////Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
-            ////sidereal speed(approx 15.0417”/sec)[Autostar II only]
-            ////Returns: Nothing
+            if (!valueInArcSecondsPerSecond.InRange(0, 15.0417))
+            {
+                throw new InvalidValueException(propertyName, valueInArcSecondsPerSecond.ToString(), "0 to 15.0417”/sec");
+            }
 
-            //    _guideRate = value;
+            _sharedResourcesWrapper.SendBlind($":Rg{valueInArcSecondsPerSecond:00.0}#");
+            //:RgSS.S#
+            //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+            //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+            //sidereal speed(approx 15.0417”/sec)[Autostar II only]
+            //Returns: Nothing
+            
+            _guideRate = valueInArcSecondsPerSecond;
+
+            WriteProfile();
+        }
+
+        private double DegreesPerSecondToArcSecondPerSecond(double value)
+        {
+            return value * 3600.0;
+        }
+
+        private double ArcSecondPerSecondToDegreesPerSecond(double value)
+        {
+            return value / 3600.0;
         }
 
         public double GuideRateDeclination
         {
             get
             {
-                LogMessage("GuideRateDeclination Get", "Not implemented");
-                return _guideRate;
+                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
+                LogMessage("GuideRateDeclination Get", $"{_guideRate:00.0} arc seconds / second = {degreesPerSecond} degrees per second");
+                return degreesPerSecond;
             }
             set
             {
@@ -984,8 +995,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("GuideRateRightAscension Get", "Not implemented");
-                return _guideRate;
+                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
+                LogMessage("GuideRateRightAscension Get", $"{_guideRate:00.0} arc seconds / second = {degreesPerSecond} degrees per second");
+                return degreesPerSecond;
             }
             set
             {
@@ -2087,11 +2099,24 @@ namespace ASCOM.Meade.net
         /// </summary>
         internal void ReadProfile()
         {
-            var profileProperties = _sharedResourcesWrapper.ReadProfile();
+            ProfileProperties profileProperties = _sharedResourcesWrapper.ReadProfile();
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
+            _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
         }
 
+        internal void WriteProfile()
+        {
+            var profileProperties = new ProfileProperties
+            {
+                TraceLogger = _tl.Enabled,
+                ComPort = _comPort,
+                GuideRateArcSecondsPerSecond = _guideRate
+            };
+
+            _sharedResourcesWrapper.WriteProfile(profileProperties);
+        }
+        
         /// <summary>
         /// Log helper function that takes formatted strings and arguments
         /// </summary>

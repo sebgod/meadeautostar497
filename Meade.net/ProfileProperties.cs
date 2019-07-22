@@ -5,5 +5,6 @@ namespace ASCOM.Meade.net
         // properies that are part of the profile
         public string ComPort { get; set; }
         public bool TraceLogger { get; set; }
+        public double GuideRateArcSecondsPerSecond { get; set; }
     }
 }

@@ -9,14 +9,12 @@ namespace ASCOM.Meade.net
     class GarbageCollection
     {
         private bool _mbContinueThread;
-        private bool _mGcWatchStopped;
         private readonly int _miInterval;
         private readonly ManualResetEvent _mEventThreadEnded;
 
         public GarbageCollection(int iInterval)
         {
             _mbContinueThread = true;
-            _mGcWatchStopped = false;
             _miInterval = iInterval;
             _mEventThreadEnded = new ManualResetEvent(false);
         }

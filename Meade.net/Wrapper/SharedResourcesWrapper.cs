@@ -23,6 +23,7 @@ namespace ASCOM.Meade.net.Wrapper
         ProfileProperties ReadProfile();
 
         void SetupDialog();
+        void WriteProfile(ProfileProperties profileProperties);
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -79,6 +80,11 @@ namespace ASCOM.Meade.net.Wrapper
         public void SetupDialog()
         {
             SharedResources.SetupDialog();
+        }
+
+        public void WriteProfile(ProfileProperties profileProperties)
+        {
+            SharedResources.WriteProfile(profileProperties);
         }
     }
 }

@@ -46,6 +46,8 @@ namespace ASCOM.Meade.net
             {
                 comboBoxComPort.SelectedItem = profileProperties.ComPort;
             }
+
+            txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString();
         }
 
         public ProfileProperties GetProfile()
@@ -62,6 +64,17 @@ namespace ASCOM.Meade.net
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
             Activate();
+        }
+
+        private void TextBox1_TextChanged(object sender, EventArgs e)
+        {
+          //const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
+          var newGuideRate = double.Parse(txtGuideRate.Text);
+
+          const double siderealArcSecondsPerSecond = 15.041;
+          var percentOfSideReal = (newGuideRate / siderealArcSecondsPerSecond * 100);
+
+          lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
         }
     }
 }

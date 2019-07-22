@@ -158,6 +158,7 @@ namespace ASCOM.Meade.net
         // Constants used for Profile persistence
         private const string ComPortProfileName = "COM Port";
         private const string TraceStateProfileName = "Trace Level";
+        private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -168,12 +169,14 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
+                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString());
                 }
             }
         }
 
         private const string ComPortDefault = "COM1";
         private const string TraceStateDefault = "false";
+        private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
 
         public static ProfileProperties ReadProfile()
         {
@@ -183,10 +186,9 @@ namespace ASCOM.Meade.net
                 using (Profile driverProfile = new Profile())
                 {
                     driverProfile.DeviceType = "Telescope";
-                    profileProperties.ComPort =
-                        driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
-                    profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId,
-                        TraceStateProfileName, string.Empty, TraceStateDefault));
+                    profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
+                    profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
+                    profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault));
                 }
 
                 return profileProperties;

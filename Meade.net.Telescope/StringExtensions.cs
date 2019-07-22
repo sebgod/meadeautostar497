@@ -6,5 +6,10 @@ namespace ASCOM.Meade.net
         {
             return int.Parse(str);
         }
+
+        public static double ToDouble(this string str)
+        {
+            return double.Parse(str);
+        }
     }
 }
