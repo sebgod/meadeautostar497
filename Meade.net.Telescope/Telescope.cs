@@ -338,6 +338,12 @@ namespace ASCOM.Meade.net
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;
+
+                            if (CanSetGuideRates)
+                            {
+                                SetNewGuideRate( _guideRate, "Connect" );
+                            }
+
                         }
                         catch (Exception)
                         {
@@ -961,10 +967,12 @@ namespace ASCOM.Meade.net
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
             //sidereal speed(approx 15.0417”/sec)[Autostar II only]
             //Returns: Nothing
-            
-            _guideRate = valueInArcSecondsPerSecond;
+            if (_guideRate != valueInArcSecondsPerSecond)
+            {
+                _guideRate = valueInArcSecondsPerSecond;
 
-            WriteProfile();
+                WriteProfile();
+            }
         }
 
         private double DegreesPerSecondToArcSecondPerSecond(double value)
