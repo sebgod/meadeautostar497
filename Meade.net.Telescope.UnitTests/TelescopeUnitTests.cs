@@ -152,7 +152,8 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            _telescope.Action("site", site);
+            string parameters = $"select {site}";
+            _telescope.Action("site", parameters);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
         }
@@ -163,9 +164,78 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", site); });
+            string parameters = $"select {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
 
-            Assert.That(exception.Message, Is.EqualTo($"Site {site} not allowed, must be between 1 and 4"));
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [TestCase("1", ":GM#", "Home")]
+        [TestCase("2", ":GN#", "Club")]
+        [TestCase("3", ":GO#", "GPS")]
+        [TestCase("4", ":GP#", "Parents")]
+        public void Action_Site_GetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
+        {
+            ConnectTelescope();
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(telescopeCommand)).Returns(siteName);
+
+            string parameters = $"GetName {site}";
+            var result = _telescope.Action("site", parameters);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(telescopeCommand), Times.Once);
+            Assert.That(result, Is.EqualTo(siteName));
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_GetName_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"GetName {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [TestCase("1", ":SMHome#", "Home")]
+        [TestCase("2", ":SNClub#", "Club")]
+        [TestCase("3", ":SOGPS#", "GPS")]
+        [TestCase("4", ":SPParents#", "Parents")]
+        public void Action_Site_SetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
+        {
+            ConnectTelescope();
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(telescopeCommand)).Returns("1");
+
+            string parameters = $"SetName {site} {siteName}";
+            _telescope.Action("site", parameters);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(telescopeCommand), Times.Once);
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_SetName_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"SetName {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [Test]
+        public void Action_Site_WhenCallingUnknownParam_ThenThrowsException()
+        {
+            ConnectTelescope();
+
+            string parameters = $"unknown";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site parameters {parameters} not known"));
         }
 
         [Test]

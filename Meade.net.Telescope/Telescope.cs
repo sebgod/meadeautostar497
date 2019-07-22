@@ -242,21 +242,68 @@ namespace ASCOM.Meade.net
 
                     break;
                 case "site":
-                    switch (actionParameters.ToLower())
+                    var parames = actionParameters.ToLower().Split(' ');
+                    switch (parames[0])
                     {
-                        case "1":
-                        case "2":
-                        case "3":
-                        case "4":
-                            SelectSite(actionParameters.ToInteger());
+                        case "select":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    SelectSite(parames[1].ToInteger());
+                                    break;
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
+                            break;
+                        case "getname":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    return GetSiteName(parames[1].ToInteger());
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
+                            break;
+                        case "setname":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    var sitename = actionParameters.Substring(actionParameters.Position(' ', 2)).Trim();
+
+                                    SetSiteName(parames[1].ToInteger(), sitename);
+                                    break;
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
                             break;
                         default:
-                            LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-                            throw new InvalidValueException($"Site {actionParameters} not allowed, must be between 1 and 4");
-
+                            throw new InvalidValueException(
+                                $"Site parameters {actionParameters} not known");
                     }
 
                     break;
+
                 default:
                     LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
                     throw new ActionNotImplementedException($"{actionName}");
@@ -432,6 +479,96 @@ namespace ASCOM.Meade.net
             //:W<n>#
             //Set current site to<n>, an ASCII digit in the range 1..4
             //Returns: Nothing
+        }
+
+        private void SetSiteName(int site, string sitename)
+        {
+            CheckConnected("SetSiteName");
+
+            if (site < 1)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+            else if (site > 4)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+
+            string command = String.Empty;
+            switch (site)
+            {
+                case 1:
+                    command = $":SM{sitename}#";
+                    //:SM<string>#
+                    //Set site 1’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 2:
+                    command = $":SN{sitename}#";
+                    //:SN<string>#
+                    //Set site 2’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 3:
+                    command = $":SO{sitename}#";
+                    //:SO<string>#
+                    //Set site 3’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 4:
+                    command = $":SP{sitename}#";
+                    //:SP<string>#
+                    //Set site 4’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+
+            }
+
+            var result = _sharedResourcesWrapper.SendChar(command);
+            if (result != "1")
+            {
+                throw new InvalidOperationException("Failed to set site name.");
+            }
+        }
+
+        private string GetSiteName(int site)
+        {
+            CheckConnected("GetSiteName");
+
+            if (site < 1)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+            else if (site > 4)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+
+            switch (site)
+            {
+                case 1:
+                    return _sharedResourcesWrapper.SendString(":GM#");
+                    //:GM# Get Site 1 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 2:
+                    return _sharedResourcesWrapper.SendString(":GN#");
+                    //:GN# Get Site 2 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 3:
+                    return _sharedResourcesWrapper.SendString(":GO#");
+                    //:GO# Get Site 3 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 4:
+                    return _sharedResourcesWrapper.SendString(":GP#");
+                    //:GP# Get Site 4 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+            }
+
+            throw new ArgumentOutOfRangeException("site", site, "Site out of range");
         }
 
         public string Description
