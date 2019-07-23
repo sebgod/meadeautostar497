@@ -105,14 +105,12 @@ namespace ASCOM.Meade.net
         {
             //todo move the TraceLogger out to a factory class.
             _tl = new TraceLogger("", "Meade.Generic.Telescope");
-            LogMessage("Telescope", "Starting initialisation");
-            LogMessage("Telescope", $"Driver version: {DriverVersion}");
-
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
             
             LogMessage("Telescope", "Completed initialisation");
+            LogMessage("Telescope", $"Driver version: {DriverVersion}");
         }
 
 

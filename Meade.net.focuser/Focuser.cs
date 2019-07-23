@@ -77,14 +77,12 @@ namespace ASCOM.Meade.net
             //todo move the TraceLogger out to a factory class.
             Tl = new TraceLogger("", "Meade.Generic.focusser");
 
-            LogMessage("Focuser", "Starting initialisation");
-            LogMessage("Focuser", $"Driver version: {DriverVersion}");
-
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
 
             LogMessage("Focuser", "Completed initialisation");
+            LogMessage("Focuser", $"Driver version: {DriverVersion}");
         }
 
 

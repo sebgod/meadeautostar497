@@ -201,7 +201,7 @@ namespace Meade.net.Telescope.UnitTests
 
         [TestCase("1", ":SMHome#", "Home")]
         [TestCase("2", ":SNClub#", "Club")]
-        [TestCase("3", ":SOGPS#", "GPS")]
+        [TestCase("3", ":SOGPS Site#", "GPS Site")]
         [TestCase("4", ":SPParents#", "Parents")]
         public void Action_Site_SetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
         {
