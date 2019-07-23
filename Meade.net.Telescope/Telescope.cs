@@ -367,9 +367,11 @@ namespace ASCOM.Meade.net
 
                 if (value)
                 {
-                    LogMessage("Connected Set", "Connecting to port {0}", _comPort);
                     try
                     {
+                        ReadProfile();
+
+                        LogMessage("Connected Set", "Connecting to port {0}", _comPort);
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
@@ -2246,6 +2248,10 @@ namespace ASCOM.Meade.net
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
             _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
+
+            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
+            LogMessage("ReadProfile", $"Com Port: {_comPort}");
+            LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
         }
 
         internal void WriteProfile()

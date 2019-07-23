@@ -178,6 +178,7 @@ namespace ASCOM.Meade.net
                 {
                     try
                     {
+                        ReadProfile();
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
@@ -579,6 +580,9 @@ namespace ASCOM.Meade.net
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             Tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
+
+            LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
+            LogMessage("ReadProfile", $"Com Port: {_comPort}");
         }
 
         /// <summary>
