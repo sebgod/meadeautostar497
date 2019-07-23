@@ -55,7 +55,8 @@ namespace ASCOM.Meade.net
             var profileProperties = new ProfileProperties
             {
                 TraceLogger = chkTrace.Checked,
-                ComPort = comboBoxComPort.SelectedItem.ToString()
+                ComPort = comboBoxComPort.SelectedItem.ToString(),
+                GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text)
             };
 
             return profileProperties;
