@@ -1098,13 +1098,15 @@ namespace ASCOM.Meade.net
                 throw new InvalidValueException(propertyName, valueInArcSecondsPerSecond.ToString(), "0 to 15.0417”/sec");
             }
 
-            LogMessage($"{propertyName} Set", $"Setting new guiderate {valueInArcSecondsPerSecond} arc seconds/second ({value} degrees/second)");
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {valueInArcSecondsPerSecond.ToString()} arc seconds/second ({value.ToString()} degrees/second)");
             _sharedResourcesWrapper.SendBlind($":Rg{valueInArcSecondsPerSecond:00.0}#");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
             //sidereal speed(approx 15.0417”/sec)[Autostar II only]
             //Returns: Nothing
+
+            //info from RickB says that 15.04107 is a better value for 
 
             _guideRate = valueInArcSecondsPerSecond;
 
