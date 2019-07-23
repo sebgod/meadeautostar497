@@ -1087,7 +1087,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsGuideRateSettingSupported())
             {
-                LogMessage("GuideRateDeclination Set", "Not implemented");
+                LogMessage($"{propertyName} Set", "Not implemented");
                 throw new PropertyNotImplementedException(propertyName, true);
             }
 
@@ -1098,18 +1098,17 @@ namespace ASCOM.Meade.net
                 throw new InvalidValueException(propertyName, valueInArcSecondsPerSecond.ToString(), "0 to 15.0417”/sec");
             }
 
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {valueInArcSecondsPerSecond} arc seconds/second ({value} degrees/second)");
             _sharedResourcesWrapper.SendBlind($":Rg{valueInArcSecondsPerSecond:00.0}#");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
             //sidereal speed(approx 15.0417”/sec)[Autostar II only]
             //Returns: Nothing
-            if (_guideRate != valueInArcSecondsPerSecond)
-            {
-                _guideRate = valueInArcSecondsPerSecond;
 
-                WriteProfile();
-            }
+            _guideRate = valueInArcSecondsPerSecond;
+
+            WriteProfile();
         }
 
         private double DegreesPerSecondToArcSecondPerSecond(double value)
@@ -1127,7 +1126,7 @@ namespace ASCOM.Meade.net
             get
             {
                 var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
-                LogMessage("GuideRateDeclination Get", $"{_guideRate:00.0} arc seconds / second = {degreesPerSecond} degrees per second");
+                LogMessage("GuideRateDeclination Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
@@ -1140,8 +1139,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
-                LogMessage("GuideRateRightAscension Get", $"{_guideRate:00.0} arc seconds / second = {degreesPerSecond} degrees per second");
+                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
+                LogMessage("GuideRateRightAscension Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
