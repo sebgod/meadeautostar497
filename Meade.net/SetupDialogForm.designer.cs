@@ -89,6 +89,7 @@ namespace ASCOM.Meade.net
             this.comboBoxComPort.FormattingEnabled = true;
             resources.ApplyResources(this.comboBoxComPort, "comboBoxComPort");
             this.comboBoxComPort.Name = "comboBoxComPort";
+            this.comboBoxComPort.SelectedValueChanged += new System.EventHandler(this.ComboBoxComPort_SelectedValueChanged);
             // 
             // label3
             // 
