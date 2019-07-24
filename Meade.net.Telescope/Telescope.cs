@@ -1091,15 +1091,13 @@ namespace ASCOM.Meade.net
                 throw new PropertyNotImplementedException(propertyName, true);
             }
 
-            var valueInArcSecondsPerSecond = DegreesPerSecondToArcSecondPerSecond(value);
-
-            if (!valueInArcSecondsPerSecond.InRange(0, 15.0417))
+            if (!value.InRange(0, 15.0417))
             {
-                throw new InvalidValueException(propertyName, valueInArcSecondsPerSecond.ToString(), "0 to 15.0417”/sec");
+                throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
             }
 
-            LogMessage($"{propertyName} Set", $"Setting new guiderate {valueInArcSecondsPerSecond.ToString()} arc seconds/second ({value.ToString()} degrees/second)");
-            _sharedResourcesWrapper.SendBlind($":Rg{valueInArcSecondsPerSecond:00.0}#");
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString()} arc seconds/second ({value.ToString()} degrees/second)");
+            _sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
@@ -1108,7 +1106,7 @@ namespace ASCOM.Meade.net
 
             //info from RickB says that 15.04107 is a better value for 
 
-            _guideRate = valueInArcSecondsPerSecond;
+            _guideRate = value;
 
             WriteProfile();
         }
@@ -1133,7 +1131,8 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                SetNewGuideRate(value, "GuideRateDeclination");
+                var newValue = DegreesPerSecondToArcSecondPerSecond(value);
+                SetNewGuideRate(newValue, "GuideRateDeclination");
             }
         }
         
@@ -1147,7 +1146,8 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                SetNewGuideRate(value, "GuideRateRightAscension");
+                var newValue = DegreesPerSecondToArcSecondPerSecond(value);
+                SetNewGuideRate(newValue, "GuideRateRightAscension");
             }
         }
 

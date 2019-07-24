@@ -339,6 +339,22 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
         }
 
+        [Test]
+        public void Connected_Set_WhenConnecting_Then()
+        {
+            var productName = "LX2001";
+            var firmware = string.Empty;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
+        }
+
 
         [Test]
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
