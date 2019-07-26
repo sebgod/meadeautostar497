@@ -505,7 +505,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
 
-            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
+            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 
             var driverVersion = _telescope.DriverVersion;
 
