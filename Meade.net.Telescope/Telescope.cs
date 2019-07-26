@@ -597,7 +597,7 @@ namespace ASCOM.Meade.net
             get
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
+                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
                 LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
