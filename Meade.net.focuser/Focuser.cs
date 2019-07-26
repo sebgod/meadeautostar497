@@ -74,14 +74,15 @@ namespace ASCOM.Meade.net
 
         private void Initialise()
         {
-            Tl = new TraceLogger("", "Meade.net.focusser");
+            //todo move the TraceLogger out to a factory class.
+            Tl = new TraceLogger("", "Meade.Generic.focusser");
 
-            Tl.LogMessage("Focuser", "Starting initialisation");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
 
-            Tl.LogMessage("Focuser", "Completed initialisation");
+            LogMessage("Focuser", "Completed initialisation");
+            LogMessage("Focuser", $"Driver version: {DriverVersion}");
         }
 
 
@@ -177,6 +178,7 @@ namespace ASCOM.Meade.net
                 {
                     try
                     {
+                        ReadProfile();
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
@@ -578,6 +580,9 @@ namespace ASCOM.Meade.net
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             Tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
+
+            LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
+            LogMessage("ReadProfile", $"Com Port: {_comPort}");
         }
 
         /// <summary>

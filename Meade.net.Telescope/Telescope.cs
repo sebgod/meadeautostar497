@@ -97,17 +97,20 @@ namespace ASCOM.Meade.net
             Initialise();
         }
 
+        private double _guideRate;
+
+        private const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
+
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
-            _tl = new TraceLogger("", "Meade.net.Telescope");
-            LogMessage("Telescope", "Starting initialisation");
-
+            _tl = new TraceLogger("", "Meade.Generic.Telescope");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
-
+            
             LogMessage("Telescope", "Completed initialisation");
+            LogMessage("Telescope", $"Driver version: {DriverVersion}");
         }
 
 
@@ -151,6 +154,7 @@ namespace ASCOM.Meade.net
                 LogMessage("SupportedActions Get", "Returning empty arraylist");
                 var supportedActions = new ArrayList();
                 supportedActions.Add("handbox");
+                supportedActions.Add("site");
                 return supportedActions;
             }
         }
@@ -233,7 +237,71 @@ namespace ASCOM.Meade.net
                             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
                             throw new ActionNotImplementedException($"{actionName}({actionParameters})");
                     }
+
                     break;
+                case "site":
+                    var parames = actionParameters.ToLower().Split(' ');
+                    switch (parames[0])
+                    {
+                        case "select":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    SelectSite(parames[1].ToInteger());
+                                    break;
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
+                            break;
+                        case "getname":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    return GetSiteName(parames[1].ToInteger());
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
+                            break;
+                        case "setname":
+                            switch (parames[1])
+                            {
+                                case "1":
+                                case "2":
+                                case "3":
+                                case "4":
+                                    var sitename = actionParameters.Substring(actionParameters.Position(' ', 2)).Trim();
+
+                                    SetSiteName(parames[1].ToInteger(), sitename);
+                                    break;
+                                default:
+                                    LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
+                                        actionParameters);
+                                    throw new InvalidValueException(
+                                        $"Site {actionParameters} not allowed, must be between 1 and 4");
+
+                            }
+                            break;
+                        default:
+                            throw new InvalidValueException(
+                                $"Site parameters {actionParameters} not known");
+                    }
+
+                    break;
+
                 default:
                     LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
                     throw new ActionNotImplementedException($"{actionName}");
@@ -299,9 +367,11 @@ namespace ASCOM.Meade.net
 
                 if (value)
                 {
-                    LogMessage("Connected Set", "Connecting to port {0}", _comPort);
                     try
                     {
+                        ReadProfile();
+
+                        LogMessage("Connected Set", "Connecting to port {0}", _comPort);
                         _sharedResourcesWrapper.Connect("Serial");
                         try
                         {
@@ -315,6 +385,12 @@ namespace ASCOM.Meade.net
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;
+
+                            if (CanSetGuideRates)
+                            {
+                                SetNewGuideRate( _guideRate, "Connect" );
+                            }
+
                         }
                         catch (Exception)
                         {
@@ -338,11 +414,25 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            if (_sharedResourcesWrapper.ProductName == _sharedResourcesWrapper.Autostar497)
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
             {
-                return FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49731Ee);
+                return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
             }
 
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsGuideRateSettingSupported()
+        {
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -376,9 +466,10 @@ namespace ASCOM.Meade.net
             });
         }
 
-        //todo hook this up to a custom action
         public void SelectSite(int site)
         {
+            CheckConnected("SelectSite");
+
             if (site < 1)
                 throw new ArgumentOutOfRangeException("site",site,"Site cannot be lower than 1");
             else if (site > 4)
@@ -388,6 +479,96 @@ namespace ASCOM.Meade.net
             //:W<n>#
             //Set current site to<n>, an ASCII digit in the range 1..4
             //Returns: Nothing
+        }
+
+        private void SetSiteName(int site, string sitename)
+        {
+            CheckConnected("SetSiteName");
+
+            if (site < 1)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+            else if (site > 4)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+
+            string command = String.Empty;
+            switch (site)
+            {
+                case 1:
+                    command = $":SM{sitename}#";
+                    //:SM<string>#
+                    //Set site 1’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 2:
+                    command = $":SN{sitename}#";
+                    //:SN<string>#
+                    //Set site 2’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 3:
+                    command = $":SO{sitename}#";
+                    //:SO<string>#
+                    //Set site 3’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+                case 4:
+                    command = $":SP{sitename}#";
+                    //:SP<string>#
+                    //Set site 4’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //    Returns:
+                    //0 – Invalid
+                    //1 - Valid
+                    break;
+
+            }
+
+            var result = _sharedResourcesWrapper.SendChar(command);
+            if (result != "1")
+            {
+                throw new InvalidOperationException("Failed to set site name.");
+            }
+        }
+
+        private string GetSiteName(int site)
+        {
+            CheckConnected("GetSiteName");
+
+            if (site < 1)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+            else if (site > 4)
+                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+
+            switch (site)
+            {
+                case 1:
+                    return _sharedResourcesWrapper.SendString(":GM#");
+                    //:GM# Get Site 1 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 2:
+                    return _sharedResourcesWrapper.SendString(":GN#");
+                    //:GN# Get Site 2 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 3:
+                    return _sharedResourcesWrapper.SendString(":GO#");
+                    //:GO# Get Site 3 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+                case 4:
+                    return _sharedResourcesWrapper.SendString(":GP#");
+                    //:GP# Get Site 4 Name
+                    //Returns: <string>#
+                    //A ‘#’ terminated string with the name of the requested site.
+            }
+
+            throw new ArgumentOutOfRangeException("site", site, "Site out of range");
         }
 
         public string Description
@@ -416,7 +597,7 @@ namespace ASCOM.Meade.net
             get
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
+                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
                 LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
@@ -489,7 +670,7 @@ namespace ASCOM.Meade.net
                 //P If scope in Polar Mode
 
                 //todo implement GW Command - Supported in Autostar 43Eg and above
-                //if FirmwareIsGreaterThan(_sharedResourcesWrapper.AUTOSTAR497_43EG)
+                //if FirmwareIsGreaterThan(TelescopeList.Autostar497_43EG)
                 //{
                     //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
                     //:GW# Get Scope Alignment Status
@@ -525,7 +706,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!FirmwareIsGreaterThan(_sharedResourcesWrapper.Autostar49743Eg))
+                if (!FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
                     throw new PropertyNotImplementedException("AlignmentMode",true );
 
                 //todo make this only try with Autostar 43Eg and above.
@@ -716,8 +897,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetGuideRates", "Get - " + false.ToString());
-                return false;
+                CheckConnected("CanSetGuideRates Get");
+
+                var canSetGuideRate = IsGuideRateSettingSupported();
+
+                LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate.ToString());
+                return canSetGuideRate;
             }
         }
 
@@ -898,31 +1083,71 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private void SetNewGuideRate(double value, string propertyName)
+        {
+            if (!IsGuideRateSettingSupported())
+            {
+                LogMessage($"{propertyName} Set", "Not implemented");
+                throw new PropertyNotImplementedException(propertyName, true);
+            }
+
+            if (!value.InRange(0, 15.0417))
+            {
+                throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
+            }
+
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString()} arc seconds/second ({value.ToString()} degrees/second)");
+            _sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
+            //:RgSS.S#
+            //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
+            //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
+            //sidereal speed(approx 15.0417”/sec)[Autostar II only]
+            //Returns: Nothing
+
+            //info from RickB says that 15.04107 is a better value for 
+
+            _guideRate = value;
+
+            WriteProfile();
+        }
+
+        private double DegreesPerSecondToArcSecondPerSecond(double value)
+        {
+            return value * 3600.0;
+        }
+
+        private double ArcSecondPerSecondToDegreesPerSecond(double value)
+        {
+            return value / 3600.0;
+        }
+
         public double GuideRateDeclination
         {
             get
             {
-                LogMessage("GuideRateDeclination Get", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateDeclination", false);
+                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
+                LogMessage("GuideRateDeclination Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                return degreesPerSecond;
             }
             set
             {
-                LogMessage("GuideRateDeclination Set", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateDeclination", true);
+                var newValue = DegreesPerSecondToArcSecondPerSecond(value);
+                SetNewGuideRate(newValue, "GuideRateDeclination");
             }
         }
-
+        
         public double GuideRateRightAscension
         {
             get
             {
-                LogMessage("GuideRateRightAscension Get", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateRightAscension", false);
+                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
+                LogMessage("GuideRateRightAscension Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                return degreesPerSecond;
             }
             set
             {
-                LogMessage("GuideRateRightAscension Set", "Not implemented");
-                throw new PropertyNotImplementedException("GuideRateRightAscension", true);
+                var newValue = DegreesPerSecondToArcSecondPerSecond(value);
+                SetNewGuideRate(newValue, "GuideRateRightAscension");
             }
         }
 
@@ -1075,8 +1300,9 @@ namespace ASCOM.Meade.net
                     break;
             }
 
-            if (_userNewerPulseGuiding)
+            if (_userNewerPulseGuiding && duration < 10000)
             {
+                LogMessage("PulseGuide", $"Using new pulse guiding technique");
                 _sharedResourcesWrapper.SendBlind($":Mg{d}{duration:0000}#");
                 //:MgnDDDD#
                 //:MgsDDDD#
@@ -1086,12 +1312,11 @@ namespace ASCOM.Meade.net
                 //passed in the command.These commands support serial port driven guiding.
                 //Returns – Nothing
                 //LX200 – Not Supported
-
-                //todo implement IsPulseGuiding if WaitForMilliseconds is not needed
                 _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
             }
             else
             {
+                LogMessage("PulseGuide", $"Using old pulse guiding technique");
                 _sharedResourcesWrapper.Lock(() =>
                 {
                     _sharedResourcesWrapper.SendBlind(":RG#"); //Make sure we are at guide rate
@@ -2020,11 +2245,28 @@ namespace ASCOM.Meade.net
         /// </summary>
         internal void ReadProfile()
         {
-            var profileProperties = _sharedResourcesWrapper.ReadProfile();
+            ProfileProperties profileProperties = _sharedResourcesWrapper.ReadProfile();
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
+            _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
+
+            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
+            LogMessage("ReadProfile", $"Com Port: {_comPort}");
+            LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
         }
 
+        internal void WriteProfile()
+        {
+            var profileProperties = new ProfileProperties
+            {
+                TraceLogger = _tl.Enabled,
+                ComPort = _comPort,
+                GuideRateArcSecondsPerSecond = _guideRate
+            };
+
+            _sharedResourcesWrapper.WriteProfile(profileProperties);
+        }
+        
         /// <summary>
         /// Log helper function that takes formatted strings and arguments
         /// </summary>

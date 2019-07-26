@@ -36,6 +36,10 @@ namespace ASCOM.Meade.net
             this.label2 = new System.Windows.Forms.Label();
             this.chkTrace = new System.Windows.Forms.CheckBox();
             this.comboBoxComPort = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtGuideRate = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.lblPercentOfSiderealRate = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -85,11 +89,37 @@ namespace ASCOM.Meade.net
             this.comboBoxComPort.FormattingEnabled = true;
             resources.ApplyResources(this.comboBoxComPort, "comboBoxComPort");
             this.comboBoxComPort.Name = "comboBoxComPort";
+            this.comboBoxComPort.SelectedValueChanged += new System.EventHandler(this.ComboBoxComPort_SelectedValueChanged);
+            // 
+            // label3
+            // 
+            resources.ApplyResources(this.label3, "label3");
+            this.label3.Name = "label3";
+            // 
+            // txtGuideRate
+            // 
+            resources.ApplyResources(this.txtGuideRate, "txtGuideRate");
+            this.txtGuideRate.Name = "txtGuideRate";
+            this.txtGuideRate.TextChanged += new System.EventHandler(this.TextBox1_TextChanged);
+            // 
+            // label4
+            // 
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.Name = "label4";
+            // 
+            // lblPercentOfSiderealRate
+            // 
+            resources.ApplyResources(this.lblPercentOfSiderealRate, "lblPercentOfSiderealRate");
+            this.lblPercentOfSiderealRate.Name = "lblPercentOfSiderealRate";
             // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblPercentOfSiderealRate);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.txtGuideRate);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBoxComPort);
             this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.label2);
@@ -118,5 +148,9 @@ namespace ASCOM.Meade.net
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkTrace;
         private System.Windows.Forms.ComboBox comboBoxComPort;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtGuideRate;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lblPercentOfSiderealRate;
     }
 }

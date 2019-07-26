@@ -30,6 +30,7 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties = new ProfileProperties();
             _profileProperties.TraceLogger = false;
             _profileProperties.ComPort = "TestCom1";
+            _profileProperties.GuideRateArcSecondsPerSecond = 1.23;
 
             _utilMock = new Mock<IUtil>();
             _utilExtraMock = new Mock<IUtilExtra>();
@@ -37,10 +38,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
-            _sharedResourcesWrapperMock.Setup(x => x.Autostar497).Returns(() => "AUTOSTAR");
-            _sharedResourcesWrapperMock.Setup(x => x.Autostar49731Ee).Returns(() => "31Ee");
-            _sharedResourcesWrapperMock.Setup(x => x.Autostar49743Eg) .Returns(() => "43Eg");
 
+            _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>((func) => func());
@@ -56,8 +55,8 @@ namespace Meade.net.Telescope.UnitTests
 
         private void ConnectTelescope()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
             _telescope.Connected = true;
         }
 
@@ -90,8 +89,9 @@ namespace Meade.net.Telescope.UnitTests
             var supportedActions = _telescope.SupportedActions;
 
             Assert.That(supportedActions, Is.Not.Null);
-            Assert.That(supportedActions.Count, Is.EqualTo(1));
+            Assert.That(supportedActions.Count, Is.EqualTo(2));
             Assert.That(supportedActions.Contains("handbox"), Is.True);
+            Assert.That(supportedActions.Contains("site"), Is.True);
         }
 
         [Test]
@@ -135,13 +135,107 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("back", ":EK87#")]
         [TestCase("forward", ":EK69#")]
         [TestCase("?", ":EK63#")]
-        public void Action_Handbox_blindCommands(string action, string expectedString)
+        public void Action_Handbox_WhenCalling_ThenSendsAppropriateBlindCommands(string action, string expectedString)
         {
             ConnectTelescope();
 
             _telescope.Action("handbox", action);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedString), Times.Once);
+        }
+
+        [TestCase("1")]
+        [TestCase("2")]
+        [TestCase("3")]
+        [TestCase("4")]
+        public void Action_Site_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"select {site}";
+            _telescope.Action("site", parameters);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"select {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [TestCase("1", ":GM#", "Home")]
+        [TestCase("2", ":GN#", "Club")]
+        [TestCase("3", ":GO#", "GPS")]
+        [TestCase("4", ":GP#", "Parents")]
+        public void Action_Site_GetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
+        {
+            ConnectTelescope();
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(telescopeCommand)).Returns(siteName);
+
+            string parameters = $"GetName {site}";
+            var result = _telescope.Action("site", parameters);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(telescopeCommand), Times.Once);
+            Assert.That(result, Is.EqualTo(siteName));
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_GetName_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"GetName {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [TestCase("1", ":SMHome#", "Home")]
+        [TestCase("2", ":SNClub#", "Club")]
+        [TestCase("3", ":SOGPS Site#", "GPS Site")]
+        [TestCase("4", ":SPParents#", "Parents")]
+        public void Action_Site_SetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
+        {
+            ConnectTelescope();
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(telescopeCommand)).Returns("1");
+
+            string parameters = $"SetName {site} {siteName}";
+            _telescope.Action("site", parameters);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(telescopeCommand), Times.Once);
+        }
+
+        [TestCase("0")]
+        [TestCase("5")]
+        public void Action_Site_SetName_WhenCallingWithInCorrectValues_ThenThrowsException(string site)
+        {
+            ConnectTelescope();
+
+            string parameters = $"SetName {site}";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
+        }
+
+        [Test]
+        public void Action_Site_WhenCallingUnknownParam_ThenThrowsException()
+        {
+            ConnectTelescope();
+
+            string parameters = $"unknown";
+            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+
+            Assert.That(exception.Message, Is.EqualTo($"Site parameters {parameters} not known"));
         }
 
         [Test]
@@ -238,11 +332,27 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(false)]
         public void Connected_Get_ReturnsExpectedValue(bool expectedConnected)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
             _telescope.Connected = expectedConnected;
 
             Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
+        }
+
+        [Test]
+        public void Connected_Set_WhenConnecting_Then()
+        {
+            var productName = "LX2001";
+            var firmware = string.Empty;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
         }
 
 
@@ -275,8 +385,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_WhenFailsToConnect_ThenDisconnects()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => _sharedResourcesWrapperMock.Object.Autostar49731Ee);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(It.IsAny<string>())).Throws(new Exception("TestFailed"));
 
@@ -287,10 +397,11 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
         }
 
-        [TestCase("AUTOSTAR", "30Ab", false)]
-        [TestCase("AUTOSTAR","31Ee", true)]
-        [TestCase("AUTOSTAR", "43Eg", true)]
-        [TestCase("AUTOSTAR II", "", false)]
+        [TestCase("Autostar", "30Ab", false)]
+        [TestCase("Autostar", "31Ee", true)]
+        [TestCase("Autostar", "43Eg", true)]
+        [TestCase("Autostar II", "", false)]
+        [TestCase("LX2001", "", true)]
         public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string productName, string firmware, bool isSupported)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
@@ -338,8 +449,17 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
+        public void SelectSite_Get_WhenNotConnected_ThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SelectSite(1); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SelectSite"));
+        }
+
+        [Test]
         public void SelectSite_WhenNewSiteToLow_ThenThrowsException()
         {
+            ConnectTelescope();
+
             var site = 0;
             var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
 
@@ -349,6 +469,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SelectSite_WhenNewSiteToHigh_ThenThrowsException()
         {
+            ConnectTelescope();
+
             var site = 5;
             var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
 
@@ -361,6 +483,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(4)]
         public void SelectSite_WhenNewSiteToHigh_ThenThrowsException(int site)
         {
+            ConnectTelescope();
+
             _telescope.SelectSite(site);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
@@ -381,7 +505,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
 
-            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Revision}.{version.Build}";
+            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 
             var driverVersion = _telescope.DriverVersion;
 
@@ -582,11 +706,32 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void CanSetGuideRates_Get_ReturnsFalse()
+        public void CanSetGuideRates_Get_WhenNotConnected_ThenThrowsException()
         {
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _telescope.CanSetGuideRates; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CanSetGuideRates Get"));
+        }
+        
+        [Test]
+        public void CanSetGuideRates_Get_WhenConnectedToAutostar_ThenReturnsFalse()
+        {
+            ConnectTelescope();
+
             var result = _telescope.CanSetGuideRates;
 
             Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void CanSetGuideRates_Get_WhenConnectedToLX200GPS_ThenReturnsTrue()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.LX200GPS_42G);
+            _telescope.Connected = true;
+
+            var result = _telescope.CanSetGuideRates;
+
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -769,15 +914,16 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void GuideRateDeclination_Get_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateDeclination; });
+            var result = _telescope.GuideRateDeclination;
 
-            Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(0.00034166666666666666));
         }
 
         [Test]
-        public void GuideRateDeclination_Set_ThenThrowsException()
+        public void GuideRateDeclination_Set_WhenNotSupported_ThenThrowsException()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+
             var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateDeclination = 0; });
 
             Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
@@ -785,21 +931,50 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void GuideRateRightAscension_Get_ThenThrowsException()
+        public void GuideRateDeclination_Set_WhenIsSupported_ThenSetsNewGuideRate()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { var result = _telescope.GuideRateRightAscension; });
+            var newGuideRate = 0.00034166666666666666;
 
-            Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+
+            _telescope.GuideRateDeclination = newGuideRate;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
+
+            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
         }
 
         [Test]
-        public void GuideRateRightAscension_Set_ThenThrowsException()
+        public void GuideRateRightAscension_Get_ThenThrowsException()
         {
+            var result = _telescope.GuideRateRightAscension;
+
+            Assert.That(result, Is.EqualTo(0.00034166666666666666));
+        }
+
+        [Test]
+        public void GuideRateRightAscension_Set_WhenNotSupported_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+
             var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateRightAscension = 0; });
 
             Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
             Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [Test]
+        public void GuideRateRightAscension_Set_WhenIsSupported_ThenSetsNewGuideRate()
+        {
+            var newGuideRate = 0.00034166666666666666;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
+
+            _telescope.GuideRateRightAscension = newGuideRate;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
+
+            Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
         }
 
         [Test]
@@ -969,7 +1144,7 @@ namespace Meade.net.Telescope.UnitTests
             var duration = 0;
             ConnectTelescope();
 
-            _telescope.PulseGuide(direction, 0);
+            _telescope.PulseGuide(direction, duration);
 
             string d = string.Empty;
             switch (direction)
@@ -999,11 +1174,47 @@ namespace Meade.net.Telescope.UnitTests
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
             var duration = 0;
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => _sharedResourcesWrapperMock.Object.Autostar497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => "31Ed");
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
             _telescope.Connected = true;
 
-            _telescope.PulseGuide(direction, 0);
+            _telescope.PulseGuide(direction, duration);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":M{d}#"));
+            _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Q{d}#"));
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailableButDurationTooLong_ThenSendsOldCommandsAndWaits(GuideDirections direction)
+        {
+            var duration = 10000;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, duration);
 
             string d = string.Empty;
             switch (direction)
@@ -1294,8 +1505,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToAltAz_WhenConnected_ThenSendsExpectedMessage()
         {
-            string expectedMessage = "test blind Message";
-
             ConnectTelescope();
 
             var exception = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SyncToAltAz(0,0); });
