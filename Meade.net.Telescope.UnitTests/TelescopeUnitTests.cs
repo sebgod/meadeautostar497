@@ -752,23 +752,23 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.Precision = desiredPresision;
             var currentPrecision = telescopePrecision;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":P#")).Returns(() =>
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":P#")).Returns(() =>
             {
                 currentPrecision = !currentPrecision;
 
                 switch (currentPrecision)
                 {
                     case true:
-                        return "HIGH PRECISION";
+                        return "H";
                     default:
-                        return "LOW PRECISION";
+                        return "L";
                 }
             });
 
             _telescope.Connected = true;
 
             Assert.That(currentPrecision, Is.EqualTo(finalPrecision));
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":P#"), Times.AtLeastOnce);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.AtLeastOnce);
         }
 
         [Test]

@@ -489,17 +489,18 @@ namespace ASCOM.Meade.net
 
         private bool TogglePrecision()
         {
-            var result = _sharedResourcesWrapper.SendString(":P#");
+            LogMessage("TogglePrecision", $"Toggling slewing precision");
+            var result = _sharedResourcesWrapper.SendChar(":P#");
             //:P# Toggles High Precsion Pointing. When High precision pointing is enabled scope will first allow the operator to center a nearby bright star before moving to the actual target.
             //Returns: <string>
             //“HIGH PRECISION” Current setting after this command.
             //“LOW PRECISION” Current setting after this command.
 
-
+            LogMessage("TogglePrecision", $"Result: {result}");
             bool highPrecision = false;
             switch (result)
             {
-                case "HIGH PRECISION":
+                case "H":
                     highPrecision = true;
                     break;
             }
