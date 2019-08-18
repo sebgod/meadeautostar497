@@ -2309,6 +2309,7 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");
             LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
+            LogMessage("ReadProfile", $"Precision: {_precision}");
         }
 
         internal void WriteProfile()
