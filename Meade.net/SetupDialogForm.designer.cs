@@ -40,6 +40,8 @@ namespace ASCOM.Meade.net
             this.txtGuideRate = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.lblPercentOfSiderealRate = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cboPrecision = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -112,10 +114,28 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.lblPercentOfSiderealRate, "lblPercentOfSiderealRate");
             this.lblPercentOfSiderealRate.Name = "lblPercentOfSiderealRate";
             // 
+            // label5
+            // 
+            resources.ApplyResources(this.label5, "label5");
+            this.label5.Name = "label5";
+            // 
+            // cboPrecision
+            // 
+            this.cboPrecision.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboPrecision.FormattingEnabled = true;
+            this.cboPrecision.Items.AddRange(new object[] {
+            resources.GetString("cboPrecision.Items"),
+            resources.GetString("cboPrecision.Items1"),
+            resources.GetString("cboPrecision.Items2")});
+            resources.ApplyResources(this.cboPrecision, "cboPrecision");
+            this.cboPrecision.Name = "cboPrecision";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cboPrecision);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.lblPercentOfSiderealRate);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtGuideRate);
@@ -152,5 +172,7 @@ namespace ASCOM.Meade.net
         private System.Windows.Forms.TextBox txtGuideRate;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label lblPercentOfSiderealRate;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ComboBox cboPrecision;
     }
 }

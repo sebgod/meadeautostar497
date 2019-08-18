@@ -116,6 +116,14 @@ namespace ASCOM.Meade.net
             }
         }
 
+        public static string ReadCharacters(int throwAwayCharacters)
+        {
+            lock (LockObject)
+            {
+                return SharedSerial.ReceiveCounted(throwAwayCharacters);
+            }
+        }
+
         /// <summary>
         /// Example of handling connecting to and disconnection from the
         /// shared serial port.
@@ -159,6 +167,7 @@ namespace ASCOM.Meade.net
         private const string ComPortProfileName = "COM Port";
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
+        private const string PrecisionProfileName = "Precision";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -170,6 +179,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString());
+                    driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                 }
             }
         }
@@ -177,6 +187,7 @@ namespace ASCOM.Meade.net
         private const string ComPortDefault = "COM1";
         private const string TraceStateDefault = "false";
         private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+        private const string PrecisionDefault = "Unchanged";
 
         public static ProfileProperties ReadProfile()
         {
@@ -189,6 +200,7 @@ namespace ASCOM.Meade.net
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
                     profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
                     profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault));
+                    profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
                 }
 
                 return profileProperties;

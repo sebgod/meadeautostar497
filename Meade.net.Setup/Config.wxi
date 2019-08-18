@@ -11,7 +11,7 @@
     UpgradeCode must be unique to this product and should not be changed for the product lifetime.
   -->
 
-  <?define InstallName = "ASCOM Meade.net" ?>
+  <?define InstallName = "ASCOM Meade Generic" ?>
   <?define Manufacturer = "cjdawson.com" ?>
   <?define UpgradeCode = "{57597bb6-f207-4998-97f4-8a041950d062}" ?>
   <?define INSTALLFOLDER = "$(var.InstallName)" ?>
