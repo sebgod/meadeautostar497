@@ -445,7 +445,7 @@
     <value>77, 191</value>
   </data>
   <data name="cboPrecision.Size" type="System.Drawing.Size, System.Drawing">
-    <value>69, 21</value>
+    <value>90, 21</value>
   </data>
   <data name="cboPrecision.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
