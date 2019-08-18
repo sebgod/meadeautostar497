@@ -496,14 +496,19 @@ namespace ASCOM.Meade.net
             //“HIGH PRECISION” Current setting after this command.
             //“LOW PRECISION” Current setting after this command.
 
+            int throwAwayCharacters = "LOW PRECISION".Length - 1;
+
             LogMessage("TogglePrecision", $"Result: {result}");
             bool highPrecision = false;
             switch (result)
             {
                 case "H":
                     highPrecision = true;
+                    throwAwayCharacters = "HIGH PRECISION".Length - 1;
                     break;
             }
+
+            _sharedResourcesWrapper.ReadCharacters(throwAwayCharacters);
 
             //Make sure that the buffers are cleared out.
             _sharedResourcesWrapper.SendBlind("#");

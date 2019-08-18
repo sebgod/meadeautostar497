@@ -116,6 +116,14 @@ namespace ASCOM.Meade.net
             }
         }
 
+        public static string ReadCharacters(int throwAwayCharacters)
+        {
+            lock (LockObject)
+            {
+                return SharedSerial.ReceiveCounted(throwAwayCharacters);
+            }
+        }
+
         /// <summary>
         /// Example of handling connecting to and disconnection from the
         /// shared serial port.
