@@ -417,13 +417,13 @@ namespace ASCOM.Meade.net
 
         private void SetTelescopePrecision(string propertyName)
         {
-            switch (_precision)
+            switch (_precision.ToLower())
             {
-                case "High":
+                case "high":
                     TelescopePointingPrecision(true);
                     LogMessage(propertyName, $"High precision slewing selected");
                     break;
-                case "Low":
+                case "low":
                     TelescopePointingPrecision(false);
                     LogMessage(propertyName, $"Low precision slewing selected");
                     break;

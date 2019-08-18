@@ -66,7 +66,7 @@ namespace ASCOM.Meade.net
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
-                Precision = cboPrecision.SelectedText
+                Precision = cboPrecision.SelectedItem.ToString()
             };
 
             return profileProperties;
