@@ -6,5 +6,6 @@ namespace ASCOM.Meade.net
         public string ComPort { get; set; }
         public bool TraceLogger { get; set; }
         public double GuideRateArcSecondsPerSecond { get; set; }
+        public string Precision { get; set; }
     }
 }

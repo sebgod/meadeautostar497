@@ -243,6 +243,8 @@ namespace ASCOM.Meade.net
                     var parames = actionParameters.ToLower().Split(' ');
                     switch (parames[0])
                     {
+                        case "count":
+                            return "4";
                         case "select":
                             switch (parames[1])
                             {
@@ -391,6 +393,7 @@ namespace ASCOM.Meade.net
                                 SetNewGuideRate( _guideRate, "Connect" );
                             }
 
+                            SetTelescopePrecision("Connect");
                         }
                         catch (Exception)
                         {
@@ -409,6 +412,24 @@ namespace ASCOM.Meade.net
                     _sharedResourcesWrapper.Disconnect("Serial");
                     IsConnected = false;
                 }
+            }
+        }
+
+        private void SetTelescopePrecision(string propertyName)
+        {
+            switch (_precision)
+            {
+                case "High":
+                    TelescopePointingPrecision(true);
+                    LogMessage(propertyName, $"High precision slewing selected");
+                    break;
+                case "Low":
+                    TelescopePointingPrecision(false);
+                    LogMessage(propertyName, $"Low precision slewing selected");
+                    break;
+                default:
+                    LogMessage(propertyName, $"Precision slewing unchanged");
+                    break;
             }
         }
 
@@ -464,6 +485,39 @@ namespace ASCOM.Meade.net
                     //    Returns Nothing
                 }
             });
+        }
+
+        private bool TogglePrecision()
+        {
+            var result = _sharedResourcesWrapper.SendString(":P#");
+            //:P# Toggles High Precsion Pointing. When High precision pointing is enabled scope will first allow the operator to center a nearby bright star before moving to the actual target.
+            //Returns: <string>
+            //“HIGH PRECISION” Current setting after this command.
+            //“LOW PRECISION” Current setting after this command.
+
+
+            bool highPrecision = false;
+            switch (result)
+            {
+                case "HIGH PRECISION":
+                    highPrecision = true;
+                    break;
+            }
+
+            //Make sure that the buffers are cleared out.
+            _sharedResourcesWrapper.SendBlind("#");
+
+            return highPrecision;
+        }
+
+        public void TelescopePointingPrecision(bool high)
+        {
+            var currentPrecision = TogglePrecision();
+
+            while (currentPrecision != high)
+            {
+                currentPrecision = TogglePrecision();
+            }
         }
 
         public void SelectSite(int site)
@@ -1963,6 +2017,7 @@ namespace ASCOM.Meade.net
         }
 
         private DriveRates _trackingRate = DriveRates.driveSidereal;
+        private string _precision;
 
         public DriveRates TrackingRate
         {
@@ -2249,6 +2304,7 @@ namespace ASCOM.Meade.net
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
             _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
+            _precision = profileProperties.Precision;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");

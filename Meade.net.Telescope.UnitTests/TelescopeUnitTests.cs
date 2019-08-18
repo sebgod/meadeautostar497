@@ -31,6 +31,7 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.TraceLogger = false;
             _profileProperties.ComPort = "TestCom1";
             _profileProperties.GuideRateArcSecondsPerSecond = 1.23;
+            _profileProperties.Precision = "Unchanged";
 
             _utilMock = new Mock<IUtil>();
             _utilExtraMock = new Mock<IUtilExtra>();
@@ -732,6 +733,42 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.CanSetGuideRates;
 
             Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void Precision_Set_WhenConnectedAndPrecisionSetUnChanged_ThenDoesNotSetPrecision()
+        {
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":P#"), Times.Never);
+        }
+
+        [TestCase("High", false, true)]
+        [TestCase("High", true, true)]
+        [TestCase("Low", false, false)]
+        [TestCase("Low", true, false)]
+        public void Precision_Set_WhenConnectedAndPrecisionSetHighScopeIsLow_ThenTelescopePrecisionChanged(string desiredPresision, bool telescopePrecision, bool finalPrecision)
+        {
+            _profileProperties.Precision = desiredPresision;
+            var currentPrecision = telescopePrecision;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":P#")).Returns(() =>
+            {
+                currentPrecision = !currentPrecision;
+
+                switch (currentPrecision)
+                {
+                    case true:
+                        return "HIGH PRECISION";
+                    default:
+                        return "LOW PRECISION";
+                }
+            });
+
+            _telescope.Connected = true;
+
+            Assert.That(currentPrecision, Is.EqualTo(finalPrecision));
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":P#"), Times.AtLeastOnce);
         }
 
         [Test]

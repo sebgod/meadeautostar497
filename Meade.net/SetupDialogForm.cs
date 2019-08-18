@@ -49,15 +49,24 @@ namespace ASCOM.Meade.net
             }
 
             txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString();
+            try
+            {
+                cboPrecision.SelectedItem = profileProperties.Precision;
+            }
+            catch (Exception e)
+            {
+                cboPrecision.SelectedItem = "Unchanged";
+            }
         }
 
-        public ProfileProperties GetProfile()
+    public ProfileProperties GetProfile()
         {
             var profileProperties = new ProfileProperties
             {
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
-                GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim())
+                GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
+                Precision = cboPrecision.SelectedText
             };
 
             return profileProperties;
