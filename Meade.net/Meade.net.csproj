@@ -122,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassFactory.cs" />
+    <Compile Include="ConnectionInfo.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>

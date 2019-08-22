@@ -179,7 +179,7 @@ namespace ASCOM.Meade.net
                     try
                     {
                         ReadProfile();
-                        _sharedResourcesWrapper.Connect("Serial");
+                        _sharedResourcesWrapper.Connect("Serial", DriverId);
                         try
                         {
                             SelectSite(1);
@@ -189,7 +189,7 @@ namespace ASCOM.Meade.net
                         }
                         catch (Exception)
                         {
-                            _sharedResourcesWrapper.Disconnect("Serial");
+                            _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
                         }
                     }
@@ -201,7 +201,7 @@ namespace ASCOM.Meade.net
                 else
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
-                    _sharedResourcesWrapper.Disconnect("Serial");
+                    _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
             }

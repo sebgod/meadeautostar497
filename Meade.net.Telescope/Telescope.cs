@@ -277,7 +277,6 @@ namespace ASCOM.Meade.net
                                         $"Site {actionParameters} not allowed, must be between 1 and 4");
 
                             }
-                            break;
                         case "setname":
                             switch (parames[1])
                             {
@@ -374,12 +373,11 @@ namespace ASCOM.Meade.net
                         ReadProfile();
 
                         LogMessage("Connected Set", "Connecting to port {0}", _comPort);
-                        _sharedResourcesWrapper.Connect("Serial");
+                        var connectionInfo = _sharedResourcesWrapper.Connect("Serial", DriverId);
                         try
                         {
                             LogMessage("Connected Set", $"Connected to port {_comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
 
-                            SetLongFormat(true);
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
                             _targetDeclination = InvalidParameter;
                             _targetRightAscension = InvalidParameter;
@@ -388,16 +386,22 @@ namespace ASCOM.Meade.net
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;
 
-                            if (CanSetGuideRates)
+                            if (connectionInfo.SameDevice == 1)
                             {
-                                SetNewGuideRate( _guideRate, "Connect" );
-                            }
+                                //These settings are applied only when the first device connects to the telescope.
+                                SetLongFormat(true);
 
-                            SetTelescopePrecision("Connect");
+                                if (CanSetGuideRates)
+                                {
+                                    SetNewGuideRate(_guideRate, "Connect");
+                                }
+
+                                SetTelescopePrecision("Connect");
+                            }
                         }
                         catch (Exception)
                         {
-                            _sharedResourcesWrapper.Disconnect("Serial");
+                            _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
                         }
                     }
@@ -409,7 +413,7 @@ namespace ASCOM.Meade.net
                 else
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
-                    _sharedResourcesWrapper.Disconnect("Serial");
+                    _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
             }

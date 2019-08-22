@@ -260,18 +260,25 @@ namespace ASCOM.Meade.net
         /// </summary>
         private static readonly Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
 
+        private static readonly Dictionary<string, DeviceHardware> _connectedDeviceIds = new Dictionary<string, DeviceHardware>();
+
+
         /// <summary>
         /// This is called in the driver Connect(true) property,
         /// it add the device id to the list of devices if it's not there and increments the device count.
         /// </summary>
         /// <param name="deviceId"></param>
-        public static void Connect(string deviceId)
+        public static ConnectionInfo Connect(string deviceId, string driverId)
         {
             lock (LockObject)
             {
                 if (!_connectedDevices.ContainsKey(deviceId))
                     _connectedDevices.Add(deviceId, new DeviceHardware());
                 _connectedDevices[deviceId].Count++; // increment the value
+
+                if (!_connectedDeviceIds.ContainsKey(driverId))
+                    _connectedDeviceIds.Add(driverId, new DeviceHardware());
+                _connectedDeviceIds[driverId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
@@ -292,10 +299,16 @@ namespace ASCOM.Meade.net
                         FirmwareVersion = SendString(":GVN#");
                     }
                 }
+
+                return new ConnectionInfo
+                {
+                    Connections = _connectedDevices[deviceId].Count,
+                    SameDevice = _connectedDeviceIds[driverId].Count
+                };
             }
         }
 
-        public static void Disconnect(string deviceId)
+        public static void Disconnect(string deviceId, string driverId)
         {
             lock (LockObject)
             {
@@ -310,6 +323,11 @@ namespace ASCOM.Meade.net
                             SharedSerial.Connected = false;
                         }
                     }
+                }
+
+                if (_connectedDeviceIds.ContainsKey(driverId))
+                {
+                    _connectedDeviceIds[driverId].Count--;
                 }
             }
         }
