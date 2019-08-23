@@ -55,7 +55,7 @@ namespace ASCOM.Meade.net
             {
                 cboPrecision.SelectedItem = profileProperties.Precision;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 cboPrecision.SelectedItem = "Unchanged";
             }
@@ -95,7 +95,7 @@ namespace ASCOM.Meade.net
                 lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
                 _guideRateValid = true;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 //Surpressing this exception as if the value is not valid then it's not useful.
                 _guideRateValid = false;

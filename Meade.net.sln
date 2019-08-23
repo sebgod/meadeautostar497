@@ -23,6 +23,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Meade.net.Setup", "Meade.ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meade.net.Telescope.UnitTests", "Meade.net.Telescope.UnitTests\Meade.net.Telescope.UnitTests.csproj", "{B7EEEEFD-5BFF-443D-981C-7B8AB5DFDE33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meade.net.Focuser.UnitTests", "Meade.net.Focuser.UnitTests\Meade.net.Focuser.UnitTests.csproj", "{A3991FA7-23C3-405A-96F9-5AB03AC58F30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,18 @@ Global
 		{B7EEEEFD-5BFF-443D-981C-7B8AB5DFDE33}.Release|x64.Build.0 = Release|Any CPU
 		{B7EEEEFD-5BFF-443D-981C-7B8AB5DFDE33}.Release|x86.ActiveCfg = Release|x86
 		{B7EEEEFD-5BFF-443D-981C-7B8AB5DFDE33}.Release|x86.Build.0 = Release|x86
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|x64.Build.0 = Release|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,6 +143,7 @@ Global
 		{AABC96B8-C462-4B3A-9B5F-2929E3CB7A49} = {BF650D97-AF98-4638-9C55-21311C6D88DA}
 		{AD4959DD-33D7-4C3F-8DB0-7361D8E74A95} = {0958D817-269C-44BE-BEFB-F3E6A409DE91}
 		{B7EEEEFD-5BFF-443D-981C-7B8AB5DFDE33} = {0958D817-269C-44BE-BEFB-F3E6A409DE91}
+		{A3991FA7-23C3-405A-96F9-5AB03AC58F30} = {0958D817-269C-44BE-BEFB-F3E6A409DE91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3C0509DC-C7F5-48DC-920D-DCFD9C879BD2}

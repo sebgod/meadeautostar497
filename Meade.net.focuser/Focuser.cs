@@ -66,8 +66,17 @@ namespace ASCOM.Meade.net
         public Focuser()
         {
             //todo move this out to IOC
-            _utilities = new Util(); //Initialise util object
+            var util = new Util(); //Initialise util object
+            _utilities = util;
             _sharedResourcesWrapper = new SharedResourcesWrapper();
+
+            Initialise();
+        }
+
+        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper)
+        {
+            _utilities = util;
+            _sharedResourcesWrapper = sharedResourcesWrapper;
 
             Initialise();
         }
@@ -118,7 +127,7 @@ namespace ASCOM.Meade.net
         public string Action(string actionName, string actionParameters)
         {
             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-            throw new ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            throw new ActionNotImplementedException();
         }
 
         public void CommandBlind(string command, bool raw)
@@ -149,8 +158,7 @@ namespace ASCOM.Meade.net
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
             return _sharedResourcesWrapper.SendString(command);
-
-            throw new MethodNotImplementedException("CommandString");
+            //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -182,9 +190,6 @@ namespace ASCOM.Meade.net
                         _sharedResourcesWrapper.Connect("Serial", DriverId);
                         try
                         {
-                            SelectSite(1);
-                            SetLongFormat(true);
-
                             IsConnected = true;
                         }
                         catch (Exception)
@@ -205,37 +210,6 @@ namespace ASCOM.Meade.net
                     IsConnected = false;
                 }
             }
-        }
-
-        private void SetLongFormat(bool setLongFormat)
-        {
-            _sharedResourcesWrapper.Lock(() =>
-            {
-                var result = _sharedResourcesWrapper.SendString(":GZ#");
-                //:GZ# Get telescope azimuth
-                //Returns: DDD*MM#T or DDD*MM’SS#
-                //The current telescope Azimuth depending on the selected precision.
-
-                bool isLongFormat = result.Length > 6;
-
-                if (isLongFormat != setLongFormat)
-                {
-                    _utilities.WaitForMilliseconds(500);
-                    _sharedResourcesWrapper.SendBlind(":U#");
-                    //:U# Toggle between low/hi precision positions
-                    //Low - RA displays and messages HH:MM.T sDD*MM
-                    //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
-                    //    Returns Nothing
-                }
-            });
-        }
-
-        private void SelectSite(int site)
-        {
-            _sharedResourcesWrapper.SendBlind($":W{site}#");
-            //:W<n>#
-            //Set current site to<n>, an ASCII digit in the range 1..4
-            //Returns: Nothing
         }
 
         public string Description
@@ -568,7 +542,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new NotConnectedException(message);
+                throw new NotConnectedException($"Not connected to focuser when trying to execute: {message}");
             }
         }
 
