@@ -72,9 +72,12 @@ namespace ASCOM.Meade.net
             return profileProperties;
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
-            BringToFront();
+            SetForegroundWindow(Handle);
             Activate();
         }
 
