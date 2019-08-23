@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 namespace ASCOM.Meade.net
@@ -73,18 +74,9 @@ namespace ASCOM.Meade.net
             return profileProperties;
         }
 
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-
-        private static extern bool AllowSetForegroundWindow(int dwProcessId);
-
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
-            Process currentProcess = Process.GetCurrentProcess();
-            AllowSetForegroundWindow(currentProcess.Id);
-            SetForegroundWindow(Handle);
+            Win32Utilities.BringWindowToFront(Handle);
             Activate();
         }
 
