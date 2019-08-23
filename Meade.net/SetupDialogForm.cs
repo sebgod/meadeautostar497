@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -75,8 +76,14 @@ namespace ASCOM.Meade.net
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+
+        private static extern bool AllowSetForegroundWindow(int dwProcessId);
+
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
+            Process currentProcess = Process.GetCurrentProcess();
+            AllowSetForegroundWindow(currentProcess.Id);
             SetForegroundWindow(Handle);
             Activate();
         }
