@@ -74,6 +74,7 @@ namespace ASCOM.Meade.net
 
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
+            BringToFront();
             Activate();
         }
 

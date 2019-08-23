@@ -152,6 +152,7 @@ namespace ASCOM.Meade.net
             this.MinimizeBox = false;
             this.Name = "SetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.TopMost = true;
             this.Shown += new System.EventHandler(this.SetupDialogForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
