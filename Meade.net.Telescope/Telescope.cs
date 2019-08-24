@@ -401,7 +401,7 @@ namespace ASCOM.Meade.net
                             }
                             else
                             {
-                                LogMessage("Connected Set", $"Skipping first connection telescope adjustments (current connections: {connectionInfo.SameDevice}");
+                                LogMessage("Connected Set", $"Skipping first connection telescope adjustments (current connections: {connectionInfo.SameDevice})");
                             }
                         }
                         catch (Exception)
