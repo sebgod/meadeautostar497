@@ -388,6 +388,7 @@ namespace ASCOM.Meade.net
 
                             if (connectionInfo.SameDevice == 1)
                             {
+                                LogMessage("Connected Set", $"Making first connection telescope adjustments");
                                 //These settings are applied only when the first device connects to the telescope.
                                 SetLongFormat(true);
 
@@ -397,6 +398,10 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
+                            }
+                            else
+                            {
+                                LogMessage("Connected Set", $"Skipping first connection telescope adjustments (current connections: {connectionInfo.SameDevice}");
                             }
                         }
                         catch (Exception)
