@@ -37,7 +37,7 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Focuser";
-        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -54,7 +54,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        internal static TraceLogger Tl;
+        private static TraceLogger Tl;
 
         private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -358,16 +358,7 @@ namespace ASCOM.Meade.net
             if (position == 0)
                 return;
 
-            if (position > 0)
-            {
-                //desired move direction is out
-                MoveFocuser(true, Math.Abs(position));
-            }
-            else
-            {
-                //desired move direction is in
-                MoveFocuser(false, Math.Abs(position));
-            }
+            MoveFocuser(position > 0, Math.Abs(position));
         }
 
         private void MoveFocuser(bool directionOut, int steps)
@@ -426,6 +417,7 @@ namespace ASCOM.Meade.net
                 Tl.LogMessage("TempComp Get", false.ToString());
                 return false;
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 Tl.LogMessage("TempComp Set", "Not implemented");
@@ -551,7 +543,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
-        internal void ReadProfile()
+        private void ReadProfile()
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             Tl.Enabled = profileProperties.TraceLogger;
@@ -567,7 +559,7 @@ namespace ASCOM.Meade.net
         /// <param name="identifier"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        internal static void LogMessage(string identifier, string message, params object[] args)
+        private static void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
             Tl.LogMessage(identifier, msg);

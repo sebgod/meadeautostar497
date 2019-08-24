@@ -30,12 +30,7 @@
       <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
     </Condition>
 
-    <!--todo create a method to check if ASCOM is installed.-->
-    <!--<Condition Message="This application requires ASCOM Platform 6.4 or later.  Please install this and try again.">
-      <![CDATA[Installed or WIX_IS_NETFRAMEWORK_471_OR_LATER_INSTALLED]]>
-    </Condition>-->
-
-   <!-- <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
+    <!-- <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
       <?if $(var.Win64) = "yes" ?>
       VersionNT64
       <?else?>
@@ -46,6 +41,7 @@
     
     <UIRef Id="InstallationUI"/>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <FeatureGroupRef Id="fgRoot"/>
 	</Product>
