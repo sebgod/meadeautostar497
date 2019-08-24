@@ -1,4 +1,6 @@
-﻿using ASCOM;
+﻿using System;
+using ASCOM;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
@@ -45,6 +47,12 @@ namespace Meade.net.Focuser.UnitTests
         public void CheckThatClassCreatedProperly()
         {
             Assert.That(_focuser, Is.Not.Null);
+        }
+
+        [Test]
+        public void NotConnectedByDefault()
+        {
+            Assert.That(_focuser.Connected, Is.False);
         }
 
         [Test]
@@ -140,6 +148,235 @@ namespace Meade.net.Focuser.UnitTests
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage), Times.Once);
             Assert.That(actualMessage, Is.EqualTo(expectedMessage));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Connected_Get_ReturnsExpectedValue(bool expectedConnected)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
+            _focuser.Connected = expectedConnected;
+
+            Assert.That(_focuser.Connected, Is.EqualTo(expectedConnected));
+        }
+
+        [Test]
+        public void Connected_Set_WhenConnecting_Then_ConnectsToSerialDevice()
+        {
+            var productName = "LX2001";
+            var firmware = string.Empty;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _focuser.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+        }
+
+
+        [Test]
+        public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
+        {
+            ConnectFocuser();
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+            //act
+            _focuser.Connected = true;
+
+            //assert
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
+        {
+            ConnectFocuser();
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+            //act
+            _focuser.Connected = false;
+
+            //assert
+            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
+        }
+
+        //Commented out for now as the catch after connect is currently unreachable code.
+        //[Test]
+        //public void Connected_Set_WhenFailsToConnect_ThenDisconnects()
+        //{
+        //    _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+        //    _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
+
+        //    _sharedResourcesWrapperMock.Setup(x => x.SendString(It.IsAny<string>())).Throws(new Exception("TestFailed"));
+
+        //    //act
+        //    _focuser.Connected = true;
+
+        //    //assert
+        //    _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
+        //}
+
+        [Test]
+        public void Description_Get()
+        {
+            var expectedDescription = "Meade Generic";
+
+            var description = _focuser.Description;
+
+            Assert.That(description, Is.EqualTo(expectedDescription));
+        }
+
+        [Test]
+        public void DriverVersion_Get()
+        {
+            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Focuser)).GetName().Version;
+
+            string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+
+            var driverVersion = _focuser.DriverVersion;
+
+            Assert.That(driverVersion, Is.EqualTo(exptectedDriverInfo));
+        }
+
+        [Test]
+        public void DriverInfo_Get()
+        {
+            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Focuser)).GetName().Version;
+
+            string exptectedDriverInfo = $"{_focuser.Description} .net driver. Version: {_focuser.DriverVersion}";
+
+            var driverInfo = _focuser.DriverInfo;
+
+            Assert.That(driverInfo, Is.EqualTo(exptectedDriverInfo));
+        }
+
+        [Test]
+        public void InterfaceVersion_Get()
+        {
+            var interfaceVersion = _focuser.InterfaceVersion;
+            Assert.That(interfaceVersion, Is.EqualTo(3));
+
+            Assert.That(_focuser, Is.AssignableTo<IFocuserV3>());
+        }
+
+        [Test]
+        public void Name_Get()
+        {
+            string expectedName = "Meade Generic";
+
+            var name = _focuser.Name;
+
+            Assert.That(name, Is.EqualTo(expectedName));
+        }
+
+        [Test]
+        public void Absolute_Get_WhenNotConnected_ThenThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() => { var result = _focuser.Absolute; });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: Absolute Get"));
+        }
+
+        [Test]
+        public void Absolute_Get_WhenConnected_ThenReturnsFalse()
+        {
+            ConnectFocuser();
+            var result = _focuser.Absolute;
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void Halt_WhenNotConnected_ThenThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() => { _focuser.Halt(); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: Halt"));
+        }
+
+        [Test]
+        public void Halt_WhenConnected_ThenSendsHaltCommand()
+        {
+            ConnectFocuser();
+
+            _focuser.Halt();
+
+            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":FQ#"), Times.AtLeastOnce);
+            _utilMock.Verify( x => x.WaitForMilliseconds(250), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void IsMoving_WhenCalled_ThenReturnsFalse()
+        {
+            ConnectFocuser();
+
+            var result = _focuser.IsMoving;
+
+            Assert.That(result, Is.False);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Link_Get_ReturnsSameValueAsConnected( bool connected)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
+            _focuser.Connected = connected;
+
+            Assert.That( _focuser.Link, Is.EqualTo(connected));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Link_Set_WhenSet_ThenSetsConnectedState(bool connected)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
+            _focuser.Link = connected;
+
+            Assert.That(_focuser.Link, Is.EqualTo(connected));
+        }
+
+        [Test]
+        public void MaxIncrement_WhenCalled_ThenReturnsExpectedValue()
+        {
+            var result = _focuser.MaxIncrement;
+
+            Assert.That(result, Is.EqualTo(7000));
+        }
+
+        [Test]
+        public void MaxStep_WhenCalled_ThenReturnsExpectedValue()
+        {
+            var result = _focuser.MaxStep;
+
+            Assert.That(result, Is.EqualTo(7000));
+        }
+
+        [Test]
+        public void Move_WhenNotConnected_ThenThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() => { _focuser.Move(0); });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: Move"));
+        }
+
+        [TestCase(-7001)]
+        [TestCase(7001)]
+        public void Move_WhenLargerThanMaxIncrement_ThenThrowsException(int increment)
+        {
+            ConnectFocuser();
+
+            var exception = Assert.Throws<InvalidValueException>(() => { _focuser.Move(increment); });
+            Assert.That(exception.Message, Is.EqualTo($"position out of range -{_focuser.MaxIncrement} < {increment} < {_focuser.MaxIncrement}"));
+        }
+
+        [Test]
+        public void Move_WhenIncrementIs0_ThenDoesNothing()
+        {
+            ConnectFocuser();
+
+            _focuser.Move(0);
+
+            _utilMock.Verify( x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Never);
         }
     }
 }

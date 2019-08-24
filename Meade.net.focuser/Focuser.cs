@@ -226,10 +226,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                Tl.LogMessage("DriverInfo Get", driverInfo);
+                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
+                LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
         }
@@ -239,8 +238,8 @@ namespace ASCOM.Meade.net
             get
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                Tl.LogMessage("DriverVersion Get", driverVersion);
+                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+                LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
         }
@@ -274,6 +273,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                CheckConnected("Absolute Get");
+
                 Tl.LogMessage("Absolute Get", false.ToString());
                 return false; // This is a relative focuser
             }
@@ -286,6 +287,7 @@ namespace ASCOM.Meade.net
             CheckConnected("Halt");
 
             //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
+            //todo make this mockable
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (stopwatch.ElapsedMilliseconds < 1000)
             {
@@ -386,6 +388,7 @@ namespace ASCOM.Meade.net
                 _utilities.WaitForMilliseconds(100);
 
                 //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
+                //todo make this mockable
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {

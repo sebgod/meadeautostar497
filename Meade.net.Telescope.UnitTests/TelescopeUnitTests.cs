@@ -346,7 +346,7 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void Connected_Set_WhenConnecting_Then()
+        public void Connected_Set_WhenConnecting_Then_ConnectsToSerialDevice()
         {
             var productName = "LX2001";
             var firmware = string.Empty;
