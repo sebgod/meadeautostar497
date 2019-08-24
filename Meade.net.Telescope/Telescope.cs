@@ -525,7 +525,7 @@ namespace ASCOM.Meade.net
             return highPrecision;
         }
 
-        public void TelescopePointingPrecision(bool high)
+        private void TelescopePointingPrecision(bool high)
         {
             var currentPrecision = TogglePrecision();
 
@@ -2313,7 +2313,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
-        internal void ReadProfile()
+        private void ReadProfile()
         {
             ProfileProperties profileProperties = _sharedResourcesWrapper.ReadProfile();
             _tl.Enabled = profileProperties.TraceLogger;

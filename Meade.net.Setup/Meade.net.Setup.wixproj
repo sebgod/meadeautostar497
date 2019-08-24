@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config.wxi" />
+    <Content Include="License.rtf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Meade.net.focuser\Meade.net.focuser.csproj">
