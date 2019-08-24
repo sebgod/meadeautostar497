@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
-using System.Globalization;
 using System.Collections;
 using System.Reflection;
 using ASCOM.Meade.net.Wrapper;

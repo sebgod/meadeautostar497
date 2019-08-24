@@ -6,6 +6,7 @@ using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
+using NotImplementedException = System.NotImplementedException;
 
 namespace Meade.net.Focuser.UnitTests
 {
@@ -31,6 +32,9 @@ namespace Meade.net.Focuser.UnitTests
             _utilMock = new Mock<IUtil>();
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
+
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
+
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() => _profileProperties);
 
             _focuser = new ASCOM.Meade.net.Focuser(_utilMock.Object, _sharedResourcesWrapperMock.Object);
@@ -361,12 +365,12 @@ namespace Meade.net.Focuser.UnitTests
 
         [TestCase(-7001)]
         [TestCase(7001)]
-        public void Move_WhenLargerThanMaxIncrement_ThenThrowsException(int increment)
+        public void Move_WhenLargerThanMaxIncrement_ThenThrowsException(int position)
         {
             ConnectFocuser();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _focuser.Move(increment); });
-            Assert.That(exception.Message, Is.EqualTo($"position out of range -{_focuser.MaxIncrement} < {increment} < {_focuser.MaxIncrement}"));
+            var exception = Assert.Throws<InvalidValueException>(() => { _focuser.Move(position); });
+            Assert.That(exception.Message, Is.EqualTo($"position out of range -{_focuser.MaxIncrement} < {position} < {_focuser.MaxIncrement}"));
         }
 
         [Test]
@@ -377,6 +381,75 @@ namespace Meade.net.Focuser.UnitTests
             _focuser.Move(0);
 
             _utilMock.Verify( x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Never);
+        }
+
+        [TestCase(200)]
+        [TestCase(-200)]
+        public void Move_WhenIncrementIsNot0_ThenMovesFocuserAndStopsFocuser( int position)
+        {
+            ConnectFocuser();
+
+            _focuser.Move(position);
+
+            if (position < 0)
+            {
+                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":F-#"), Times.AtLeastOnce);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
+            }
+            else
+            {
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.AtLeastOnce);
+            }
+
+            _sharedResourcesWrapperMock.Verify( x => x.Lock(It.IsAny<Action>()), Times.Once);
+
+            _utilMock.Verify(x => x.WaitForMilliseconds(250), Times.AtLeastOnce);
+
+            _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Once());
+            _utilMock.Verify(x => x.WaitForMilliseconds(1000), Times.Once());
+        }
+
+        [Test]
+        public void Position_WhenCalled_ThenThrowsException()
+        {
+            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.Position; });
+            Assert.That(exception.Message, Is.EqualTo("Property read Position is not implemented in this driver."));
+        }
+
+        [Test]
+        public void StepSize_WhenCalled_ThenThrowsException()
+        {
+            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.StepSize; });
+            Assert.That(exception.Message, Is.EqualTo("Property read StepSize is not implemented in this driver."));
+        }
+
+        [Test]
+        public void TempComp_WhenRead_ThenReturnsFalse()
+        {
+            var result = _focuser.TempComp;
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void TempComp_WhenWrite_ThenThrowsException()
+        {
+            var exception = Assert.Throws<PropertyNotImplementedException>(() => { _focuser.TempComp = false; });
+            Assert.That(exception.Message, Is.EqualTo("Property read TempComp is not implemented in this driver."));
+        }
+
+        [Test]
+        public void TempCompAvailable_WhenRead_ThenReturnsFalse()
+        {
+            var result = _focuser.TempCompAvailable;
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void Temperature_WhenCalled_ThenThrowsException()
+        {
+            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.Temperature; });
+            Assert.That(exception.Message, Is.EqualTo("Property read Temperature is not implemented in this driver."));
         }
     }
 }
