@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
-using System.Globalization;
 using System.Collections;
 using System.Reflection;
 using ASCOM.Meade.net.Wrapper;
@@ -66,8 +65,17 @@ namespace ASCOM.Meade.net
         public Focuser()
         {
             //todo move this out to IOC
-            _utilities = new Util(); //Initialise util object
+            var util = new Util(); //Initialise util object
+            _utilities = util;
             _sharedResourcesWrapper = new SharedResourcesWrapper();
+
+            Initialise();
+        }
+
+        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper)
+        {
+            _utilities = util;
+            _sharedResourcesWrapper = sharedResourcesWrapper;
 
             Initialise();
         }
@@ -118,7 +126,7 @@ namespace ASCOM.Meade.net
         public string Action(string actionName, string actionParameters)
         {
             LogMessage("", "Action {0}, parameters {1} not implemented", actionName, actionParameters);
-            throw new ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            throw new ActionNotImplementedException();
         }
 
         public void CommandBlind(string command, bool raw)
@@ -149,8 +157,7 @@ namespace ASCOM.Meade.net
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
             return _sharedResourcesWrapper.SendString(command);
-
-            throw new MethodNotImplementedException("CommandString");
+            //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -179,17 +186,14 @@ namespace ASCOM.Meade.net
                     try
                     {
                         ReadProfile();
-                        _sharedResourcesWrapper.Connect("Serial");
+                        _sharedResourcesWrapper.Connect("Serial", DriverId);
                         try
                         {
-                            SelectSite(1);
-                            SetLongFormat(true);
-
                             IsConnected = true;
                         }
                         catch (Exception)
                         {
-                            _sharedResourcesWrapper.Disconnect("Serial");
+                            _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
                         }
                     }
@@ -201,41 +205,10 @@ namespace ASCOM.Meade.net
                 else
                 {
                     LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
-                    _sharedResourcesWrapper.Disconnect("Serial");
+                    _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
             }
-        }
-
-        private void SetLongFormat(bool setLongFormat)
-        {
-            _sharedResourcesWrapper.Lock(() =>
-            {
-                var result = _sharedResourcesWrapper.SendString(":GZ#");
-                //:GZ# Get telescope azimuth
-                //Returns: DDD*MM#T or DDD*MM’SS#
-                //The current telescope Azimuth depending on the selected precision.
-
-                bool isLongFormat = result.Length > 6;
-
-                if (isLongFormat != setLongFormat)
-                {
-                    _utilities.WaitForMilliseconds(500);
-                    _sharedResourcesWrapper.SendBlind(":U#");
-                    //:U# Toggle between low/hi precision positions
-                    //Low - RA displays and messages HH:MM.T sDD*MM
-                    //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
-                    //    Returns Nothing
-                }
-            });
-        }
-
-        private void SelectSite(int site)
-        {
-            _sharedResourcesWrapper.SendBlind($":W{site}#");
-            //:W<n>#
-            //Set current site to<n>, an ASCII digit in the range 1..4
-            //Returns: Nothing
         }
 
         public string Description
@@ -252,10 +225,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                Tl.LogMessage("DriverInfo Get", driverInfo);
+                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
+                LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
         }
@@ -265,8 +237,8 @@ namespace ASCOM.Meade.net
             get
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                Tl.LogMessage("DriverVersion Get", driverVersion);
+                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+                LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;
             }
         }
@@ -300,6 +272,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                CheckConnected("Absolute Get");
+
                 Tl.LogMessage("Absolute Get", false.ToString());
                 return false; // This is a relative focuser
             }
@@ -312,6 +286,7 @@ namespace ASCOM.Meade.net
             CheckConnected("Halt");
 
             //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
+            //todo make this mockable
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (stopwatch.ElapsedMilliseconds < 1000)
             {
@@ -412,6 +387,7 @@ namespace ASCOM.Meade.net
                 _utilities.WaitForMilliseconds(100);
 
                 //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
+                //todo make this mockable
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {
@@ -568,7 +544,7 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new NotConnectedException(message);
+                throw new NotConnectedException($"Not connected to focuser when trying to execute: {message}");
             }
         }
 

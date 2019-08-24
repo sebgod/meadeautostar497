@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 namespace ASCOM.Meade.net
@@ -53,7 +55,7 @@ namespace ASCOM.Meade.net
             {
                 cboPrecision.SelectedItem = profileProperties.Precision;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 cboPrecision.SelectedItem = "Unchanged";
             }
@@ -74,6 +76,7 @@ namespace ASCOM.Meade.net
 
         private void SetupDialogForm_Shown(object sender, EventArgs e)
         {
+            Win32Utilities.BringWindowToFront(Handle);
             Activate();
         }
 
@@ -92,7 +95,7 @@ namespace ASCOM.Meade.net
                 lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
                 _guideRateValid = true;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 //Surpressing this exception as if the value is not valid then it's not useful.
                 _guideRateValid = false;

@@ -23,6 +23,7 @@ namespace Meade.net.Telescope.UnitTests
         private Mock<IAstroMaths> _astroMathsMock;
 
         private ProfileProperties _profileProperties;
+        private ConnectionInfo _connectionInfo;
 
         [SetUp]
         public void Setup()
@@ -40,10 +41,14 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
 
-            _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
+            _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() =>_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>((func) => func());
+
+            _connectionInfo = new ConnectionInfo {Connections = 1, SameDevice = 1};
+
+            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>())).Returns( () => _connectionInfo );
 
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
@@ -341,7 +346,7 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void Connected_Set_WhenConnecting_Then()
+        public void Connected_Set_WhenConnecting_Then_ConnectsToSerialDevice()
         {
             var productName = "LX2001";
             var firmware = string.Empty;
@@ -350,7 +355,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial"), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
@@ -361,26 +366,26 @@ namespace Meade.net.Telescope.UnitTests
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>()),Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>(), It.IsAny<string>()),Times.Once);
 
             //act
             _telescope.Connected = true;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
             //act
             _telescope.Connected = false;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
+            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
         }
 
         [Test]
@@ -395,7 +400,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>()), Times.Once());
+            _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
         }
 
         [TestCase("Autostar", "30Ab", false)]
@@ -769,6 +774,22 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(currentPrecision, Is.EqualTo(finalPrecision));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.AtLeastOnce);
+        }
+
+        [TestCase("High", false, true)]
+        [TestCase("High", true, true)]
+        [TestCase("Low", false, false)]
+        [TestCase("Low", true, false)]
+        public void Precision_Set_WhenSecondConnectionMade_ThenTelescopePrecisionNotChanged(string desiredPresision, bool telescopePrecision, bool finalPrecision)
+        {
+            _profileProperties.Precision = desiredPresision;
+
+            _connectionInfo.SameDevice = 2;
+            _connectionInfo.Connections = 2;
+
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.Never);
         }
 
         [Test]

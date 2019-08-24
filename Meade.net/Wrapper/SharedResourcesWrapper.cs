@@ -4,8 +4,8 @@ namespace ASCOM.Meade.net.Wrapper
 {
     public interface ISharedResourcesWrapper
     {
-        void Connect(string deviceId);
-        void Disconnect(string deviceId);
+        ConnectionInfo Connect(string deviceId, string driverId);
+        void Disconnect(string deviceId, string driverId);
 
         string ProductName { get; }
 
@@ -29,14 +29,14 @@ namespace ASCOM.Meade.net.Wrapper
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
     {
-        public void Connect(string deviceId)
+        public ConnectionInfo Connect(string deviceId, string driverId)
         {
-            SharedResources.Connect( deviceId);
+            return SharedResources.Connect(deviceId, driverId);
         }
 
-        public void Disconnect(string deviceId)
+        public void Disconnect(string deviceId, string driverId)
         {
-            SharedResources.Disconnect(deviceId);
+            SharedResources.Disconnect(deviceId, driverId);
         }
 
         public string ProductName => SharedResources.ProductName;
