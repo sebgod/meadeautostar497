@@ -1,8 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ASCOM.Meade.net
@@ -13,6 +12,10 @@ namespace ASCOM.Meade.net
         public SetupDialogForm()
         {
             InitializeComponent();
+
+            var assemblyInfo = new AssemblyInfo();
+
+            Text = $"{assemblyInfo.Product} Settings ({assemblyInfo.AssemblyVersion})";
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
