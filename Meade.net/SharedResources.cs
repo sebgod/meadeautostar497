@@ -15,6 +15,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
@@ -226,7 +227,12 @@ namespace ASCOM.Meade.net
             using (SetupDialogForm f = new SetupDialogForm())
             {
                 f.SetProfile(profileProperties);
-                
+
+                if (IsConnected())
+                {
+                    f.SetReadOnlyMode();
+                }
+
                 var result = f.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
@@ -330,6 +336,17 @@ namespace ASCOM.Meade.net
                     _connectedDeviceIds[driverId].Count--;
                 }
             }
+        }
+
+        public static bool IsConnected()
+        {
+            foreach (var device in _connectedDevices)
+            {
+                if (device.Value.Count > 0)
+                    return true;
+            }
+
+            return false;
         }
 
         public static bool IsConnected(string deviceId)

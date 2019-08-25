@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -115,6 +114,21 @@ namespace ASCOM.Meade.net
         private void ComboBoxComPort_SelectedValueChanged(object sender, EventArgs e)
         {
             UpdateOKButton();
+        }
+
+        public void SetReadOnlyMode()
+        {
+            foreach (Control control in Controls)
+            {
+                control.Enabled = false;
+            }
+
+            cmdCancel.Enabled = true;
+            //cmdOK.Enabled = false;
+            //comboBoxComPort.Enabled = false;
+            //chkTrace.Enabled = false;
+            //txtGuideRate.Enabled = false;
+            //cboPrecision.Enabled = false;
         }
     }
 }
