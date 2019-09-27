@@ -18,41 +18,6 @@
               Vital="yes"
               Assembly=".net"
               AssemblyApplication="filFocuserDriverAssembly" />
-        <!-- Registry entries suitable for a LocalServer served class -->
-        <!-- HKCR\CLSID\{driver-guid} -->
-        <RegistryKey Root="HKCR" Key="CLSID">
-          <RegistryKey Key="$(var.FocuserDriverClassId)">
-            <RegistryValue Value="$(var.FocuserDriverProgId)" Type="string"/>
-            <RegistryValue Name="AppId" Value="$(var.LocalServerAppId)" Type="string"/>
-            <RegistryKey Key="Implemented Categories">
-              <RegistryKey Key="{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}"
-                           ForceCreateOnInstall="yes"
-                           ForceDeleteOnUninstall="yes"/>
-            </RegistryKey>
-            <RegistryKey Key="ProgId">
-              <RegistryValue Value="$(var.FocuserDriverProgId)" Type="string"/>
-            </RegistryKey>
-            <RegistryKey Key="Programmable"
-                         ForceCreateOnInstall="yes"
-                         ForceDeleteOnUninstall="yes" />
-            <RegistryKey Key="LocalServer32">
-              <RegistryValue Value="[#filLocalServerAssembly]" Type="string"/>
-            </RegistryKey>
-          </RegistryKey>
-        </RegistryKey>
-
-        <!-- HKCR\{driver-prog-id} -->
-        <RegistryKey Root="HKCR" Key="$(var.FocuserDriverProgId)">
-          <RegistryValue Value="$(var.FocuserDriverDescription)" Type="string"/>
-          <RegistryKey Key="CLSID">
-            <RegistryValue Value="$(var.FocuserDriverClassId)" Type="string" />
-          </RegistryKey>
-        </RegistryKey>
-
-        <!--Register the driver with the ASCOM Profile-->
-        <RegistryKey Root="HKLM" Key="SOFTWARE\ASCOM\Focuser Drivers\$(var.FocuserDriverProgId)">
-          <RegistryValue Value="$(var.FocuserDriverDescription)" Type="string"/>
-        </RegistryKey>
       </Component>
     </ComponentGroup>
   </Fragment>
