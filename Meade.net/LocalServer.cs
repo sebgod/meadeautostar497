@@ -29,6 +29,8 @@ namespace ASCOM.Meade.net
     public static class Server
     {
 
+        private const string DRIVER_NAME = "Meade Generic";
+
         #region Access to kernel32.dll, user32.dll, and ole32.dll functions
         [Flags]
         enum Clsctx : uint
@@ -256,8 +258,8 @@ namespace ASCOM.Meade.net
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("Failed to load served COM class assembly " + fi.Name + " - " + e.Message,
-                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show($"Failed to load served COM class assembly {fi.Name} - {e.Message}",
+                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
 
@@ -293,12 +295,11 @@ namespace ASCOM.Meade.net
             try { Process.Start(si); }
             catch (System.ComponentModel.Win32Exception)
             {
-                MessageBox.Show("The Meade Generic was not " + (arg == "/register" ? "registered" : "unregistered") +
-                    " because you did not allow it.", "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"The {DRIVER_NAME} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(ex.ToString(), DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
             return;
         }
@@ -356,8 +357,8 @@ namespace ASCOM.Meade.net
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show($"Error while registering the server:\n{ex}",
+                    DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
             finally
@@ -426,7 +427,7 @@ namespace ASCOM.Meade.net
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                            "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
                 finally
@@ -514,7 +515,7 @@ namespace ASCOM.Meade.net
                 if (!factory.RegisterClassObject())
                 {
                     MessageBox.Show("Failed to register class factory for " + type.Name,
-                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
             }
@@ -570,7 +571,7 @@ namespace ASCOM.Meade.net
 
                     default:
                         MessageBox.Show("Unknown argument: " + args[0] + "\nValid are : -register, -unregister and -embedding",
-                            "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
             }
