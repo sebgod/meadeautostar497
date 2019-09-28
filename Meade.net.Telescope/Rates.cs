@@ -170,7 +170,7 @@ namespace ASCOM.Meade.net
                 _pos.Value = -1;
             }
 
-            return this as IEnumerator;
+            return this;
         }
 
         public void Dispose()
