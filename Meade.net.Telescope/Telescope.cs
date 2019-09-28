@@ -466,7 +466,7 @@ namespace ASCOM.Meade.net
         {
             var currentVersion = _sharedResourcesWrapper.FirmwareVersion;
             var comparison = String.Compare(currentVersion, minVersion, StringComparison.Ordinal);
-            return (comparison >= 0);
+            return comparison >= 0;
         }
 
         public void SetLongFormat(bool setLongFormat)

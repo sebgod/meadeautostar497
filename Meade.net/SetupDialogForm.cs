@@ -92,7 +92,7 @@ namespace ASCOM.Meade.net
                 double newGuideRate = double.Parse(txtGuideRate.Text.Trim());
 
                 const double siderealArcSecondsPerSecond = 15.041;
-                var percentOfSideReal = (newGuideRate / siderealArcSecondsPerSecond * 100);
+                var percentOfSideReal = newGuideRate / siderealArcSecondsPerSecond * 100;
 
                 lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
                 _guideRateValid = true;

@@ -156,25 +156,25 @@ namespace ASCOM.Meade.net
                 Flags,
                 out _mCookie
                 );
-            return (i == 0);
+            return i == 0;
         }
 
         public bool RevokeClassObject()
         {
             int i = CoRevokeClassObject(_mCookie);
-            return (i == 0);
+            return i == 0;
         }
 
         public static bool ResumeClassObjects()
         {
             int i = CoResumeClassObjects();
-            return (i == 0);
+            return i == 0;
         }
 
         public static bool SuspendClassObjects()
         {
             int i = CoSuspendClassObjects();
-            return (i == 0);
+            return i == 0;
         }
         #endregion
 

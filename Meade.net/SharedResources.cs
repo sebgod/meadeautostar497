@@ -353,7 +353,7 @@ namespace ASCOM.Meade.net
         public static bool IsConnected(string deviceId)
         {
             if (ConnectedDevices.ContainsKey(deviceId))
-                return (ConnectedDevices[deviceId].Count > 0);
+                return ConnectedDevices[deviceId].Count > 0;
             else
                 return false;
         }

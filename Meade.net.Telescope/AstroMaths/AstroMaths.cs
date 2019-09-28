@@ -107,7 +107,7 @@ namespace ASCOM.Meade.net.AstroMaths
         public double RadiansToDegrees(double radians)
         {
             double degrees = (180 / Math.PI) * radians;
-            return (degrees);
+            return degrees;
         }
 
         //todo convert to extension method
