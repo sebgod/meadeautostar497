@@ -1096,6 +1096,7 @@ namespace ASCOM.Meade.net
                 LogMessage("DeclinationRate", "Get - " + declination.ToString(CultureInfo.InvariantCulture));
                 return declination;
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("DeclinationRate Set", "Not implemented");
@@ -1116,6 +1117,7 @@ namespace ASCOM.Meade.net
                 LogMessage("DoesRefraction Get", "Not implemented");
                 throw new PropertyNotImplementedException("DoesRefraction", false);
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("DoesRefraction Set", "Not implemented");
@@ -1435,6 +1437,7 @@ namespace ASCOM.Meade.net
                 LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString(CultureInfo.InvariantCulture));
                 return rightAscensionRate;
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("RightAscensionRate Set", "Not implemented");
@@ -1455,6 +1458,7 @@ namespace ASCOM.Meade.net
                 LogMessage("SideOfPier Get", "Not implemented");
                 throw new PropertyNotImplementedException("SideOfPier", false);
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("SideOfPier Set", "Not implemented");
@@ -1495,6 +1499,7 @@ namespace ASCOM.Meade.net
                 LogMessage("SiteElevation Get", "Not implemented");
                 throw new PropertyNotImplementedException("SiteElevation", false);
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("SiteElevation Set", "Not implemented");
@@ -1609,6 +1614,7 @@ namespace ASCOM.Meade.net
                 LogMessage("SlewSettleTime Get", "Not implemented");
                 throw new PropertyNotImplementedException("SlewSettleTime", false);
             }
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 LogMessage("SlewSettleTime Set", "Not implemented");
