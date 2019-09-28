@@ -257,7 +257,7 @@ namespace ASCOM.Meade.net
                 catch (Exception e)
                 {
                     MessageBox.Show("Failed to load served COM class assembly " + fi.Name + " - " + e.Message,
-                        "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
 
@@ -293,12 +293,12 @@ namespace ASCOM.Meade.net
             try { Process.Start(si); }
             catch (System.ComponentModel.Win32Exception)
             {
-                MessageBox.Show("The Meade.net was not " + (arg == "/register" ? "registered" : "unregistered") +
-                    " because you did not allow it.", "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("The Meade Generic was not " + (arg == "/register" ? "registered" : "unregistered") +
+                    " because you did not allow it.", "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(ex.ToString(), "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
             return;
         }
@@ -357,7 +357,7 @@ namespace ASCOM.Meade.net
             catch (Exception ex)
             {
                 MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                        "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
             finally
@@ -426,7 +426,7 @@ namespace ASCOM.Meade.net
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                            "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
                 finally
@@ -514,7 +514,7 @@ namespace ASCOM.Meade.net
                 if (!factory.RegisterClassObject())
                 {
                     MessageBox.Show("Failed to register class factory for " + type.Name,
-                        "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
             }
@@ -570,7 +570,7 @@ namespace ASCOM.Meade.net
 
                     default:
                         MessageBox.Show("Unknown argument: " + args[0] + "\nValid are : -register, -unregister and -embedding",
-                            "Meade.net", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            "Meade Generic", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
             }
