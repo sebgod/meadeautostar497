@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("ASCOM multi-interface server for Meade.net")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("cjdawson.com")]
-[assembly: AssemblyProduct("")]
+[assembly: AssemblyProduct("ASCOM Meade Generic")]
 [assembly: AssemblyCopyright("Copyright © 2019 cjdawson.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

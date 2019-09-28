@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 
 namespace ASCOM.Meade.net
@@ -13,6 +11,10 @@ namespace ASCOM.Meade.net
         public SetupDialogForm()
         {
             InitializeComponent();
+
+            var assemblyInfo = new AssemblyInfo();
+
+            Text = $"{assemblyInfo.Product} Settings ({assemblyInfo.AssemblyVersion})";
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -112,6 +114,21 @@ namespace ASCOM.Meade.net
         private void ComboBoxComPort_SelectedValueChanged(object sender, EventArgs e)
         {
             UpdateOKButton();
+        }
+
+        public void SetReadOnlyMode()
+        {
+            foreach (Control control in Controls)
+            {
+                control.Enabled = false;
+            }
+
+            cmdCancel.Enabled = true;
+            //cmdOK.Enabled = false;
+            //comboBoxComPort.Enabled = false;
+            //chkTrace.Enabled = false;
+            //txtGuideRate.Enabled = false;
+            //cboPrecision.Enabled = false;
         }
     }
 }

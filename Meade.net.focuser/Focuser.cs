@@ -28,7 +28,7 @@ namespace ASCOM.Meade.net
     /// </summary>
     [Guid("a32ac647-bf0f-42f9-8ab0-d166fa5884ad")]
     [ProgId("ASCOM.MeadeGeneric.focuser")]
-    [ServedClassName("Meade.net Focuser")]
+    [ServedClassName("Meade Generic")]
     [ClassInterface(ClassInterfaceType.None)]
     public class Focuser : ReferenceCountedObjectBase, IFocuserV3
     {

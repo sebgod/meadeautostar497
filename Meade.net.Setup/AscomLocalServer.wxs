@@ -12,21 +12,31 @@
               Assembly=".net"
               AssemblyApplication="filLocalServerAssembly" />
       </Component>
-      <Component Id="cmpLocalServerRegistry" Win64="no">
-        <!-- LocalServer32 COM Registration -->
-        <RegistryKey Root="HKCR" Key="AppID" >
-          <!-- HKCR\AppID\{my-app-id} -->
-          <RegistryKey Key="$(var.LocalServerAppId)">
-            <RegistryValue Value="$(var.InstallName)" Type="string"/>
-            <RegistryValue Name="AppID" Value="$(var.LocalServerAppId)" Type="string"/>
-            <RegistryValue Name="AuthenticationLevel" Value="1" Type="integer"/>
-          </RegistryKey>
-          <!-- HKCR\AppID\{exe-name} -->
-          <RegistryKey Key="$(var.Meade.net.TargetFileName)">
-            <RegistryValue Name="AppID" Value="$(var.LocalServerAppId)" Type="string"/>
-          </RegistryKey>
-        </RegistryKey>
-      </Component>
     </ComponentGroup>
+
+    <CustomAction Id="RegisterEXE"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[#filLocalServerAssembly]&quot; /register"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="no"
+    />
+
+    <CustomAction Id="UnRegisterEXE"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[#filLocalServerAssembly]&quot; /unregister"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="no"
+    />
+
+    <InstallExecuteSequence>
+      <Custom Action='RegisterEXE' Before="InstallFinalize">
+        <![CDATA[(NOT Installed)]]>
+      </Custom>
+      <Custom Action="UnRegisterEXE" After="InstallInitialize">
+        <![CDATA[(REMOVE ~= "ALL" AND NOT UPGRADINGPRODUCTCODE)]]>
+      </Custom>
+    </InstallExecuteSequence>
   </Fragment>
 </Wix>

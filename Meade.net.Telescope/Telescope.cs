@@ -30,7 +30,7 @@ namespace ASCOM.Meade.net
     /// </summary>
     [Guid("d9fd4b3e-c4f1-48ac-a16f-d02eef30d86f")]
     [ProgId("ASCOM.MeadeGeneric.Telescope")]
-    [ServedClassName("Meade.net Telescope")]
+    [ServedClassName("Meade Generic")]
     [ClassInterface(ClassInterfaceType.None)]
     public class Telescope : ReferenceCountedObjectBase, ITelescopeV3
     {
