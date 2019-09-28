@@ -2329,7 +2329,7 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Precision: {_precision}");
         }
 
-        internal void WriteProfile()
+        private void WriteProfile()
         {
             var profileProperties = new ProfileProperties
             {
@@ -2347,7 +2347,7 @@ namespace ASCOM.Meade.net
         /// <param name="identifier"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        internal void LogMessage(string identifier, string message, params object[] args)
+        private void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
             _tl.LogMessage(identifier, msg);

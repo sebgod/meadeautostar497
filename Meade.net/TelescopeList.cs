@@ -13,16 +13,21 @@ namespace ASCOM.Meade.net
         public static readonly string Autostar497 = "Autostar";
 
         //Autostar/Audiostar firmware revisions
+        // ReSharper disable once InconsistentNaming
         public static readonly string Autostar497_30Ee = "30Ee";
+        // ReSharper disable once InconsistentNaming
         public static readonly string Autostar497_31Ee = "31Ee";
+        // ReSharper disable once InconsistentNaming
         public static readonly string Autostar497_43Eg = "43Eg";
 
         #endregion
 
         #region LX200GPS
 
+        // ReSharper disable once InconsistentNaming
         public static readonly string LX200GPS = "LX2001";
 
+        // ReSharper disable once InconsistentNaming
         public static readonly string LX200GPS_42G = "4.2G";
 
         #endregion
