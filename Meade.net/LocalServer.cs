@@ -363,9 +363,6 @@ namespace ASCOM.Meade.net
                     DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
-            finally
-            {
-            }
 
             //
             // For each of the driver assemblies
@@ -432,9 +429,7 @@ namespace ASCOM.Meade.net
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
-                finally
-                {
-                }
+
                 if (bFail) break;
             }
         }

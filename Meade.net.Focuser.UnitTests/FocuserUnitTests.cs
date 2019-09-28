@@ -86,7 +86,11 @@ namespace Meade.net.Focuser.UnitTests
         {
             var actionName = "Action";
 
-            Assert.Throws<ActionNotImplementedException>(() => { var actualResult = _focuser.Action(actionName, string.Empty); });
+            Assert.Throws<ActionNotImplementedException>(() =>
+            {
+                var actualResult = _focuser.Action(actionName, string.Empty);
+                Assert.Fail($"{actualResult} should not have a value");
+            });
         }
 
         [Test]
@@ -277,7 +281,11 @@ namespace Meade.net.Focuser.UnitTests
         [Test]
         public void Absolute_Get_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { var result = _focuser.Absolute; });
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                var result = _focuser.Absolute;
+                Assert.Fail($"{result} should not have a value");
+            });
             Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: Absolute Get"));
         }
 
@@ -413,14 +421,22 @@ namespace Meade.net.Focuser.UnitTests
         [Test]
         public void Position_WhenCalled_ThenThrowsException()
         {
-            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.Position; });
+            var exception = Assert.Throws<PropertyNotImplementedException>(() =>
+            {
+                var result = _focuser.Position;
+                Assert.Fail($"{result} should not have a value");
+            });
             Assert.That(exception.Message, Is.EqualTo("Property read Position is not implemented in this driver."));
         }
 
         [Test]
         public void StepSize_WhenCalled_ThenThrowsException()
         {
-            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.StepSize; });
+            var exception = Assert.Throws<PropertyNotImplementedException>(() =>
+            {
+                var result = _focuser.StepSize;
+                Assert.Fail($"{result} should not have a value");
+            });
             Assert.That(exception.Message, Is.EqualTo("Property read StepSize is not implemented in this driver."));
         }
 
@@ -448,7 +464,11 @@ namespace Meade.net.Focuser.UnitTests
         [Test]
         public void Temperature_WhenCalled_ThenThrowsException()
         {
-            var exception = Assert.Throws<PropertyNotImplementedException>(() => { var result = _focuser.Temperature; });
+            var exception = Assert.Throws<PropertyNotImplementedException>(() =>
+            {
+                var result = _focuser.Temperature; 
+                Assert.Fail($"{result} should not have a value");
+            });
             Assert.That(exception.Message, Is.EqualTo("Property read Temperature is not implemented in this driver."));
         }
     }

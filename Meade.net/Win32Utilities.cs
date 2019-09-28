@@ -34,32 +34,73 @@ namespace ASCOM.Meade.net
         static extern bool BringWindowToTop(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        // ReSharper disable once UnusedMember.Local
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, Int32 nMaxCount);
 
         [DllImport("user32.dll")]
+        // ReSharper disable once UnusedMember.Local
         private static extern int GetWindowThreadProcessId(IntPtr hWnd, ref Int32 lpdwProcessId);
 
         [DllImport("User32.dll")]
         public static extern IntPtr GetParent(IntPtr hWnd);
 
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private const int SW_HIDE = 0;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWNORMAL = 1;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private const int SW_NORMAL = 1;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWMINIMIZED = 2;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWMAXIMIZED = 3;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private const int SW_MAXIMIZE = 3;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWNOACTIVATE = 4;
+        // ReSharper disable once InconsistentNaming
         private const int SW_SHOW = 5;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private const int SW_MINIMIZE = 6;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWMINNOACTIVE = 7;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWNA = 8;
+        // ReSharper disable once InconsistentNaming
         private const int SW_RESTORE = 9;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once IdentifierTypo
         private const int SW_SHOWDEFAULT = 10;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private const int SW_MAX = 10;
 
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once IdentifierTypo
         private const uint SPI_GETFOREGROUNDLOCKTIMEOUT = 0x2000;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once IdentifierTypo
         private const uint SPI_SETFOREGROUNDLOCKTIMEOUT = 0x2001;
 
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once IdentifierTypo
         private const int SPIF_SENDCHANGE = 0x2;
 
 
