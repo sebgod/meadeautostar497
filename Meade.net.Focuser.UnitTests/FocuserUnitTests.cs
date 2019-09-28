@@ -23,11 +23,13 @@ namespace Meade.net.Focuser.UnitTests
         [SetUp]
         public void Setup()
         {
-            _profileProperties = new ProfileProperties();
-            _profileProperties.TraceLogger = false;
-            _profileProperties.ComPort = "TestCom1";
-            _profileProperties.GuideRateArcSecondsPerSecond = 1.23;
-            _profileProperties.Precision = "Unchanged";
+            _profileProperties = new ProfileProperties
+            {
+                TraceLogger = false,
+                ComPort = "TestCom1",
+                GuideRateArcSecondsPerSecond = 1.23,
+                Precision = "Unchanged"
+            };
 
             _utilMock = new Mock<IUtil>();
 
@@ -84,7 +86,7 @@ namespace Meade.net.Focuser.UnitTests
         {
             var actionName = "Action";
 
-            var exception = Assert.Throws<ActionNotImplementedException>(() => { var actualResult = _focuser.Action(actionName, string.Empty); });
+            Assert.Throws<ActionNotImplementedException>(() => { var actualResult = _focuser.Action(actionName, string.Empty); });
         }
 
         [Test]
@@ -246,8 +248,6 @@ namespace Meade.net.Focuser.UnitTests
         [Test]
         public void DriverInfo_Get()
         {
-            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Focuser)).GetName().Version;
-
             string exptectedDriverInfo = $"{_focuser.Description} .net driver. Version: {_focuser.DriverVersion}";
 
             var driverInfo = _focuser.DriverInfo;

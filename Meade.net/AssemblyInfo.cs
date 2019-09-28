@@ -12,7 +12,7 @@ namespace ASCOM.Meade.net
             Product = "", Copyright = "", Trademark = "",
             AssemblyVersion = "", FileVersion = "", Guid = "",
             NeutralLanguage = "";
-        public bool IsComVisible = false;
+        public bool IsComVisible;
 
         // Return a particular assembly attribute value.
         public static T GetAssemblyAttribute<T>(Assembly assembly)

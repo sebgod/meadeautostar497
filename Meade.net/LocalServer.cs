@@ -29,7 +29,7 @@ namespace ASCOM.Meade.net
     public static class Server
     {
 
-        private const string DRIVER_NAME = "Meade Generic";
+        private const string DriverName = "Meade Generic";
 
         #region Access to kernel32.dll, user32.dll, and ole32.dll functions
         [Flags]
@@ -259,7 +259,7 @@ namespace ASCOM.Meade.net
                 catch (Exception e)
                 {
                     MessageBox.Show($"Failed to load served COM class assembly {fi.Name} - {e.Message}",
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
 
@@ -287,19 +287,21 @@ namespace ASCOM.Meade.net
         //
         private static void ElevateSelf(string arg)
         {
-            ProcessStartInfo si = new ProcessStartInfo();
-            si.Arguments = arg;
-            si.WorkingDirectory = Environment.CurrentDirectory;
-            si.FileName = Application.ExecutablePath;
-            si.Verb = "runas";
+            var si = new ProcessStartInfo
+            {
+                Arguments = arg,
+                WorkingDirectory = Environment.CurrentDirectory,
+                FileName = Application.ExecutablePath,
+                Verb = "runas"
+            };
             try { Process.Start(si); }
             catch (System.ComponentModel.Win32Exception)
             {
-                MessageBox.Show($"The {DRIVER_NAME} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"The {DriverName} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DriverName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(ex.ToString(), DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
             return;
         }
@@ -349,8 +351,8 @@ namespace ASCOM.Meade.net
                 //
                 // HKCR\APPID\exename.ext
                 //
-                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("APPID\\{0}",
-                            Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1))))
+                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(
+                    $"APPID\\{Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)}"))
                 {
                     key.SetValue("AppID", _sAppId);
                 }
@@ -358,7 +360,7 @@ namespace ASCOM.Meade.net
             catch (Exception ex)
             {
                 MessageBox.Show($"Error while registering the server:\n{ex}",
-                    DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
             finally
@@ -381,7 +383,7 @@ namespace ASCOM.Meade.net
                     //PWGS Generate device type from the Class name
                     string deviceType = type.Name;
 
-                    using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("CLSID\\{0}", clsid)))
+                    using (RegistryKey key = Registry.ClassesRoot.CreateSubKey($"CLSID\\{clsid}"))
                     {
                         key.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
                         key.SetValue("AppId", _sAppId);
@@ -427,7 +429,7 @@ namespace ASCOM.Meade.net
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
                 finally
@@ -454,9 +456,9 @@ namespace ASCOM.Meade.net
             //
             // Local server's DCOM/AppID information
             //
-            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}", _sAppId), false);
-            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}",
-                    Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)), false);
+            Registry.ClassesRoot.DeleteSubKey($"APPID\\{_sAppId}", false);
+            Registry.ClassesRoot.DeleteSubKey(
+                $"APPID\\{Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)}", false);
 
             //
             // For each of the driver assemblies
@@ -472,17 +474,17 @@ namespace ASCOM.Meade.net
                 //
                 // HKCR\progid
                 //
-                Registry.ClassesRoot.DeleteSubKey(String.Format("{0}\\CLSID", progid), false);
+                Registry.ClassesRoot.DeleteSubKey($"{progid}\\CLSID", false);
                 Registry.ClassesRoot.DeleteSubKey(progid, false);
                 //
                 // HKCR\CLSID\clsid
                 //
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Implemented Categories\\{{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}}", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Implemented Categories", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\ProgId", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\LocalServer32", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Programmable", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}", clsid), false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Implemented Categories\\{{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}}", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Implemented Categories", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\ProgId", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\LocalServer32", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Programmable", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}", false);
                 try
                 {
                     //
@@ -494,7 +496,10 @@ namespace ASCOM.Meade.net
                         p.Unregister(progid);
                     }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
         }
         #endregion
@@ -515,7 +520,7 @@ namespace ASCOM.Meade.net
                 if (!factory.RegisterClassObject())
                 {
                     MessageBox.Show("Failed to register class factory for " + type.Name,
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
             }
@@ -571,7 +576,7 @@ namespace ASCOM.Meade.net
 
                     default:
                         MessageBox.Show("Unknown argument: " + args[0] + "\nValid are : -register, -unregister and -embedding",
-                            DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            DriverName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
             }
@@ -610,9 +615,11 @@ namespace ASCOM.Meade.net
             RegisterClassFactories();
 
             // Start up the garbage collection thread.
-            GarbageCollection garbageCollector = new GarbageCollection(1000);
-            Thread gcThread = new Thread(new ThreadStart(garbageCollector.GcWatch));
-            gcThread.Name = "Garbage Collection Thread";
+            var garbageCollector = new GarbageCollection(1000);
+            var gcThread = new Thread(garbageCollector.GcWatch)
+            {
+                Name = "Garbage Collection Thread"
+            };
             gcThread.Start();
 
             //

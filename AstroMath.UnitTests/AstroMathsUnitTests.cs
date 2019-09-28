@@ -113,11 +113,13 @@ namespace AstroMath.UnitTests
         {
             var latitude = 52.0;
 
-            EquatorialCoordinates equatorialCoordinates = new EquatorialCoordinates();
-            equatorialCoordinates.RightAscension = 5.862222222222222;//5 51' 44"
-            equatorialCoordinates.Declination = 23.21944444444444;//23 13' 10"
+            var equatorialCoordinates = new EquatorialCoordinates
+            {
+                RightAscension = 5.862222222222222, //5 51' 44"
+                Declination = 23.21944444444444 //23 13' 10"
+            };
 
-            var hourAngle = 5.682222;
+            const double hourAngle = 5.682222;
 
             var altAz = _astroMath.ConvertEqToHoz(hourAngle, latitude, equatorialCoordinates);
 
@@ -131,9 +133,11 @@ namespace AstroMath.UnitTests
             DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
             var longitude = -1.7833333333333332;
             var latitude = 52.0;
-            EquatorialCoordinates equatorialCoordinates = new EquatorialCoordinates();
-            equatorialCoordinates.RightAscension = 4.15361111111111;
-            equatorialCoordinates.Declination = 30.0019444444444;
+            EquatorialCoordinates equatorialCoordinates = new EquatorialCoordinates
+            {
+                RightAscension = 4.15361111111111,
+                Declination = 30.0019444444444
+            };
 
             var hourAngle = _astroMath.RightAscensionToHourAngle(dateTime, longitude, equatorialCoordinates.RightAscension);
             var altaz = _astroMath.ConvertEqToHoz(hourAngle, latitude, equatorialCoordinates);

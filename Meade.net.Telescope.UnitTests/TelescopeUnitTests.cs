@@ -28,11 +28,13 @@ namespace Meade.net.Telescope.UnitTests
         [SetUp]
         public void Setup()
         {
-            _profileProperties = new ProfileProperties();
-            _profileProperties.TraceLogger = false;
-            _profileProperties.ComPort = "TestCom1";
-            _profileProperties.GuideRateArcSecondsPerSecond = 1.23;
-            _profileProperties.Precision = "Unchanged";
+            _profileProperties = new ProfileProperties
+            {
+                TraceLogger = false,
+                ComPort = "TestCom1",
+                GuideRateArcSecondsPerSecond = 1.23,
+                Precision = "Unchanged"
+            };
 
             _utilMock = new Mock<IUtil>();
             _utilExtraMock = new Mock<IUtilExtra>();
@@ -521,8 +523,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void DriverInfo_Get()
         {
-            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
-
             string exptectedDriverInfo = $"{_telescope.Description} .net driver. Version: {_telescope.DriverVersion}";
 
             var driverInfo = _telescope.DriverInfo;

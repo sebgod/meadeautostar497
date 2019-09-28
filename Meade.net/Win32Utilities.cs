@@ -77,11 +77,11 @@ namespace ASCOM.Meade.net
             // Published in The Delphi Magazine 55, page 16
             // Converted to C# by Kevin Gale
             IntPtr foregroundWindow = GetForegroundWindow();
-            IntPtr Dummy = IntPtr.Zero;
+            IntPtr dummy = IntPtr.Zero;
 
-            uint foregroundThreadId = GetWindowThreadProcessId(foregroundWindow, Dummy);
+            uint foregroundThreadId = GetWindowThreadProcessId(foregroundWindow, dummy);
 
-            uint thisThreadId = GetWindowThreadProcessId(hWnd, Dummy);
+            uint thisThreadId = GetWindowThreadProcessId(hWnd, dummy);
 
             if (AttachThreadInput(thisThreadId, foregroundThreadId, true))
             {
@@ -94,12 +94,12 @@ namespace ASCOM.Meade.net
             {
                 // Code by Daniel P. Stasinski
                 // Converted to C# by Kevin Gale
-                IntPtr Timeout = IntPtr.Zero;
-                SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, Timeout, 0);
-                SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Dummy, SPIF_SENDCHANGE);
+                IntPtr timeout = IntPtr.Zero;
+                SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, timeout, 0);
+                SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, dummy, SPIF_SENDCHANGE);
                 BringWindowToTop(hWnd); // IE 5.5 related hack
                 SetForegroundWindow(hWnd);
-                SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, Timeout, SPIF_SENDCHANGE);
+                SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, timeout, SPIF_SENDCHANGE);
             }
         }
     }

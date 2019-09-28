@@ -15,6 +15,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ASCOM.Utilities;
 
@@ -64,7 +65,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// number of connections to the shared serial port
         /// </summary>
-        public static int Connections { get; set; } = 0;
+        public static int Connections { get; set; }
 
         public static void SendBlind(string message)
         {
@@ -179,7 +180,7 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
-                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString());
+                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                 }
             }
@@ -264,9 +265,9 @@ namespace ASCOM.Meade.net
         /// The Key is the connection number that identifies the device, it could be the COM port name,
         /// USB ID or IP Address, the Value is the DeviceHardware class
         /// </summary>
-        private static readonly Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
-        private static readonly Dictionary<string, DeviceHardware> _connectedDeviceIds = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
 
 
         /// <summary>
@@ -278,17 +279,17 @@ namespace ASCOM.Meade.net
         {
             lock (LockObject)
             {
-                if (!_connectedDevices.ContainsKey(deviceId))
-                    _connectedDevices.Add(deviceId, new DeviceHardware());
-                _connectedDevices[deviceId].Count++; // increment the value
+                if (!ConnectedDevices.ContainsKey(deviceId))
+                    ConnectedDevices.Add(deviceId, new DeviceHardware());
+                ConnectedDevices[deviceId].Count++; // increment the value
 
-                if (!_connectedDeviceIds.ContainsKey(driverId))
-                    _connectedDeviceIds.Add(driverId, new DeviceHardware());
-                _connectedDeviceIds[driverId].Count++; // increment the value
+                if (!ConnectedDeviceIds.ContainsKey(driverId))
+                    ConnectedDeviceIds.Add(driverId, new DeviceHardware());
+                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
-                    if (_connectedDevices[deviceId].Count == 1)
+                    if (ConnectedDevices[deviceId].Count == 1)
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
@@ -308,8 +309,8 @@ namespace ASCOM.Meade.net
 
                 return new ConnectionInfo
                 {
-                    Connections = _connectedDevices[deviceId].Count,
-                    SameDevice = _connectedDeviceIds[driverId].Count
+                    Connections = ConnectedDevices[deviceId].Count,
+                    SameDevice = ConnectedDeviceIds[driverId].Count
                 };
             }
         }
@@ -318,12 +319,12 @@ namespace ASCOM.Meade.net
         {
             lock (LockObject)
             {
-                if (_connectedDevices.ContainsKey(deviceId))
+                if (ConnectedDevices.ContainsKey(deviceId))
                 {
-                    _connectedDevices[deviceId].Count--;
-                    if (_connectedDevices[deviceId].Count <= 0)
+                    ConnectedDevices[deviceId].Count--;
+                    if (ConnectedDevices[deviceId].Count <= 0)
                     {
-                        _connectedDevices.Remove(deviceId);
+                        ConnectedDevices.Remove(deviceId);
                         if (deviceId == "Serial")
                         {
                             SharedSerial.Connected = false;
@@ -331,16 +332,16 @@ namespace ASCOM.Meade.net
                     }
                 }
 
-                if (_connectedDeviceIds.ContainsKey(driverId))
+                if (ConnectedDeviceIds.ContainsKey(driverId))
                 {
-                    _connectedDeviceIds[driverId].Count--;
+                    ConnectedDeviceIds[driverId].Count--;
                 }
             }
         }
 
         public static bool IsConnected()
         {
-            foreach (var device in _connectedDevices)
+            foreach (var device in ConnectedDevices)
             {
                 if (device.Value.Count > 0)
                     return true;
@@ -351,8 +352,8 @@ namespace ASCOM.Meade.net
 
         public static bool IsConnected(string deviceId)
         {
-            if (_connectedDevices.ContainsKey(deviceId))
-                return (_connectedDevices[deviceId].Count > 0);
+            if (ConnectedDevices.ContainsKey(deviceId))
+                return (ConnectedDevices[deviceId].Count > 0);
             else
                 return false;
         }
@@ -381,13 +382,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         public class DeviceHardware
         {
-            private int _count;
-
-            internal int Count
-            {
-                set => _count = value;
-                get => _count;
-            }
+            internal int Count { set; get; }
 
             internal DeviceHardware()
             {

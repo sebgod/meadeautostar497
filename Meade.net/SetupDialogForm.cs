@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -52,7 +53,7 @@ namespace ASCOM.Meade.net
                 comboBoxComPort.SelectedItem = profileProperties.ComPort;
             }
 
-            txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString();
+            txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture);
             try
             {
                 cboPrecision.SelectedItem = profileProperties.Precision;
@@ -86,7 +87,6 @@ namespace ASCOM.Meade.net
 
         private void TextBox1_TextChanged(object sender, EventArgs e)
         {
-            //const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
             try
             {
                 double newGuideRate = double.Parse(txtGuideRate.Text.Trim());
@@ -103,17 +103,17 @@ namespace ASCOM.Meade.net
                 _guideRateValid = false;
             }
 
-            UpdateOKButton();
+            UpdateOkButton();
         }
 
-        private void UpdateOKButton()
+        private void UpdateOkButton()
         {
             cmdOK.Enabled = _guideRateValid && (comboBoxComPort.SelectedItem != null);
         }
 
         private void ComboBoxComPort_SelectedValueChanged(object sender, EventArgs e)
         {
-            UpdateOKButton();
+            UpdateOkButton();
         }
 
         public void SetReadOnlyMode()

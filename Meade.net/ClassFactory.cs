@@ -33,8 +33,8 @@ namespace ASCOM.Meade.net
         #region Access to ole32.dll functions for class factories
 
         // Define two common GUID objects for public usage.
-        private static readonly Guid _iidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
-        private static readonly Guid _iidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
+        private static readonly Guid IidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+        private static readonly Guid IidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
 
         [Flags]
         enum Clsctx : uint
@@ -118,7 +118,7 @@ namespace ASCOM.Meade.net
         public ClassFactory(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             _mClassType = type;
 
             //PWGS Get the ProgID from the MetaData
@@ -201,12 +201,12 @@ namespace ASCOM.Meade.net
             //
             // Handle requests for IDispatch or IUnknown on the class
             //
-            if (riid == _iidIDispatch)
+            if (riid == IidIDispatch)
             {
                 ppvObject = Marshal.GetIDispatchForObject(Activator.CreateInstance(_mClassType));
                 return;
             }
-            else if (riid == _iidIUnknown)
+            else if (riid == IidIUnknown)
             {
                 ppvObject = Marshal.GetIUnknownForObject(Activator.CreateInstance(_mClassType));
             }

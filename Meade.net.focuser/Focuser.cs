@@ -54,7 +54,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        private static TraceLogger Tl;
+        private static TraceLogger _tl;
 
         private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -83,7 +83,7 @@ namespace ASCOM.Meade.net
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
-            Tl = new TraceLogger("", "Meade.Generic.focusser");
+            _tl = new TraceLogger("", "Meade.Generic.focusser");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
@@ -108,17 +108,17 @@ namespace ASCOM.Meade.net
         /// </summary>
         public void SetupDialog()
         {
-            Tl.LogMessage("SetupDialog", "Opening setup dialog");
+            _tl.LogMessage("SetupDialog", "Opening setup dialog");
             _sharedResourcesWrapper.SetupDialog();
             ReadProfile();
-            Tl.LogMessage("SetupDialog", "complete");
+            _tl.LogMessage("SetupDialog", "complete");
         }
 
         public ArrayList SupportedActions
         {
             get
             {
-                Tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                _tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -163,9 +163,9 @@ namespace ASCOM.Meade.net
         public void Dispose()
         {
             // Clean up the tracelogger and util objects
-            Tl.Enabled = false;
-            Tl.Dispose();
-            Tl = null;
+            _tl.Enabled = false;
+            _tl.Dispose();
+            _tl = null;
         }
 
         public bool Connected
@@ -177,7 +177,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                Tl.LogMessage("Connected", "Set {0}", value);
+                _tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
 
@@ -216,7 +216,7 @@ namespace ASCOM.Meade.net
             // TODO customise this device description
             get
             {
-                Tl.LogMessage("Description Get", DriverDescription);
+                _tl.LogMessage("Description Get", DriverDescription);
                 return DriverDescription;
             }
         }
@@ -259,7 +259,7 @@ namespace ASCOM.Meade.net
             {
                 //string name = "Short driver name - please customise";
                 string name = DriverDescription;
-                Tl.LogMessage("Name Get", name);
+                _tl.LogMessage("Name Get", name);
                 return name;
             }
         }
@@ -274,14 +274,14 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("Absolute Get");
 
-                Tl.LogMessage("Absolute Get", false.ToString());
+                _tl.LogMessage("Absolute Get", false.ToString());
                 return false; // This is a relative focuser
             }
         }
 
         public void Halt()
         {
-            Tl.LogMessage("Halt", "Halting");
+            _tl.LogMessage("Halt", "Halting");
 
             CheckConnected("Halt");
 
@@ -302,7 +302,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("IsMoving Get", false.ToString());
+                _tl.LogMessage("IsMoving Get", false.ToString());
                 return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
             }
         }
@@ -311,12 +311,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("Link Get", Connected.ToString());
+                _tl.LogMessage("Link Get", Connected.ToString());
                 return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
-                Tl.LogMessage("Link Set", value.ToString());
+                _tl.LogMessage("Link Set", value.ToString());
                 Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
         }
@@ -326,7 +326,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
+                _tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
                 return _maxIncrement; // Maximum change in one move
             }
         }
@@ -336,14 +336,14 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("MaxStep Get", _maxStep.ToString());
+                _tl.LogMessage("MaxStep Get", _maxStep.ToString());
                 return _maxStep;
             }
         }
 
         public void Move(int position)
         {
-            Tl.LogMessage("Move", position.ToString());
+            _tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
 
             //todo implement backlash compensation
@@ -405,7 +405,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("StepSize Get", "Not implemented");
+                _tl.LogMessage("StepSize Get", "Not implemented");
                 throw new PropertyNotImplementedException("StepSize", false);
             }
         }
@@ -414,13 +414,13 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("TempComp Get", false.ToString());
+                _tl.LogMessage("TempComp Get", false.ToString());
                 return false;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
             {
-                Tl.LogMessage("TempComp Set", "Not implemented");
+                _tl.LogMessage("TempComp Set", "Not implemented");
                 throw new PropertyNotImplementedException("TempComp", false);
             }
         }
@@ -429,7 +429,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("TempCompAvailable Get", false.ToString());
+                _tl.LogMessage("TempCompAvailable Get", false.ToString());
                 return false; // Temperature compensation is not available in this driver
             }
         }
@@ -438,7 +438,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("Temperature Get", "Not implemented");
+                _tl.LogMessage("Temperature Get", "Not implemented");
                 throw new PropertyNotImplementedException("Temperature", false);
             }
         }
@@ -546,10 +546,10 @@ namespace ASCOM.Meade.net
         private void ReadProfile()
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            Tl.Enabled = profileProperties.TraceLogger;
+            _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
 
-            LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
+            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");
         }
 
@@ -562,7 +562,7 @@ namespace ASCOM.Meade.net
         private static void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
-            Tl.LogMessage(identifier, msg);
+            _tl.LogMessage(identifier, msg);
         }
         #endregion
     }

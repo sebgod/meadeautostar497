@@ -10,20 +10,20 @@ namespace ASCOM.Meade.net
     {
         #region Autostar 497/Audiostar
 
-        public readonly static string Autostar497 = "Autostar";
+        public static readonly string Autostar497 = "Autostar";
 
         //Autostar/Audiostar firmware revisions
-        public readonly static string Autostar497_30Ee = "30Ee";
-        public readonly static string Autostar497_31Ee = "31Ee";
-        public readonly static string Autostar497_43Eg = "43Eg";
+        public static readonly string Autostar497_30Ee = "30Ee";
+        public static readonly string Autostar497_31Ee = "31Ee";
+        public static readonly string Autostar497_43Eg = "43Eg";
 
         #endregion
 
         #region LX200GPS
 
-        public readonly static string LX200GPS = "LX2001";
+        public static readonly string LX200GPS = "LX2001";
 
-        public readonly static string LX200GPS_42G = "4.2G";
+        public static readonly string LX200GPS_42G = "4.2G";
 
         #endregion
     }

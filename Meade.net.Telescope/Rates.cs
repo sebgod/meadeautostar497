@@ -19,17 +19,14 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Rate : IRate
     {
-        private double _maximum = 0;
-        private double _minimum = 0;
-
         //
         // Default constructor - Internal prevents public creation
         // of instances. These are values for AxisRates.
         //
         internal Rate(double minimum, double maximum)
         {
-            _maximum = maximum;
-            _minimum = minimum;
+            Maximum = maximum;
+            Minimum = minimum;
         }
 
         #region Implementation of IRate
@@ -39,17 +36,9 @@ namespace ASCOM.Meade.net
             // TODO Add any required object cleanup here
         }
 
-        public double Maximum
-        {
-            get => _maximum;
-            set => _maximum = value;
-        }
+        public double Maximum { get; set; }
 
-        public double Minimum
-        {
-            get => _minimum;
-            set => _minimum = value;
-        }
+        public double Minimum { get; set; }
 
         #endregion
     }
@@ -152,7 +141,7 @@ namespace ASCOM.Meade.net
         private readonly DriveRates[] _trackingRates;
 
         // this is used to make the index thread safe
-        private readonly ThreadLocal<int> _pos = new ThreadLocal<int>(() => { return -1; });
+        private readonly ThreadLocal<int> _pos = new ThreadLocal<int>(() => -1);
         private static readonly object LockObj = new object();
 
         //
@@ -176,7 +165,11 @@ namespace ASCOM.Meade.net
 
         public IEnumerator GetEnumerator()
         {
-            _pos.Value = -1;
+            lock (LockObj)
+            {
+                _pos.Value = -1;
+            }
+
             return this as IEnumerator;
         }
 
@@ -220,7 +213,10 @@ namespace ASCOM.Meade.net
 
         public void Reset()
         {
-            _pos.Value = -1;
+            lock (LockObj)
+            {
+                _pos.Value = -1;
+            }
         }
         #endregion
     }

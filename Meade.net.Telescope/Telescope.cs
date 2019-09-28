@@ -98,9 +98,7 @@ namespace ASCOM.Meade.net
         }
 
         private double _guideRate;
-
-        private const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
-
+        
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
@@ -152,9 +150,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("SupportedActions Get", "Returning empty arraylist");
-                var supportedActions = new ArrayList();
-                supportedActions.Add("handbox");
-                supportedActions.Add("site");
+                var supportedActions = new ArrayList {"handbox", "site"};
                 return supportedActions;
             }
         }
@@ -540,9 +536,9 @@ namespace ASCOM.Meade.net
             CheckConnected("SelectSite");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException("site",site,"Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site),site,"Site cannot be lower than 1");
             else if (site > 4)
-                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
 
             _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
@@ -555,9 +551,9 @@ namespace ASCOM.Meade.net
             CheckConnected("SetSiteName");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be lower than 1");
             else if (site > 4)
-                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
 
             string command = String.Empty;
             switch (site)
@@ -609,9 +605,9 @@ namespace ASCOM.Meade.net
             CheckConnected("GetSiteName");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException("site", site, "Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be lower than 1");
             else if (site > 4)
-                throw new ArgumentOutOfRangeException("site", site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
 
             switch (site)
             {
@@ -637,7 +633,7 @@ namespace ASCOM.Meade.net
                     //A ‘#’ terminated string with the name of the requested site.
             }
 
-            throw new ArgumentOutOfRangeException("site", site, "Site out of range");
+            throw new ArgumentOutOfRangeException(nameof(site), site, "Site out of range");
         }
 
         public string Description
@@ -874,7 +870,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private bool _atPark = false;
+        private bool _atPark;
 
         public bool AtPark
         {
@@ -1162,10 +1158,10 @@ namespace ASCOM.Meade.net
 
             if (!value.InRange(0, 15.0417))
             {
-                throw new InvalidValueException(propertyName, value.ToString(), "0 to 15.0417”/sec");
+                throw new InvalidValueException(propertyName, value.ToString(CultureInfo.CurrentCulture), $"{0.ToString(CultureInfo.CurrentCulture)} to {15.0417.ToString(CultureInfo.CurrentCulture)}”/sec");
             }
 
-            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString()} arc seconds/second ({value.ToString()} degrees/second)");
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString(CultureInfo.CurrentCulture)} arc seconds/second ({value.ToString(CultureInfo.CurrentCulture)} degrees/second)");
             _sharedResourcesWrapper.SendBlind($":Rg{value:00.0}#");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
@@ -1708,10 +1704,8 @@ namespace ASCOM.Meade.net
                 throw new InvalidValueException("Azimuth cannot be less than 0.");
 
             LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
-            
-            HorizonCoordinates altAz = new HorizonCoordinates();
-            altAz.Azimuth = azimuth;
-            altAz.Altitude = altitude;
+
+            HorizonCoordinates altAz = new HorizonCoordinates {Azimuth = azimuth, Altitude = altitude};
 
             var utcDateTime = UTCDate;
             var latitude = SiteLatitude;
@@ -2128,18 +2122,20 @@ namespace ASCOM.Meade.net
 
                 LogMessage("UTCDate", "Get started");
 
-                TelescopeDateDetails telescopeDateDetails = _sharedResourcesWrapper.Lock(() =>
+                var telescopeDateDetails = _sharedResourcesWrapper.Lock(() =>
                 {
-                    TelescopeDateDetails tdd = new TelescopeDateDetails();
-                    tdd.TelescopeDate = _sharedResourcesWrapper.SendString(":GC#");
-                    //:GC# Get current date.
-                    //Returns: MM/DD/YY#
-                    //The current local calendar date for the telescope.
-                    tdd.TelescopeTime = _sharedResourcesWrapper.SendString(":GL#");
-                    //:GL# Get Local Time in 24 hour format
-                    //Returns: HH:MM:SS#
-                    //The Local Time in 24 - hour Format
-                    tdd.UtcCorrection = GetUtcCorrection();
+                    var tdd = new TelescopeDateDetails
+                    {
+                        TelescopeDate = _sharedResourcesWrapper.SendString(":GC#"),
+                        //:GC# Get current date.
+                        //Returns: MM/DD/YY#
+                        //The current local calendar date for the telescope.
+                        TelescopeTime = _sharedResourcesWrapper.SendString(":GL#"),
+                        //:GL# Get Local Time in 24 hour format
+                        //Returns: HH:MM:SS#
+                        //The Local Time in 24 - hour Format
+                        UtcCorrection = GetUtcCorrection()
+                    };
 
                     return tdd;
                 });
