@@ -35,7 +35,7 @@
         <![CDATA[(NOT Installed)]]>
       </Custom>
       <Custom Action="UnRegisterEXE" After='RegisterEXE'>
-        <![CDATA[(REMOVE ~= "ALL")]]>
+        <![CDATA[(REMOVE ~= "ALL" AND NOT UPGRADINGPRODUCTCODE)]]>
       </Custom>
     </InstallExecuteSequence>
   </Fragment>
