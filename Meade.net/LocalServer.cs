@@ -487,7 +487,11 @@ namespace ASCOM.Meade.net
                     //
                     // ASCOM
                     //
-                    Registry.LocalMachine.DeleteSubKey(String.Format("SOFTWARE\\ASCOM\\{0} Drivers\\{1}", deviceType, progid), false);
+                    using (var p = new Profile())
+                    {
+                        p.DeviceType = deviceType;
+                        p.Unregister(progid);
+                    }
                 }
                 catch (Exception) { }
             }
