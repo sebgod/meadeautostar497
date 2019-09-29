@@ -20,8 +20,8 @@ namespace ASCOM.Meade.net
 
         public sealed override string Text
         {
-            get { return base.Text; }
-            set { base.Text = value; }
+            get => base.Text;
+            set => base.Text = value;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
