@@ -120,11 +120,11 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static string ReadCharacters(int throwAwayCharacters)
+        public static void ReadCharacters(int throwAwayCharacters)
         {
             lock (LockObject)
             {
-                return SharedSerial.ReceiveCounted(throwAwayCharacters);
+                SharedSerial.ReceiveCounted(throwAwayCharacters);
             }
         }
 
