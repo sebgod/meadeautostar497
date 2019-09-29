@@ -92,17 +92,17 @@ namespace ASCOM.Meade.net
         }
 
         // This method performs a thread-safe incrementation of the objects count.
-        public static int CountObject()
+        public static void CountObject()
         {
             // Increment the global count of objects.
-            return Interlocked.Increment(ref _objsInUse);
+            Interlocked.Increment(ref _objsInUse);
         }
 
         // This method performs a thread-safe decrementation the objects count.
-        public static int UncountObject()
+        public static void UncountObject()
         {
             // Decrement the global count of objects.
-            return Interlocked.Decrement(ref _objsInUse);
+            Interlocked.Decrement(ref _objsInUse);
         }
 
         // Returns the current server lock count.
@@ -119,18 +119,18 @@ namespace ASCOM.Meade.net
 
         // This method performs a thread-safe incrementation the 
         // server lock count.
-        public static int CountLock()
+        public static void CountLock()
         {
             // Increment the global lock count of this server.
-            return Interlocked.Increment(ref _serverLocks);
+            Interlocked.Increment(ref _serverLocks);
         }
 
         // This method performs a thread-safe decrementation the 
         // server lock count.
-        public static int UncountLock()
+        public static void UncountLock()
         {
             // Decrement the global lock count of this server.
-            return Interlocked.Decrement(ref _serverLocks);
+            Interlocked.Decrement(ref _serverLocks);
         }
 
         // AttemptToTerminateServer() will check to see if the objects count and the server 
@@ -456,7 +456,7 @@ namespace ASCOM.Meade.net
         // that we serve. This requires the class facgtory name to be
         // equal to the served class name + "ClassFactory".
         //
-        private static bool RegisterClassFactories()
+        private static void RegisterClassFactories()
         {
             _sClassFactories = new ArrayList();
             foreach (Type type in _sComObjectTypes)
@@ -467,11 +467,10 @@ namespace ASCOM.Meade.net
                 {
                     MessageBox.Show(string.Format(Resources.Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_, type.Name),
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    return false;
+                    return;
                 }
             }
             ClassFactory.ResumeClassObjects();                                  // Served objects now go live
-            return true;
         }
 
         private static void RevokeClassFactories()

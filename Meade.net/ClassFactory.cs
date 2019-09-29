@@ -160,22 +160,19 @@ namespace ASCOM.Meade.net
             return i == 0;
         }
 
-        public bool RevokeClassObject()
+        public void RevokeClassObject()
         {
-            int i = CoRevokeClassObject(_mCookie);
-            return i == 0;
+            CoRevokeClassObject(_mCookie);
         }
 
-        public static bool ResumeClassObjects()
+        public static void ResumeClassObjects()
         {
-            int i = CoResumeClassObjects();
-            return i == 0;
+            CoResumeClassObjects();
         }
 
-        public static bool SuspendClassObjects()
+        public static void SuspendClassObjects()
         {
-            int i = CoSuspendClassObjects();
-            return i == 0;
+            CoSuspendClassObjects();
         }
         #endregion
 
