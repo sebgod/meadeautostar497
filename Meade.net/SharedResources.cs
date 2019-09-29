@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
-using ASCOM.Meade.net.Properties;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
