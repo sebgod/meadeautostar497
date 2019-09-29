@@ -168,7 +168,6 @@
   <ItemGroup>
     <Content Include="ASCOM.ico" />
     <Content Include="ASCOM.png" />
-    <Content Include="ReadMe.htm" />
     <None Include="BootstrapAscomProfileStore.ps1" />
     <None Include="packages.config" />
     <None Include="Resources\ASCOM.bmp" />
