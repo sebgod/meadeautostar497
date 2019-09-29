@@ -64,11 +64,6 @@ namespace ASCOM.Meade.net
         /// </summary>
         private static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
 
-        /// <summary>
-        /// number of connections to the shared serial port
-        /// </summary>
-        private static int Connections { get; set; }
-
         public static void SendBlind(string message)
         {
             lock (LockObject)
@@ -178,14 +173,6 @@ namespace ASCOM.Meade.net
 
         public static void SetupDialog()
         {
-            // consider only showing the setup dialog if not connected
-            // or call a different dialog if connected
-            if (Connections > 0)
-            {
-                MessageBox.Show(Resources.SharedResources_SetupDialog_Already_connected__please_disconnect_before_altering_settings);
-                return;
-            }
-
             var profileProperties = ReadProfile();
 
             using (SetupDialogForm f = new SetupDialogForm())

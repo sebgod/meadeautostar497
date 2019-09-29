@@ -138,9 +138,6 @@ Valid are : -register, -unregister and -embedding</value>
   <data name="Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_" xml:space="preserve">
     <value>Failed to load served COM class assembly {0} - {1}</value>
   </data>
-  <data name="SharedResources_SetupDialog_Already_connected__please_disconnect_before_altering_settings" xml:space="preserve">
-    <value>Already connected, please disconnect before altering settings</value>
-  </data>
   <data name="SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_" xml:space="preserve">
     <value>({0:00.0}% of sidereal rate)</value>
   </data>
