@@ -30,7 +30,7 @@ namespace ASCOM.Meade.net
             _mEventThreadEnded.Set();
         }
 
-        protected bool ContinueThread()
+        private bool ContinueThread()
         {
             lock (this)
             {

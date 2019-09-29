@@ -135,7 +135,8 @@ namespace ASCOM.Meade.net
         #endregion
 
         #region Common ClassFactory Methods
-        public uint ClassContext { get; }
+
+        private uint ClassContext { get; }
 
         public Guid ClassId
         {
@@ -143,7 +144,7 @@ namespace ASCOM.Meade.net
             set => _mClassId = value;
         }
 
-        public uint Flags { get; }
+        private uint Flags { get; }
 
         public bool RegisterClassObject()
         {

@@ -72,15 +72,15 @@ namespace ASCOM.Meade.net
         #endregion
 
         // This property returns the main thread's id.
-        public static uint MainThreadId { get; private set; }   // Stores the main thread's thread id.
+        private static uint MainThreadId { get; set; }   // Stores the main thread's thread id.
 
         // Used to tell if started by COM or manually
-        public static bool StartedByCom { get; private set; }   // True if server started by COM (-embedding)
+        private static bool StartedByCom { get; set; }   // True if server started by COM (-embedding)
 
 
         #region Server Lock, Object Counting, and AutoQuit on COM startup
         // Returns the total number of objects alive currently.
-        public static int ObjectsCount
+        private static int ObjectsCount
         {
             get
             {
@@ -106,7 +106,7 @@ namespace ASCOM.Meade.net
         }
 
         // Returns the current server lock count.
-        public static int ServerLockCount
+        private static int ServerLockCount
         {
             get
             {

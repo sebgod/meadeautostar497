@@ -19,7 +19,7 @@ namespace ASCOM.Meade.net
         //public readonly bool IsComVisible;
 
         // Return a particular assembly attribute value.
-        public static T GetAssemblyAttribute<T>(Assembly assembly)
+        private T GetAssemblyAttribute<T>(Assembly assembly)
             where T : Attribute
         {
             // Get attributes of this type.
@@ -40,7 +40,7 @@ namespace ASCOM.Meade.net
         {
         }
 
-        public AssemblyInfo(Assembly assembly)
+        private AssemblyInfo(Assembly assembly)
         {
             // Get values from the assembly.
             //var titleAttr = GetAssemblyAttribute<AssemblyTitleAttribute>(assembly);

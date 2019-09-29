@@ -17,7 +17,7 @@ namespace ASCOM.Meade.net.Localization
             SetLocalisation(CultureInfo.CurrentCulture.Name);
         }
 
-        internal void SetLocalisation(string name)
+        private void SetLocalisation(string name)
         {
             var cultureInfo = new CultureInfo(name);
 

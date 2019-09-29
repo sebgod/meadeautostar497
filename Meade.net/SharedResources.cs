@@ -62,12 +62,12 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Shared serial port
         /// </summary>
-        public static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
+        private static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
 
         /// <summary>
         /// number of connections to the shared serial port
         /// </summary>
-        public static int Connections { get; set; }
+        private static int Connections { get; set; }
 
         public static void SendBlind(string message)
         {
@@ -342,7 +342,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static bool IsConnected()
+        private static bool IsConnected()
         {
             foreach (var device in ConnectedDevices)
             {
@@ -382,7 +382,7 @@ namespace ASCOM.Meade.net
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
         /// in reality extra code will be needed to handle the hardware in some way
         /// </summary>
-        public class DeviceHardware
+        private class DeviceHardware
         {
             internal int Count { set; get; }
 
