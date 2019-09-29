@@ -274,6 +274,7 @@ namespace ASCOM.Meade.net
         /// it add the device id to the list of devices if it's not there and increments the device count.
         /// </summary>
         /// <param name="deviceId"></param>
+        /// <param name="driverId"></param>
         public static ConnectionInfo Connect(string deviceId, string driverId)
         {
             lock (LockObject)

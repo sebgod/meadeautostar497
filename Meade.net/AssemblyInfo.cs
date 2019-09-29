@@ -8,10 +8,16 @@ namespace ASCOM.Meade.net
     public class AssemblyInfo
     {
         // The assembly information values.
-        public string Title = string.Empty, Description = string.Empty, Company = string.Empty,
-            Product = string.Empty, Copyright = string.Empty, Trademark = string.Empty,
-            AssemblyVersion, FileVersion = string.Empty, Guid = string.Empty,
-            NeutralLanguage = string.Empty;
+        public string Title = string.Empty;
+        public string Description = string.Empty;
+        public string Company = string.Empty;
+        public string Product = string.Empty;
+        public string Copyright = string.Empty;
+        public string Trademark = string.Empty;
+        public string AssemblyVersion;
+        public string FileVersion = string.Empty;
+        public string Guid = string.Empty;
+        public string NeutralLanguage = string.Empty;
         public bool IsComVisible;
 
         // Return a particular assembly attribute value.
