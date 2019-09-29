@@ -117,5 +117,33 @@ namespace ASCOM.Meade.net.Properties {
                 return ResourceManager.GetString("Server_RegisterObjects_", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Settings ({1}).
+        /// </summary>
+        internal static string SetupDialogForm_SetupDialogForm__0__Settings___1__ {
+            get {
+                return ResourceManager.GetString("SetupDialogForm_SetupDialogForm__0__Settings___1__", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ({0:00.0}% of sidereal rate).
+        /// </summary>
+        internal static string SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_ {
+            get {
+                return ResourceManager.GetString("SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Already connected, please disconnect before altering settings.
+        /// </summary>
+        internal static string SharedResources_SetupDialog_Already_connected__please_disconnect_before_altering_settings {
+            get {
+                return ResourceManager.GetString("SharedResources_SetupDialog_Already_connected__please_disconnect_before_altering_" +
+                        "settings", resourceCulture);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Properties;
 
 namespace ASCOM.Meade.net
 {
@@ -17,7 +18,7 @@ namespace ASCOM.Meade.net
 
             var assemblyInfo = new AssemblyInfo();
 
-            Text = $"{assemblyInfo.Product} Settings ({assemblyInfo.AssemblyVersion})";
+            Text = string.Format(Resources.SetupDialogForm_SetupDialogForm__0__Settings___1__, assemblyInfo.Product, assemblyInfo.AssemblyVersion);
         }
 
         public sealed override string Text
@@ -102,7 +103,7 @@ namespace ASCOM.Meade.net
                 const double siderealArcSecondsPerSecond = 15.041;
                 var percentOfSideReal = newGuideRate / siderealArcSecondsPerSecond * 100;
 
-                lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
+                lblPercentOfSiderealRate.Text = string.Format(Resources.SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_, percentOfSideReal);
                 _guideRateValid = true;
             }
             catch (Exception)

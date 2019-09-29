@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Properties;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
@@ -220,7 +221,7 @@ namespace ASCOM.Meade.net
             // or call a different dialog if connected
             if (Connections > 0)
             {
-                MessageBox.Show("Already connected, please disconnect before altering settings");
+                MessageBox.Show(Resources.SharedResources_SetupDialog_Already_connected__please_disconnect_before_altering_settings);
                 return;
             }
 
