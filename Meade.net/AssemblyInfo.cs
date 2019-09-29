@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Resources;
-using System.Runtime.InteropServices;
 
 namespace ASCOM.Meade.net
 {
