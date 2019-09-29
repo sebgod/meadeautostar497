@@ -113,7 +113,7 @@ namespace ASCOM.Meade.net
         private Guid _mClassId;
         private readonly ArrayList _mInterfaceTypes;
         private uint _mCookie;
-        private readonly string _mProgid;
+        //private readonly string _mProgid;
 
         public ClassFactory(Type type)
         {
@@ -122,7 +122,7 @@ namespace ASCOM.Meade.net
             _mClassType = type;
 
             //PWGS Get the ProgID from the MetaData
-            _mProgid = Marshal.GenerateProgIdForType(type);
+            //_mProgid = Marshal.GenerateProgIdForType(type);
             _mClassId = Marshal.GenerateGuidForType(type);		// Should be nailed down by [Guid(...)]
             ClassContext = (uint)Clsctx.ClsctxLocalServer;	// Default
             Flags = (uint)Regcls.RegclsMultipleuse |			// Default

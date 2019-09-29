@@ -79,5 +79,32 @@ namespace ASCOM.Meade.net.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Site out of range.
+        /// </summary>
+        internal static string Telescope_GetSiteName_Site_out_of_range {
+            get {
+                return ResourceManager.GetString("Telescope_GetSiteName_Site_out_of_range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Site cannot be higher than 4.
+        /// </summary>
+        internal static string Telescope_SelectSite_Site_cannot_be_higher_than_4 {
+            get {
+                return ResourceManager.GetString("Telescope_SelectSite_Site_cannot_be_higher_than_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Site cannot be lower than 1.
+        /// </summary>
+        internal static string Telescope_SelectSite_Site_cannot_be_lower_than_1 {
+            get {
+                return ResourceManager.GetString("Telescope_SelectSite_Site_cannot_be_lower_than_1", resourceCulture);
+            }
+        }
     }
 }

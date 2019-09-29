@@ -9,6 +9,7 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using ASCOM.Meade.net.AstroMaths;
+using ASCOM.Meade.net.Properties;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 
@@ -536,9 +537,9 @@ namespace ASCOM.Meade.net
             CheckConnected("SelectSite");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site),site,"Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site),site,Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
             else if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             _sharedResourcesWrapper.SendBlind($":W{site}#");
             //:W<n>#
@@ -551,9 +552,9 @@ namespace ASCOM.Meade.net
             CheckConnected("SetSiteName");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
             else if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             string command = String.Empty;
             switch (site)
@@ -605,9 +606,9 @@ namespace ASCOM.Meade.net
             CheckConnected("GetSiteName");
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be lower than 1");
+                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
             else if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, "Site cannot be higher than 4");
+                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             switch (site)
             {
@@ -633,7 +634,7 @@ namespace ASCOM.Meade.net
                     //A ‘#’ terminated string with the name of the requested site.
             }
 
-            throw new ArgumentOutOfRangeException(nameof(site), site, "Site out of range");
+            throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_GetSiteName_Site_out_of_range);
         }
 
         public string Description

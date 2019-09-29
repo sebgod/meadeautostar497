@@ -18,6 +18,12 @@ namespace ASCOM.Meade.net
             Text = $"{assemblyInfo.Product} Settings ({assemblyInfo.AssemblyVersion})";
         }
 
+        public sealed override string Text
+        {
+            get { return base.Text; }
+            set { base.Text = value; }
+        }
+
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
         {
             Close();
