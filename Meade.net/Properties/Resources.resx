@@ -121,4 +121,21 @@
   <data name="ASCOM" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\ASCOM.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Server_ProcessArguments_" xml:space="preserve">
+    <value>Unknown argument: {0}
+Valid are : -register, -unregister and -embedding</value>
+  </data>
+  <data name="Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_" xml:space="preserve">
+    <value>Failed to register class factory for {0}</value>
+  </data>
+  <data name="Server_RegisterObjects_" xml:space="preserve">
+    <value>Error while registering the server:
+{0}</value>
+  </data>
+  <data name="Server_ElevateSelf_The__0__was_not__1__because_you_did_not_allow_it_" xml:space="preserve">
+    <value>The {0} was not {1} because you did not allow it.</value>
+  </data>
+  <data name="Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_" xml:space="preserve">
+    <value>Failed to load served COM class assembly {0} - {1}</value>
+  </data>
 </root>

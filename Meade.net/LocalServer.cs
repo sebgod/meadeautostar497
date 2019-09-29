@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Properties;
 using ASCOM.Utilities;
 using Microsoft.Win32;
 
@@ -259,7 +260,7 @@ namespace ASCOM.Meade.net
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show($"Failed to load served COM class assembly {fi.Name} - {e.Message}",
+                    MessageBox.Show(string.Format(Resources.Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_, fi.Name, e.Message),
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
@@ -297,7 +298,7 @@ namespace ASCOM.Meade.net
             try { Process.Start(si); }
             catch (Win32Exception)
             {
-                MessageBox.Show($"The {DriverName} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DriverName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(string.Format(Resources.Server_ElevateSelf_The__0__was_not__1__because_you_did_not_allow_it_, DriverName, (arg == "/register" ? "registered" : "unregistered")), DriverName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
@@ -358,7 +359,7 @@ namespace ASCOM.Meade.net
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error while registering the server:\n{ex}",
+                MessageBox.Show(string.Format(Resources.Server_RegisterObjects_, ex),
                     DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
             }
@@ -424,7 +425,7 @@ namespace ASCOM.Meade.net
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error while registering the server:\n{ex}",
+                    MessageBox.Show(string.Format(Resources.Server_RegisterObjects_, ex),
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
@@ -513,7 +514,7 @@ namespace ASCOM.Meade.net
                 _sClassFactories.Add(factory);
                 if (!factory.RegisterClassObject())
                 {
-                    MessageBox.Show("Failed to register class factory for " + type.Name,
+                    MessageBox.Show(string.Format(Resources.Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_, type.Name),
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
@@ -569,7 +570,8 @@ namespace ASCOM.Meade.net
                         break;
 
                     default:
-                        MessageBox.Show("Unknown argument: " + args[0] + "\nValid are : -register, -unregister and -embedding",
+                        MessageBox.Show(
+                            string.Format(Resources.Server_ProcessArguments_, args[0]),
                             DriverName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
