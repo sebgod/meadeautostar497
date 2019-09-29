@@ -78,12 +78,6 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static bool SendBool(string message)
-        {
-            SharedSerial.ClearBuffers();
-            return SendChar(message) == "1";
-        }
-
         /// <summary>
         /// Example of a shared SendMessage method, the lock
         /// prevents different drivers tripping over one another.
@@ -126,39 +120,6 @@ namespace ASCOM.Meade.net
             {
                 SharedSerial.ReceiveCounted(throwAwayCharacters);
             }
-        }
-
-        /// <summary>
-        /// Example of handling connecting to and disconnection from the
-        /// shared serial port.
-        /// Needs error handling
-        /// the port name etc. needs to be set up first, this could be done by the driver
-        /// checking Connected and if it's false setting up the port before setting connected to true.
-        /// It could also be put here.
-        /// </summary>
-        public static bool Connected
-        {
-            set
-            {
-                lock (LockObject)
-                {
-                    if (value)
-                    {
-                        if (Connections == 0)
-                            SharedSerial.Connected = true;
-                        Connections++;
-                    }
-                    else
-                    {
-                        Connections--;
-                        if (Connections <= 0)
-                        {
-                            SharedSerial.Connected = false;
-                        }
-                    }
-                }
-            }
-            get => SharedSerial.Connected;
         }
 
         #endregion
@@ -353,13 +314,6 @@ namespace ASCOM.Meade.net
             return false;
         }
 
-        public static bool IsConnected(string deviceId)
-        {
-            if (ConnectedDevices.ContainsKey(deviceId))
-                return ConnectedDevices[deviceId].Count > 0;
-            return false;
-        }
-
         #endregion
 
         public static void Lock(Action action)
@@ -391,31 +345,5 @@ namespace ASCOM.Meade.net
                 Count = 0;
             }
         }
-
-        //#region ServedClassName attribute
-        ///// <summary>
-        ///// This is only needed if the driver is targeted at  platform 5.5, it is included with Platform 6
-        ///// </summary>
-        //[global::System.AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-        //public sealed class ServedClassNameAttribute : Attribute
-        //{
-        //    // See the attribute guidelines at 
-        //    //  http://go.microsoft.com/fwlink/?LinkId=85236
-
-        //    /// <summary>
-        //    /// Gets or sets the 'friendly name' of the served class, as registered with the ASCOM Chooser.
-        //    /// </summary>
-        //    /// <value>The 'friendly name' of the served class.</value>
-        //    public string DisplayName { get; private set; }
-        //    /// <summary>
-        //    /// Initializes a new instance of the <see cref="ServedClassNameAttribute"/> class.
-        //    /// </summary>
-        //    /// <param name="servedClassName">The 'friendly name' of the served class.</param>
-        //    public ServedClassNameAttribute(string servedClassName)
-        //    {
-        //        DisplayName = servedClassName;
-        //    }
-        //}
-        //#endregion
     }
 }

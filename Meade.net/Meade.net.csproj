@@ -132,7 +132,6 @@
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="GarbageCollection.cs" />
-    <Compile Include="Localization\LocalisationHelper.cs" />
     <Compile Include="LocalServer.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

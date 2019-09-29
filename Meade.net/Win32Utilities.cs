@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+// ReSharper disable UnusedMember.Global
 
 namespace ASCOM.Meade.net
 {
