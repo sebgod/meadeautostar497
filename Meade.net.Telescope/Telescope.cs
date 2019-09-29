@@ -384,7 +384,7 @@ namespace ASCOM.Meade.net
 
                             if (connectionInfo.SameDevice == 1)
                             {
-                                LogMessage("Connected Set", $"Making first connection telescope adjustments");
+                                LogMessage("Connected Set", "Making first connection telescope adjustments");
                                 //These settings are applied only when the first device connects to the telescope.
                                 SetLongFormat(true);
 
@@ -426,14 +426,14 @@ namespace ASCOM.Meade.net
             {
                 case "high":
                     TelescopePointingPrecision(true);
-                    LogMessage(propertyName, $"High precision slewing selected");
+                    LogMessage(propertyName, "High precision slewing selected");
                     break;
                 case "low":
                     TelescopePointingPrecision(false);
-                    LogMessage(propertyName, $"Low precision slewing selected");
+                    LogMessage(propertyName, "Low precision slewing selected");
                     break;
                 default:
-                    LogMessage(propertyName, $"Precision slewing unchanged");
+                    LogMessage(propertyName, "Precision slewing unchanged");
                     break;
             }
         }
@@ -494,7 +494,7 @@ namespace ASCOM.Meade.net
 
         private bool TogglePrecision()
         {
-            LogMessage("TogglePrecision", $"Toggling slewing precision");
+            LogMessage("TogglePrecision", "Toggling slewing precision");
             var result = _sharedResourcesWrapper.SendChar(":P#");
             //:P# Toggles High Precsion Pointing. When High precision pointing is enabled scope will first allow the operator to center a nearby bright star before moving to the actual target.
             //Returns: <string>
@@ -1369,7 +1369,7 @@ namespace ASCOM.Meade.net
 
             if (_userNewerPulseGuiding && duration < 10000)
             {
-                LogMessage("PulseGuide", $"Using new pulse guiding technique");
+                LogMessage("PulseGuide", "Using new pulse guiding technique");
                 _sharedResourcesWrapper.SendBlind($":Mg{d}{duration:0000}#");
                 //:MgnDDDD#
                 //:MgsDDDD#
@@ -1383,7 +1383,7 @@ namespace ASCOM.Meade.net
             }
             else
             {
-                LogMessage("PulseGuide", $"Using old pulse guiding technique");
+                LogMessage("PulseGuide", "Using old pulse guiding technique");
                 _sharedResourcesWrapper.Lock(() =>
                 {
                     _sharedResourcesWrapper.SendBlind(":RG#"); //Make sure we are at guide rate
@@ -2026,7 +2026,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                LogMessage($"Tracking Set", $"{value}");
+                LogMessage("Tracking Set", $"{value}");
                 _tracking = value;
             }
         }

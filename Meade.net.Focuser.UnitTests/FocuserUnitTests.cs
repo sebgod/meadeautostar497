@@ -6,7 +6,6 @@ using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Meade.net.Focuser.UnitTests
 {

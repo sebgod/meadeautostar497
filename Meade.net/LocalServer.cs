@@ -254,7 +254,6 @@ namespace ASCOM.Meade.net
                 {
                     // Probably an attempt to load a Win32 DLL (i.e. not a .net assembly)
                     // Just swallow the exception and continue to the next item.
-                    continue;
                 }
                 catch (Exception e)
                 {
@@ -262,7 +261,6 @@ namespace ASCOM.Meade.net
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
-
             }
             return true;
         }
@@ -303,7 +301,6 @@ namespace ASCOM.Meade.net
             {
                 MessageBox.Show(ex.ToString(), DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
-            return;
         }
 
         //
@@ -412,7 +409,7 @@ namespace ASCOM.Meade.net
                     //
                     // ASCOM 
                     //
-                    assy = type.Assembly;
+                    //assy = type.Assembly;
 
                     // Pull the display name from the ServedClassName attribute.
                     attr = Attribute.GetCustomAttribute(type, typeof(ServedClassNameAttribute)); //PWGS Changed to search type for attribute rather than assembly
@@ -425,7 +422,7 @@ namespace ASCOM.Meade.net
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
+                    MessageBox.Show($"Error while registering the server:\n{ex}",
                         DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
