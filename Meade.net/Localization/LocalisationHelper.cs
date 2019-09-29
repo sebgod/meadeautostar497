@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using System.Threading;
-using System.Resources;
 using System.Reflection;
+using System.Resources;
+using System.Threading;
 
 namespace ASCOM.Meade.net.Localization
 {

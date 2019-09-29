@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -33,7 +35,7 @@ namespace ASCOM.Meade.net
         {
             try
             {
-                System.Diagnostics.Process.Start("http://ascom-standards.org/");
+                Process.Start("http://ascom-standards.org/");
             }
             catch (Win32Exception noBrowser)
             {
@@ -51,7 +53,7 @@ namespace ASCOM.Meade.net
             chkTrace.Checked = profileProperties.TraceLogger;
             // set the list of com ports to those that are currently available
             comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort
+            comboBoxComPort.Items.AddRange(SerialPort
                 .GetPortNames()); // use System.IO because it's static
             // select the current port if possible
             if (comboBoxComPort.Items.Contains(profileProperties.ComPort))

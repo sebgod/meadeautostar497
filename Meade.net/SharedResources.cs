@@ -13,9 +13,11 @@
 // Written by:	Bob Denny	29-May-2007
 // Modified by Chris Rowland and Peter Simpson to hamdle multiple hardware devices March 2011
 //
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Forms;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
@@ -218,7 +220,7 @@ namespace ASCOM.Meade.net
             // or call a different dialog if connected
             if (Connections > 0)
             {
-                System.Windows.Forms.MessageBox.Show("Already connected, please disconnect before altering settings");
+                MessageBox.Show("Already connected, please disconnect before altering settings");
                 return;
             }
 
@@ -234,7 +236,7 @@ namespace ASCOM.Meade.net
                 }
 
                 var result = f.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == DialogResult.OK)
                 {
                     profileProperties = f.GetProfile();
 
@@ -354,8 +356,7 @@ namespace ASCOM.Meade.net
         {
             if (ConnectedDevices.ContainsKey(deviceId))
                 return ConnectedDevices[deviceId].Count > 0;
-            else
-                return false;
+            return false;
         }
 
         #endregion

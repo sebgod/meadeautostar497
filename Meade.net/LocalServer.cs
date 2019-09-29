@@ -12,17 +12,19 @@
 // Modified by Chris Rowland and Peter Simpson to allow use with multiple devices of the same type March 2011
 //
 //
+
 using System;
-using System.IO;
-using System.Windows.Forms;
 using System.Collections;
-using System.Runtime.InteropServices;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Threading;
+using System.Windows.Forms;
 using ASCOM.Utilities;
 using Microsoft.Win32;
-using System.Threading;
-using System.Security.Principal;
-using System.Diagnostics;
 
 namespace ASCOM.Meade.net
 {
@@ -109,7 +111,7 @@ namespace ASCOM.Meade.net
         #region Private Data
         private static int _objsInUse;                       // Keeps a count on the total number of objects alive.
         private static int _serverLocks;                     // Keeps a lock count on this application.
-        private static FrmMain _sMainForm = null;               // Reference to our main form
+        private static FrmMain _sMainForm;               // Reference to our main form
         private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
         private static ArrayList _sComObjectTypes;              // Served COM object types
         private static ArrayList _sClassFactories;              // Served COM object class factories
@@ -293,7 +295,7 @@ namespace ASCOM.Meade.net
                 Verb = "runas"
             };
             try { Process.Start(si); }
-            catch (System.ComponentModel.Win32Exception)
+            catch (Win32Exception)
             {
                 MessageBox.Show($"The {DriverName} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DriverName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }

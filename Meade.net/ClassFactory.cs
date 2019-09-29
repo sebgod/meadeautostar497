@@ -1,6 +1,6 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace ASCOM.Meade.net
 {
@@ -204,7 +204,6 @@ namespace ASCOM.Meade.net
             if (riid == IidIDispatch)
             {
                 ppvObject = Marshal.GetIDispatchForObject(Activator.CreateInstance(_mClassType));
-                return;
             }
             else if (riid == IidIUnknown)
             {

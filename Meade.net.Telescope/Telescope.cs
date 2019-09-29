@@ -1,16 +1,18 @@
 #define Telescope
 
 using System;
-using System.Runtime.InteropServices;
-using ASCOM.Astrometry.AstroUtils;
-using ASCOM.Utilities;
-using ASCOM.DeviceInterface;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using ASCOM.Astrometry;
+using ASCOM.Astrometry.AstroUtils;
+using ASCOM.Astrometry.NOVAS;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net.AstroMaths;
 using ASCOM.Meade.net.Properties;
 using ASCOM.Meade.net.Wrapper;
+using ASCOM.Utilities;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
@@ -538,7 +540,7 @@ namespace ASCOM.Meade.net
 
             if (site < 1)
                 throw new ArgumentOutOfRangeException(nameof(site),site,Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
-            else if (site > 4)
+            if (site > 4)
                 throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             _sharedResourcesWrapper.SendBlind($":W{site}#");
@@ -553,7 +555,7 @@ namespace ASCOM.Meade.net
 
             if (site < 1)
                 throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
-            else if (site > 4)
+            if (site > 4)
                 throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             string command = String.Empty;
@@ -607,7 +609,7 @@ namespace ASCOM.Meade.net
 
             if (site < 1)
                 throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
-            else if (site > 4)
+            if (site > 4)
                 throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
 
             switch (site)
@@ -831,7 +833,7 @@ namespace ASCOM.Meade.net
                 UtcDateTime = UTCDate,
                 SiteLongitude = SiteLongitude,
                 SiteLatitude = SiteLatitude,
-                EquatorialCoordinates = new EquatorialCoordinates()
+                EquatorialCoordinates = new EquatorialCoordinates
                 {
                     RightAscension = RightAscension,
                     Declination = Declination
@@ -866,7 +868,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("AtHome", "Get - " + false.ToString());
+                LogMessage("AtHome", "Get - " + false);
                 return false;
             }
         }
@@ -885,7 +887,7 @@ namespace ASCOM.Meade.net
 
         public IAxisRates AxisRates(TelescopeAxes axis)
         {
-            LogMessage("AxisRates", "Get - " + axis.ToString());
+            LogMessage("AxisRates", "Get - " + axis);
             return new AxisRates(axis);
         }
 
@@ -915,14 +917,14 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanFindHome", "Get - " + false.ToString());
+                LogMessage("CanFindHome", "Get - " + false);
                 return false;
             }
         }
 
         public bool CanMoveAxis(TelescopeAxes axis)
         {
-            LogMessage("CanMoveAxis", "Get - " + axis.ToString());
+            LogMessage("CanMoveAxis", "Get - " + axis);
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary: return true; //RA or AZ
@@ -936,7 +938,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanPark", "Get - " + true.ToString());
+                LogMessage("CanPark", "Get - " + true);
                 return true;
             }
         }
@@ -945,7 +947,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanPulseGuide", "Get - " + true.ToString());
+                LogMessage("CanPulseGuide", "Get - " + true);
                 return true;
             }
         }
@@ -954,7 +956,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
+                LogMessage("CanSetDeclinationRate", "Get - " + false);
                 return false;
             }
         }
@@ -967,7 +969,7 @@ namespace ASCOM.Meade.net
 
                 var canSetGuideRate = IsGuideRateSettingSupported();
 
-                LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate.ToString());
+                LogMessage("CanSetGuideRates", "Get - " + canSetGuideRate);
                 return canSetGuideRate;
             }
         }
@@ -976,7 +978,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetPark", "Get - " + false.ToString());
+                LogMessage("CanSetPark", "Get - " + false);
                 return false;
             }
         }
@@ -985,7 +987,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetPierSide", "Get - " + false.ToString());
+                LogMessage("CanSetPierSide", "Get - " + false);
                 return false;
             }
         }
@@ -994,7 +996,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
+                LogMessage("CanSetRightAscensionRate", "Get - " + false);
                 return false;
             }
         }
@@ -1003,7 +1005,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetTracking", "Get - " + true.ToString());
+                LogMessage("CanSetTracking", "Get - " + true);
                 return true;
             }
         }
@@ -1012,7 +1014,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSlew", "Get - " + true.ToString());
+                LogMessage("CanSlew", "Get - " + true);
                 return true;
             }
         }
@@ -1021,7 +1023,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                LogMessage("CanSlewAltAz", "Get - " + true);
                 return true;
             }
         }
@@ -1030,7 +1032,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                LogMessage("CanSlewAltAzAsync", "Get - " + true);
                 return true;
             }
         }
@@ -1039,7 +1041,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                LogMessage("CanSlewAsync", "Get - " + true);
                 return true;
             }
         }
@@ -1048,7 +1050,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSync", "Get - " + true.ToString());
+                LogMessage("CanSync", "Get - " + true);
                 return true;
             }
         }
@@ -1057,7 +1059,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSyncAltAz", "Get - " + false.ToString());
+                LogMessage("CanSyncAltAz", "Get - " + false);
                 return false;
             }
         }
@@ -1066,7 +1068,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanUnpark", "Get - " + false.ToString());
+                LogMessage("CanUnpark", "Get - " + false);
                 return false;
             }
         }
@@ -1131,7 +1133,7 @@ namespace ASCOM.Meade.net
             get
             {
                 EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equTopocentric;
-                LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
+                LogMessage("DeclinationRate", "Get - " + equatorialSystem);
                 return equatorialSystem;
             }
         }
@@ -1473,13 +1475,13 @@ namespace ASCOM.Meade.net
             {
                 // Now using NOVAS 3.1
                 double siderealTime = 0.0;
-                using (var novas = new Astrometry.NOVAS.NOVAS31())
+                using (var novas = new NOVAS31())
                 {
                     var jd = _utilities.DateUTCToJulian(DateTime.UtcNow);
                     novas.SiderealTime(jd, 0, novas.DeltaT(jd),
-                        Astrometry.GstType.GreenwichApparentSiderealTime,
-                        Astrometry.Method.EquinoxBased,
-                        Astrometry.Accuracy.Reduced, ref siderealTime);
+                        GstType.GreenwichApparentSiderealTime,
+                        Method.EquinoxBased,
+                        Accuracy.Reduced, ref siderealTime);
                 }
 
                 // Allow for the longitude
@@ -2096,7 +2098,7 @@ namespace ASCOM.Meade.net
                 LogMessage("TrackingRates", "Get - ");
                 foreach (DriveRates driveRate in trackingRates)
                 {
-                    LogMessage("TrackingRates", "Get - " + driveRate.ToString());
+                    LogMessage("TrackingRates", "Get - " + driveRate);
                 }
                 return trackingRates;
             }

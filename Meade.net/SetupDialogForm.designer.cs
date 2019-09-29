@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Windows.Forms;
+
 namespace ASCOM.Meade.net
 {
     partial class SetupDialogForm
@@ -5,7 +8,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -162,18 +165,18 @@ namespace ASCOM.Meade.net
 
         #endregion
 
-        private System.Windows.Forms.Button cmdOK;
-        private System.Windows.Forms.Button cmdCancel;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckBox chkTrace;
-        private System.Windows.Forms.ComboBox comboBoxComPort;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txtGuideRate;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label lblPercentOfSiderealRate;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.ComboBox cboPrecision;
+        private Button cmdOK;
+        private Button cmdCancel;
+        private Label label1;
+        private PictureBox picASCOM;
+        private Label label2;
+        private CheckBox chkTrace;
+        private ComboBox comboBoxComPort;
+        private Label label3;
+        private TextBox txtGuideRate;
+        private Label label4;
+        private Label lblPercentOfSiderealRate;
+        private Label label5;
+        private ComboBox cboPrecision;
     }
 }

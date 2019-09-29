@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using ASCOM.DeviceInterface;
-using System.Collections;
+﻿using System.Collections;
+using System.Runtime.InteropServices;
 using System.Threading;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.Meade.net
 {

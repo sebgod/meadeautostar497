@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using ASCOM;
 using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
@@ -239,7 +240,7 @@ namespace Meade.net.Focuser.UnitTests
         [Test]
         public void DriverVersion_Get()
         {
-            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Focuser)).GetName().Version;
+            Version version = Assembly.GetAssembly(typeof(ASCOM.Meade.net.Focuser)).GetName().Version;
 
             string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 

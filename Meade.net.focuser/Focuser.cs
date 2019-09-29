@@ -1,13 +1,13 @@
 #define Focuser
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using ASCOM.Utilities;
-using ASCOM.DeviceInterface;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net.Wrapper;
+using ASCOM.Utilities;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net

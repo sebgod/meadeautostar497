@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.DeviceInterface;
@@ -45,8 +46,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() =>_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( (func) => func());
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>((func) => func());
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( func => func());
+            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>(func => func());
 
             _connectionInfo = new ConnectionInfo {Connections = 1, SameDevice = 1};
 
@@ -243,7 +244,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            string parameters = $"unknown";
+            string parameters = "unknown";
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
 
             Assert.That(exception.Message, Is.EqualTo($"Site parameters {parameters} not known"));
@@ -514,7 +515,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void DriverVersion_Get()
         {
-            Version version = System.Reflection.Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
+            Version version = Assembly.GetAssembly(typeof(ASCOM.Meade.net.Telescope)).GetName().Version;
 
             string exptectedDriverInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 
@@ -1183,7 +1184,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var exception = Assert.Throws<InvalidValueException>(() => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
 
-            Assert.That(exception.Message, Is.EqualTo($"Can not move this axis."));
+            Assert.That(exception.Message, Is.EqualTo("Can not move this axis."));
         }
 
         [Test]
@@ -2190,8 +2191,7 @@ namespace Meade.net.Telescope.UnitTests
                 slewCounter++;
                 if (slewCounter <= iterations)
                     return "|";
-                else
-                    return "";
+                return "";
             });
 
             _telescope.SlewToTarget();
@@ -2259,8 +2259,7 @@ namespace Meade.net.Telescope.UnitTests
                 slewCounter++;
                 if (slewCounter <= iterations)
                     return "|";
-                else
-                    return "";
+                return "";
             });
 
             _telescope.SlewToCoordinates(rightAscension, declination);
@@ -2330,7 +2329,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
-                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates(){ Declination = declination, RightAscension = rightAscension });
+                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = rightAscension });
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
@@ -2364,7 +2363,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
-                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates() { Declination = declination, RightAscension = rightAscension });
+                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = rightAscension });
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
@@ -2375,8 +2374,7 @@ namespace Meade.net.Telescope.UnitTests
                 slewCounter++;
                 if (slewCounter <= iterations)
                     return "|";
-                else
-                    return "";
+                return "";
             });
 
             _telescope.SlewToAltAz( azimuth, altitude);
@@ -2500,4 +2498,3 @@ namespace Meade.net.Telescope.UnitTests
         }
     }
 }
-;
