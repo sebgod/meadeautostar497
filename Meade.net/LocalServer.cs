@@ -35,64 +35,15 @@ namespace ASCOM.Meade.net
         private const string DriverName = "Meade Generic";
 
         #region Access to kernel32.dll, user32.dll, and ole32.dll functions
-        [Flags]
-        enum Clsctx : uint
-        {
-            ClsctxInprocServer = 0x1,
-            ClsctxInprocHandler = 0x2,
-            ClsctxLocalServer = 0x4,
-            ClsctxInprocServer16 = 0x8,
-            ClsctxRemoteServer = 0x10,
-            ClsctxInprocHandler16 = 0x20,
-            ClsctxReserved1 = 0x40,
-            ClsctxReserved2 = 0x80,
-            ClsctxReserved3 = 0x100,
-            ClsctxReserved4 = 0x200,
-            ClsctxNoCodeDownload = 0x400,
-            ClsctxReserved5 = 0x800,
-            ClsctxNoCustomMarshal = 0x1000,
-            ClsctxEnableCodeDownload = 0x2000,
-            ClsctxNoFailureLog = 0x4000,
-            ClsctxDisableAaa = 0x8000,
-            ClsctxEnableAaa = 0x10000,
-            ClsctxFromDefaultContext = 0x20000,
-            ClsctxInproc = ClsctxInprocServer | ClsctxInprocHandler,
-            ClsctxServer = ClsctxInprocServer | ClsctxLocalServer | ClsctxRemoteServer,
-            ClsctxAll = ClsctxServer | ClsctxInprocHandler
-        }
 
-        [Flags]
-        enum Coinit : uint
-        {
-            /// Initializes the thread for multi-threaded object concurrency.
-            CoinitMultithreaded = 0x0,
-            /// Initializes the thread for apartment-threaded object concurrency. 
-            CoinitApartmentthreaded = 0x2,
-            /// Disables DDE for Ole1 support.
-            CoinitDisableOle1Dde = 0x4,
-            /// Trades memory for speed.
-            CoinitSpeedOverMemory = 0x8
-        }
+        //// CoInitializeEx() can be used to set the apartment model
+        //// of individual threads.
+        //[DllImport("ole32.dll")]
+        //static extern int CoInitializeEx(IntPtr pvReserved, uint dwCoInit);
 
-        [Flags]
-        enum Regcls : uint
-        {
-            RegclsSingleuse = 0,
-            RegclsMultipleuse = 1,
-            RegclsMultiSeparate = 2,
-            RegclsSuspended = 4,
-            RegclsSurrogate = 8
-        }
-
-
-        // CoInitializeEx() can be used to set the apartment model
-        // of individual threads.
-        [DllImport("ole32.dll")]
-        static extern int CoInitializeEx(IntPtr pvReserved, uint dwCoInit);
-
-        // CoUninitialize() is used to uninitialize a COM thread.
-        [DllImport("ole32.dll")]
-        static extern void CoUninitialize();
+        //// CoUninitialize() is used to uninitialize a COM thread.
+        //[DllImport("ole32.dll")]
+        //static extern void CoUninitialize();
 
         // PostThreadMessage() allows us to post a Windows Message to
         // a specific thread (identified by its thread id).

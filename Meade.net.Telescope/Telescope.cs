@@ -1638,63 +1638,63 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private double TargetAltitude
-        {
-            set
-            {
-                if (value > 90)
-                    throw new InvalidValueException("Altitude cannot be greater than 90.");
+        //private double TargetAltitude
+        //{
+        //    set
+        //    {
+        //        if (value > 90)
+        //            throw new InvalidValueException("Altitude cannot be greater than 90.");
 
-                if (value < 0)
-                    throw new InvalidValueException("Altitide cannot be less than 0.");
+        //        if (value < 0)
+        //            throw new InvalidValueException("Altitide cannot be less than 0.");
 
-                CheckConnected("TargetAltitude Set");
+        //        CheckConnected("TargetAltitude Set");
 
-                //todo this serial string does not work.  Calculate the EQ version instead.
+        //        //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var dms = _utilities.DegreesToDMS(value, "*", "'", "",0);
-                var s = value < 0 ? string.Empty : "+";
+        //        var dms = _utilities.DegreesToDMS(value, "*", "'", "",0);
+        //        var s = value < 0 ? string.Empty : "+";
 
-                var result = _sharedResourcesWrapper.SendChar($":Sa{s}{dms}#");
-                //:SasDD*MM#
-                //Set target object altitude to sDD*MM# or sDD*MM’SS# [LX 16”, Autostar, Autostar II]
-                //Returns:
-                //1 Object within slew range
-                //0 Object out of slew range
+        //        var result = _sharedResourcesWrapper.SendChar($":Sa{s}{dms}#");
+        //        //:SasDD*MM#
+        //        //Set target object altitude to sDD*MM# or sDD*MM’SS# [LX 16”, Autostar, Autostar II]
+        //        //Returns:
+        //        //1 Object within slew range
+        //        //0 Object out of slew range
 
-                if (result == "0")
-                    throw new InvalidOperationException("Target altitude out of slew range");
-            }
-        }
+        //        if (result == "0")
+        //            throw new InvalidOperationException("Target altitude out of slew range");
+        //    }
+        //}
 
-        private double TargetAzimuth
-        {
-            set
-            {
-                if (value >= 360)
-                    throw new InvalidValueException("Azimuth cannot be 360 or higher.");
+        //private double TargetAzimuth
+        //{
+        //    set
+        //    {
+        //        if (value >= 360)
+        //            throw new InvalidValueException("Azimuth cannot be 360 or higher.");
 
-                if (value < 0)
-                    throw new InvalidValueException("Azimuth cannot be less than 0.");
+        //        if (value < 0)
+        //            throw new InvalidValueException("Azimuth cannot be less than 0.");
 
-                CheckConnected("TargetAzimuth Set");
+        //        CheckConnected("TargetAzimuth Set");
 
-                //todo this serial string does not work.  Calculate the EQ version instead.
+        //        //todo this serial string does not work.  Calculate the EQ version instead.
 
-                var dms = _utilitiesExtra.DegreesToDM(value, "*" );
+        //        var dms = _utilitiesExtra.DegreesToDM(value, "*" );
 
-                var result = _sharedResourcesWrapper.SendChar($":Sz{dms}#");
-                //:SzDDD*MM#
-                //Sets the target Object Azimuth[LX 16” and Autostar II only]
-                //Returns:
-                //0 – Invalid
-                //1 - Valid
+        //        var result = _sharedResourcesWrapper.SendChar($":Sz{dms}#");
+        //        //:SzDDD*MM#
+        //        //Sets the target Object Azimuth[LX 16” and Autostar II only]
+        //        //Returns:
+        //        //0 – Invalid
+        //        //1 - Valid
 
-                if (result == "0")
-                    throw new InvalidOperationException("Target Azimuth out of slew range");
+        //        if (result == "0")
+        //            throw new InvalidOperationException("Target Azimuth out of slew range");
 
-            }
-        }
+        //    }
+        //}
 
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
