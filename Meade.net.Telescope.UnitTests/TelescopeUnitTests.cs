@@ -349,12 +349,18 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = expectedConnected;
 
             Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
-        }
 
+            if (expectedConnected)
+            {
+                _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
+            }
+        }
+        
         [Test]
-        public void Connected_Set_WhenConnecting_Then_ConnectsToSerialDevice()
+        public void Connected_Set_WhenConnectingLX200GPS_Then_ConnectsToSerialDevice()
         {
-            var productName = "LX2001";
+            var productName = TelescopeList.LX200GPS;
             var firmware = string.Empty;
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
@@ -365,6 +371,21 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
+        }
+
+        [Test]
+        public void Connected_Set_WhenConnectingToLX200EMC_Then_ConnectsToSerialDevice()
+        {
+            var productName = TelescopeList.LX200CLASSIC;
+            var firmware = string.Empty;
+
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+            _telescope.Connected = true;
+
+            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
         }
 
 
@@ -414,6 +435,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("Autostar", "43Eg", true)]
         [TestCase("Autostar II", "", false)]
         [TestCase("LX2001", "", true)]
+        [TestCase(":GVP", "", false)] //LX200 Classic
         public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string productName, string firmware, bool isSupported)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);

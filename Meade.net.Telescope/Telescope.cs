@@ -456,6 +456,15 @@ namespace ASCOM.Meade.net
             return false;
         }
 
+        private bool IsLongFormatSupported()
+        {
+            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+            {
+                return false;
+            }
+            return true;
+        }
+
         private bool IsGuideRateSettingSupported()
         {
             if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
@@ -472,8 +481,15 @@ namespace ASCOM.Meade.net
             return comparison >= 0;
         }
 
+        public bool IsLongFormat { get; private set; }
+
         public void SetLongFormat(bool setLongFormat)
         {
+            IsLongFormat = false;
+
+            if (!IsLongFormatSupported())
+                return;
+
             _sharedResourcesWrapper.Lock(() =>
             {
                 var result = _sharedResourcesWrapper.SendString(":GZ#");
@@ -481,9 +497,9 @@ namespace ASCOM.Meade.net
                 //Returns: DDD*MM# or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
 
-                bool isLongFormat = result.Length > 6;
+                IsLongFormat = result.Length > 6;
 
-                if (isLongFormat != setLongFormat)
+                if (IsLongFormat != setLongFormat)
                 {
                     _utilities.WaitForMilliseconds(500);
                     _sharedResourcesWrapper.SendBlind(":U#");

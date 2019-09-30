@@ -23,7 +23,10 @@
 
         // ReSharper disable once InconsistentNaming
         public static readonly string LX200GPS_42G = "4.2G";
+        #endregion
 
+        #region LX200EMC
+        public static readonly string LX200CLASSIC = ":GVP"; //GVP command is not supported!
         #endregion
     }
 }
