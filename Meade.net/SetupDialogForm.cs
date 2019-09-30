@@ -1,7 +1,11 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Properties;
 
 namespace ASCOM.Meade.net
 {
@@ -14,7 +18,13 @@ namespace ASCOM.Meade.net
 
             var assemblyInfo = new AssemblyInfo();
 
-            Text = $"{assemblyInfo.Product} Settings ({assemblyInfo.AssemblyVersion})";
+            Text = string.Format(Resources.SetupDialogForm_SetupDialogForm__0__Settings___1__, assemblyInfo.Product, assemblyInfo.AssemblyVersion);
+        }
+
+        public sealed override string Text
+        {
+            get => base.Text;
+            set => base.Text = value;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -26,7 +36,7 @@ namespace ASCOM.Meade.net
         {
             try
             {
-                System.Diagnostics.Process.Start("http://ascom-standards.org/");
+                Process.Start("http://ascom-standards.org/");
             }
             catch (Win32Exception noBrowser)
             {
@@ -44,7 +54,7 @@ namespace ASCOM.Meade.net
             chkTrace.Checked = profileProperties.TraceLogger;
             // set the list of com ports to those that are currently available
             comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort
+            comboBoxComPort.Items.AddRange(SerialPort
                 .GetPortNames()); // use System.IO because it's static
             // select the current port if possible
             if (comboBoxComPort.Items.Contains(profileProperties.ComPort))
@@ -52,7 +62,7 @@ namespace ASCOM.Meade.net
                 comboBoxComPort.SelectedItem = profileProperties.ComPort;
             }
 
-            txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString();
+            txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture);
             try
             {
                 cboPrecision.SelectedItem = profileProperties.Precision;
@@ -86,15 +96,14 @@ namespace ASCOM.Meade.net
 
         private void TextBox1_TextChanged(object sender, EventArgs e)
         {
-            //const double SIDRATE = 0.9972695677; //synodic/solar seconds per sidereal second
             try
             {
                 double newGuideRate = double.Parse(txtGuideRate.Text.Trim());
 
                 const double siderealArcSecondsPerSecond = 15.041;
-                var percentOfSideReal = (newGuideRate / siderealArcSecondsPerSecond * 100);
+                var percentOfSideReal = newGuideRate / siderealArcSecondsPerSecond * 100;
 
-                lblPercentOfSiderealRate.Text = $"({percentOfSideReal:00.0}% of sidereal rate)";
+                lblPercentOfSiderealRate.Text = string.Format(Resources.SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_, percentOfSideReal);
                 _guideRateValid = true;
             }
             catch (Exception)
@@ -103,17 +112,17 @@ namespace ASCOM.Meade.net
                 _guideRateValid = false;
             }
 
-            UpdateOKButton();
+            UpdateOkButton();
         }
 
-        private void UpdateOKButton()
+        private void UpdateOkButton()
         {
             cmdOK.Enabled = _guideRateValid && (comboBoxComPort.SelectedItem != null);
         }
 
         private void ComboBoxComPort_SelectedValueChanged(object sender, EventArgs e)
         {
-            UpdateOKButton();
+            UpdateOkButton();
         }
 
         public void SetReadOnlyMode()

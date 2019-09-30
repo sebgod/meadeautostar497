@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using ASCOM.DeviceInterface;
-using System.Collections;
+﻿using System.Collections;
+using System.Runtime.InteropServices;
 using System.Threading;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.Meade.net
 {
@@ -19,17 +19,14 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Rate : IRate
     {
-        private double _maximum = 0;
-        private double _minimum = 0;
-
         //
         // Default constructor - Internal prevents public creation
         // of instances. These are values for AxisRates.
         //
         internal Rate(double minimum, double maximum)
         {
-            _maximum = maximum;
-            _minimum = minimum;
+            Maximum = maximum;
+            Minimum = minimum;
         }
 
         #region Implementation of IRate
@@ -39,17 +36,9 @@ namespace ASCOM.Meade.net
             // TODO Add any required object cleanup here
         }
 
-        public double Maximum
-        {
-            get => _maximum;
-            set => _maximum = value;
-        }
+        public double Maximum { get; set; }
 
-        public double Minimum
-        {
-            get => _minimum;
-            set => _minimum = value;
-        }
+        public double Minimum { get; set; }
 
         #endregion
     }
@@ -96,12 +85,12 @@ namespace ASCOM.Meade.net
                     // TODO Initialize this array with any Primary axis rates that your driver may provide
                     // Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
                     //this.rates = new Rate[0];
-                    _rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
+                    _rates = new[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
                     break;
                 case TelescopeAxes.axisSecondary:
                     // TODO Initialize this array with any Secondary axis rates that your driver may provide
                     //this.rates = new Rate[0];
-                    _rates = new Rate[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
+                    _rates = new[] { new Rate(1, 1), new Rate(2, 2), new Rate(3, 3), new Rate(4, 4) };
                     break;
                 case TelescopeAxes.axisTertiary:
                     // TODO Initialize this array with any Tertiary axis rates that your driver may provide
@@ -152,7 +141,7 @@ namespace ASCOM.Meade.net
         private readonly DriveRates[] _trackingRates;
 
         // this is used to make the index thread safe
-        private readonly ThreadLocal<int> _pos = new ThreadLocal<int>(() => { return -1; });
+        private readonly ThreadLocal<int> _pos = new ThreadLocal<int>(() => -1);
         private static readonly object LockObj = new object();
 
         //
@@ -176,8 +165,12 @@ namespace ASCOM.Meade.net
 
         public IEnumerator GetEnumerator()
         {
-            _pos.Value = -1;
-            return this as IEnumerator;
+            lock (LockObj)
+            {
+                _pos.Value = -1;
+            }
+
+            return this;
         }
 
         public void Dispose()
@@ -220,7 +213,10 @@ namespace ASCOM.Meade.net
 
         public void Reset()
         {
-            _pos.Value = -1;
+            lock (LockObj)
+            {
+                _pos.Value = -1;
+            }
         }
         #endregion
     }

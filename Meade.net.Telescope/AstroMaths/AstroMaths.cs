@@ -9,7 +9,7 @@ namespace ASCOM.Meade.net.AstroMaths
         //returns the decimal hour angle for given right ascension on a given datetime for a given logitude.
         public double RightAscensionToHourAngle(DateTime utcDateTime, double longitude, double rightAscension)
         {
-            var ut = DateTimeToDecimalHours( utcDateTime);
+            //var ut = DateTimeToDecimalHours( utcDateTime);
             var gst = UTtoGst( utcDateTime);
             var lst = GsTtoLst( gst, longitude);
             var raHours = rightAscension;
@@ -82,10 +82,11 @@ namespace ASCOM.Meade.net.AstroMaths
             var upperA = Math.Atan2(y, x);
             var upperB = RadiansToDegrees(upperA);
 
-            var horizonCoordinates = new HorizonCoordinates();
-            horizonCoordinates.Altitude = RadiansToDegrees(Math.Asin(sinA));
+            var horizonCoordinates = new HorizonCoordinates
+            {
+                Altitude = RadiansToDegrees(Math.Asin(sinA)), Azimuth = upperB
+            };
 
-            horizonCoordinates.Azimuth = upperB;
 
             if (upperB < 0)
             {
@@ -106,7 +107,7 @@ namespace ASCOM.Meade.net.AstroMaths
         public double RadiansToDegrees(double radians)
         {
             double degrees = (180 / Math.PI) * radians;
-            return (degrees);
+            return degrees;
         }
 
         //todo convert to extension method

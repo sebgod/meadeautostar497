@@ -1,6 +1,8 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Collections;
+using System.Runtime.InteropServices;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedMember.Global
 
 namespace ASCOM.Meade.net
 {
@@ -33,8 +35,8 @@ namespace ASCOM.Meade.net
         #region Access to ole32.dll functions for class factories
 
         // Define two common GUID objects for public usage.
-        private static readonly Guid _iidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
-        private static readonly Guid _iidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
+        private static readonly Guid IidIUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+        private static readonly Guid IidIDispatch = new Guid("{00020400-0000-0000-C000-000000000046}");
 
         [Flags]
         enum Clsctx : uint
@@ -113,16 +115,16 @@ namespace ASCOM.Meade.net
         private Guid _mClassId;
         private readonly ArrayList _mInterfaceTypes;
         private uint _mCookie;
-        private readonly string _mProgid;
+        //private readonly string _mProgid;
 
         public ClassFactory(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             _mClassType = type;
 
             //PWGS Get the ProgID from the MetaData
-            _mProgid = Marshal.GenerateProgIdForType(type);
+            //_mProgid = Marshal.GenerateProgIdForType(type);
             _mClassId = Marshal.GenerateGuidForType(type);		// Should be nailed down by [Guid(...)]
             ClassContext = (uint)Clsctx.ClsctxLocalServer;	// Default
             Flags = (uint)Regcls.RegclsMultipleuse |			// Default
@@ -135,7 +137,8 @@ namespace ASCOM.Meade.net
         #endregion
 
         #region Common ClassFactory Methods
-        public uint ClassContext { get; }
+
+        private uint ClassContext { get; }
 
         public Guid ClassId
         {
@@ -143,7 +146,7 @@ namespace ASCOM.Meade.net
             set => _mClassId = value;
         }
 
-        public uint Flags { get; }
+        private uint Flags { get; }
 
         public bool RegisterClassObject()
         {
@@ -156,25 +159,22 @@ namespace ASCOM.Meade.net
                 Flags,
                 out _mCookie
                 );
-            return (i == 0);
+            return i == 0;
         }
 
-        public bool RevokeClassObject()
+        public void RevokeClassObject()
         {
-            int i = CoRevokeClassObject(_mCookie);
-            return (i == 0);
+            CoRevokeClassObject(_mCookie);
         }
 
-        public static bool ResumeClassObjects()
+        public static void ResumeClassObjects()
         {
-            int i = CoResumeClassObjects();
-            return (i == 0);
+            CoResumeClassObjects();
         }
 
-        public static bool SuspendClassObjects()
+        public static void SuspendClassObjects()
         {
-            int i = CoSuspendClassObjects();
-            return (i == 0);
+            CoSuspendClassObjects();
         }
         #endregion
 
@@ -201,12 +201,11 @@ namespace ASCOM.Meade.net
             //
             // Handle requests for IDispatch or IUnknown on the class
             //
-            if (riid == _iidIDispatch)
+            if (riid == IidIDispatch)
             {
                 ppvObject = Marshal.GetIDispatchForObject(Activator.CreateInstance(_mClassType));
-                return;
             }
-            else if (riid == _iidIUnknown)
+            else if (riid == IidIUnknown)
             {
                 ppvObject = Marshal.GetIUnknownForObject(Activator.CreateInstance(_mClassType));
             }

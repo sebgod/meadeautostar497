@@ -12,84 +12,38 @@
 // Modified by Chris Rowland and Peter Simpson to allow use with multiple devices of the same type March 2011
 //
 //
+
 using System;
-using System.IO;
-using System.Windows.Forms;
 using System.Collections;
-using System.Runtime.InteropServices;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Threading;
+using System.Windows.Forms;
+using ASCOM.Meade.net.Properties;
 using ASCOM.Utilities;
 using Microsoft.Win32;
-using System.Threading;
-using System.Security.Principal;
-using System.Diagnostics;
 
 namespace ASCOM.Meade.net
 {
     public static class Server
     {
 
-        private const string DRIVER_NAME = "Meade Generic";
+        private const string DriverName = "Meade Generic";
 
         #region Access to kernel32.dll, user32.dll, and ole32.dll functions
-        [Flags]
-        enum Clsctx : uint
-        {
-            ClsctxInprocServer = 0x1,
-            ClsctxInprocHandler = 0x2,
-            ClsctxLocalServer = 0x4,
-            ClsctxInprocServer16 = 0x8,
-            ClsctxRemoteServer = 0x10,
-            ClsctxInprocHandler16 = 0x20,
-            ClsctxReserved1 = 0x40,
-            ClsctxReserved2 = 0x80,
-            ClsctxReserved3 = 0x100,
-            ClsctxReserved4 = 0x200,
-            ClsctxNoCodeDownload = 0x400,
-            ClsctxReserved5 = 0x800,
-            ClsctxNoCustomMarshal = 0x1000,
-            ClsctxEnableCodeDownload = 0x2000,
-            ClsctxNoFailureLog = 0x4000,
-            ClsctxDisableAaa = 0x8000,
-            ClsctxEnableAaa = 0x10000,
-            ClsctxFromDefaultContext = 0x20000,
-            ClsctxInproc = ClsctxInprocServer | ClsctxInprocHandler,
-            ClsctxServer = ClsctxInprocServer | ClsctxLocalServer | ClsctxRemoteServer,
-            ClsctxAll = ClsctxServer | ClsctxInprocHandler
-        }
 
-        [Flags]
-        enum Coinit : uint
-        {
-            /// Initializes the thread for multi-threaded object concurrency.
-            CoinitMultithreaded = 0x0,
-            /// Initializes the thread for apartment-threaded object concurrency. 
-            CoinitApartmentthreaded = 0x2,
-            /// Disables DDE for Ole1 support.
-            CoinitDisableOle1Dde = 0x4,
-            /// Trades memory for speed.
-            CoinitSpeedOverMemory = 0x8
-        }
+        //// CoInitializeEx() can be used to set the apartment model
+        //// of individual threads.
+        //[DllImport("ole32.dll")]
+        //static extern int CoInitializeEx(IntPtr pvReserved, uint dwCoInit);
 
-        [Flags]
-        enum Regcls : uint
-        {
-            RegclsSingleuse = 0,
-            RegclsMultipleuse = 1,
-            RegclsMultiSeparate = 2,
-            RegclsSuspended = 4,
-            RegclsSurrogate = 8
-        }
-
-
-        // CoInitializeEx() can be used to set the apartment model
-        // of individual threads.
-        [DllImport("ole32.dll")]
-        static extern int CoInitializeEx(IntPtr pvReserved, uint dwCoInit);
-
-        // CoUninitialize() is used to uninitialize a COM thread.
-        [DllImport("ole32.dll")]
-        static extern void CoUninitialize();
+        //// CoUninitialize() is used to uninitialize a COM thread.
+        //[DllImport("ole32.dll")]
+        //static extern void CoUninitialize();
 
         // PostThreadMessage() allows us to post a Windows Message to
         // a specific thread (identified by its thread id).
@@ -109,8 +63,8 @@ namespace ASCOM.Meade.net
         #region Private Data
         private static int _objsInUse;                       // Keeps a count on the total number of objects alive.
         private static int _serverLocks;                     // Keeps a lock count on this application.
-        private static FrmMain _sMainForm = null;               // Reference to our main form
-        private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
+        private static FrmMain _sMainForm;               // Reference to our main form
+        //private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
         private static ArrayList _sComObjectTypes;              // Served COM object types
         private static ArrayList _sClassFactories;              // Served COM object class factories
         private static string _sAppId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}";	// Our AppId
@@ -118,15 +72,15 @@ namespace ASCOM.Meade.net
         #endregion
 
         // This property returns the main thread's id.
-        public static uint MainThreadId { get; private set; }   // Stores the main thread's thread id.
+        private static uint MainThreadId { get; set; }   // Stores the main thread's thread id.
 
         // Used to tell if started by COM or manually
-        public static bool StartedByCom { get; private set; }   // True if server started by COM (-embedding)
+        private static bool StartedByCom { get; set; }   // True if server started by COM (-embedding)
 
 
         #region Server Lock, Object Counting, and AutoQuit on COM startup
         // Returns the total number of objects alive currently.
-        public static int ObjectsCount
+        private static int ObjectsCount
         {
             get
             {
@@ -138,21 +92,21 @@ namespace ASCOM.Meade.net
         }
 
         // This method performs a thread-safe incrementation of the objects count.
-        public static int CountObject()
+        public static void CountObject()
         {
             // Increment the global count of objects.
-            return Interlocked.Increment(ref _objsInUse);
+            Interlocked.Increment(ref _objsInUse);
         }
 
         // This method performs a thread-safe decrementation the objects count.
-        public static int UncountObject()
+        public static void UncountObject()
         {
             // Decrement the global count of objects.
-            return Interlocked.Decrement(ref _objsInUse);
+            Interlocked.Decrement(ref _objsInUse);
         }
 
         // Returns the current server lock count.
-        public static int ServerLockCount
+        private static int ServerLockCount
         {
             get
             {
@@ -165,18 +119,18 @@ namespace ASCOM.Meade.net
 
         // This method performs a thread-safe incrementation the 
         // server lock count.
-        public static int CountLock()
+        public static void CountLock()
         {
             // Increment the global lock count of this server.
-            return Interlocked.Increment(ref _serverLocks);
+            Interlocked.Increment(ref _serverLocks);
         }
 
         // This method performs a thread-safe decrementation the 
         // server lock count.
-        public static int UncountLock()
+        public static void UncountLock()
         {
             // Decrement the global lock count of this server.
-            return Interlocked.Decrement(ref _serverLocks);
+            Interlocked.Decrement(ref _serverLocks);
         }
 
         // AttemptToTerminateServer() will check to see if the objects count and the server 
@@ -215,7 +169,7 @@ namespace ASCOM.Meade.net
         //
         private static bool LoadComObjectAssemblies()
         {
-            _sComObjectAssys = new ArrayList();
+            //_sComObjectAssys = new ArrayList();
             _sComObjectTypes = new ArrayList();
 
             // put everything into one folder, the same as the server.
@@ -246,7 +200,7 @@ namespace ASCOM.Meade.net
                         {
                             //MessageBox.Show("Adding Type: " + type.Name + " " + type.FullName);
                             _sComObjectTypes.Add(type); //PWGS - much simpler
-                            _sComObjectAssys.Add(so);
+                            //_sComObjectAssys.Add(so);
                         }
                     }
                 }
@@ -254,15 +208,13 @@ namespace ASCOM.Meade.net
                 {
                     // Probably an attempt to load a Win32 DLL (i.e. not a .net assembly)
                     // Just swallow the exception and continue to the next item.
-                    continue;
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show($"Failed to load served COM class assembly {fi.Name} - {e.Message}",
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show(string.Format(Resources.Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_, fi.Name, e.Message),
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     return false;
                 }
-
             }
             return true;
         }
@@ -287,21 +239,22 @@ namespace ASCOM.Meade.net
         //
         private static void ElevateSelf(string arg)
         {
-            ProcessStartInfo si = new ProcessStartInfo();
-            si.Arguments = arg;
-            si.WorkingDirectory = Environment.CurrentDirectory;
-            si.FileName = Application.ExecutablePath;
-            si.Verb = "runas";
-            try { Process.Start(si); }
-            catch (System.ComponentModel.Win32Exception)
+            var si = new ProcessStartInfo
             {
-                MessageBox.Show($"The {DRIVER_NAME} was not {(arg == "/register" ? "registered" : "unregistered")} because you did not allow it.", DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Arguments = arg,
+                WorkingDirectory = Environment.CurrentDirectory,
+                FileName = Application.ExecutablePath,
+                Verb = "runas"
+            };
+            try { Process.Start(si); }
+            catch (Win32Exception)
+            {
+                MessageBox.Show(string.Format(Resources.Server_ElevateSelf_The__0__was_not__1__because_you_did_not_allow_it_, DriverName, (arg == "/register" ? "registered" : "unregistered")), DriverName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(ex.ToString(), DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
-            return;
         }
 
         //
@@ -349,20 +302,17 @@ namespace ASCOM.Meade.net
                 //
                 // HKCR\APPID\exename.ext
                 //
-                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("APPID\\{0}",
-                            Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1))))
+                using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(
+                    $"APPID\\{Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)}"))
                 {
                     key.SetValue("AppID", _sAppId);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error while registering the server:\n{ex}",
-                    DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(string.Format(Resources.Server_RegisterObjects_, ex),
+                    DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 return;
-            }
-            finally
-            {
             }
 
             //
@@ -381,7 +331,7 @@ namespace ASCOM.Meade.net
                     //PWGS Generate device type from the Class name
                     string deviceType = type.Name;
 
-                    using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format("CLSID\\{0}", clsid)))
+                    using (RegistryKey key = Registry.ClassesRoot.CreateSubKey($"CLSID\\{clsid}"))
                     {
                         key.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
                         key.SetValue("AppId", _sAppId);
@@ -413,7 +363,7 @@ namespace ASCOM.Meade.net
                     //
                     // ASCOM 
                     //
-                    assy = type.Assembly;
+                    //assy = type.Assembly;
 
                     // Pull the display name from the ServedClassName attribute.
                     attr = Attribute.GetCustomAttribute(type, typeof(ServedClassNameAttribute)); //PWGS Changed to search type for attribute rather than assembly
@@ -426,13 +376,11 @@ namespace ASCOM.Meade.net
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error while registering the server:\n" + ex.ToString(),
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show(string.Format(Resources.Server_RegisterObjects_, ex),
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     bFail = true;
                 }
-                finally
-                {
-                }
+
                 if (bFail) break;
             }
         }
@@ -454,9 +402,9 @@ namespace ASCOM.Meade.net
             //
             // Local server's DCOM/AppID information
             //
-            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}", _sAppId), false);
-            Registry.ClassesRoot.DeleteSubKey(string.Format("APPID\\{0}",
-                    Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)), false);
+            Registry.ClassesRoot.DeleteSubKey($"APPID\\{_sAppId}", false);
+            Registry.ClassesRoot.DeleteSubKey(
+                $"APPID\\{Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)}", false);
 
             //
             // For each of the driver assemblies
@@ -472,17 +420,17 @@ namespace ASCOM.Meade.net
                 //
                 // HKCR\progid
                 //
-                Registry.ClassesRoot.DeleteSubKey(String.Format("{0}\\CLSID", progid), false);
+                Registry.ClassesRoot.DeleteSubKey($"{progid}\\CLSID", false);
                 Registry.ClassesRoot.DeleteSubKey(progid, false);
                 //
                 // HKCR\CLSID\clsid
                 //
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Implemented Categories\\{{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}}", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Implemented Categories", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\ProgId", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\LocalServer32", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}\\Programmable", clsid), false);
-                Registry.ClassesRoot.DeleteSubKey(String.Format("CLSID\\{0}", clsid), false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Implemented Categories\\{{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}}", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Implemented Categories", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\ProgId", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\LocalServer32", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}\\Programmable", false);
+                Registry.ClassesRoot.DeleteSubKey($"CLSID\\{clsid}", false);
                 try
                 {
                     //
@@ -494,7 +442,10 @@ namespace ASCOM.Meade.net
                         p.Unregister(progid);
                     }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
         }
         #endregion
@@ -505,7 +456,7 @@ namespace ASCOM.Meade.net
         // that we serve. This requires the class facgtory name to be
         // equal to the served class name + "ClassFactory".
         //
-        private static bool RegisterClassFactories()
+        private static void RegisterClassFactories()
         {
             _sClassFactories = new ArrayList();
             foreach (Type type in _sComObjectTypes)
@@ -514,13 +465,12 @@ namespace ASCOM.Meade.net
                 _sClassFactories.Add(factory);
                 if (!factory.RegisterClassObject())
                 {
-                    MessageBox.Show("Failed to register class factory for " + type.Name,
-                        DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    return false;
+                    MessageBox.Show(string.Format(Resources.Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_, type.Name),
+                        DriverName, MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    return;
                 }
             }
             ClassFactory.ResumeClassObjects();                                  // Served objects now go live
-            return true;
         }
 
         private static void RevokeClassFactories()
@@ -570,8 +520,9 @@ namespace ASCOM.Meade.net
                         break;
 
                     default:
-                        MessageBox.Show("Unknown argument: " + args[0] + "\nValid are : -register, -unregister and -embedding",
-                            DRIVER_NAME, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        MessageBox.Show(
+                            string.Format(Resources.Server_ProcessArguments_, args[0]),
+                            DriverName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
             }
@@ -610,9 +561,11 @@ namespace ASCOM.Meade.net
             RegisterClassFactories();
 
             // Start up the garbage collection thread.
-            GarbageCollection garbageCollector = new GarbageCollection(1000);
-            Thread gcThread = new Thread(new ThreadStart(garbageCollector.GcWatch));
-            gcThread.Name = "Garbage Collection Thread";
+            var garbageCollector = new GarbageCollection(1000);
+            var gcThread = new Thread(garbageCollector.GcWatch)
+            {
+                Name = "Garbage Collection Thread"
+            };
             gcThread.Start();
 
             //

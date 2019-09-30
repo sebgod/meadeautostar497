@@ -124,4 +124,13 @@
   <data name="DefaultIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\ASCOM.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Telescope_SelectSite_Site_cannot_be_lower_than_1" xml:space="preserve">
+    <value>Site cannot be lower than 1</value>
+  </data>
+  <data name="Telescope_SelectSite_Site_cannot_be_higher_than_4" xml:space="preserve">
+    <value>Site cannot be higher than 4</value>
+  </data>
+  <data name="Telescope_GetSiteName_Site_out_of_range" xml:space="preserve">
+    <value>Site out of range</value>
+  </data>
 </root>

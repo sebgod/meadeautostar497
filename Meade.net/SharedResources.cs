@@ -13,9 +13,11 @@
 // Written by:	Bob Denny	29-May-2007
 // Modified by Chris Rowland and Peter Simpson to hamdle multiple hardware devices March 2011
 //
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
+using System.Windows.Forms;
 using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
@@ -59,12 +61,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Shared serial port
         /// </summary>
-        public static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
-
-        /// <summary>
-        /// number of connections to the shared serial port
-        /// </summary>
-        public static int Connections { get; set; } = 0;
+        private static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
 
         public static void SendBlind(string message)
         {
@@ -73,12 +70,6 @@ namespace ASCOM.Meade.net
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
             }
-        }
-
-        public static bool SendBool(string message)
-        {
-            SharedSerial.ClearBuffers();
-            return SendChar(message) == "1";
         }
 
         /// <summary>
@@ -117,45 +108,12 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static string ReadCharacters(int throwAwayCharacters)
+        public static void ReadCharacters(int throwAwayCharacters)
         {
             lock (LockObject)
             {
-                return SharedSerial.ReceiveCounted(throwAwayCharacters);
+                SharedSerial.ReceiveCounted(throwAwayCharacters);
             }
-        }
-
-        /// <summary>
-        /// Example of handling connecting to and disconnection from the
-        /// shared serial port.
-        /// Needs error handling
-        /// the port name etc. needs to be set up first, this could be done by the driver
-        /// checking Connected and if it's false setting up the port before setting connected to true.
-        /// It could also be put here.
-        /// </summary>
-        public static bool Connected
-        {
-            set
-            {
-                lock (LockObject)
-                {
-                    if (value)
-                    {
-                        if (Connections == 0)
-                            SharedSerial.Connected = true;
-                        Connections++;
-                    }
-                    else
-                    {
-                        Connections--;
-                        if (Connections <= 0)
-                        {
-                            SharedSerial.Connected = false;
-                        }
-                    }
-                }
-            }
-            get => SharedSerial.Connected;
         }
 
         #endregion
@@ -179,7 +137,7 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
-                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString());
+                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                 }
             }
@@ -214,14 +172,6 @@ namespace ASCOM.Meade.net
 
         public static void SetupDialog()
         {
-            // consider only showing the setup dialog if not connected
-            // or call a different dialog if connected
-            if (Connections > 0)
-            {
-                System.Windows.Forms.MessageBox.Show("Already connected, please disconnect before altering settings");
-                return;
-            }
-
             var profileProperties = ReadProfile();
 
             using (SetupDialogForm f = new SetupDialogForm())
@@ -234,7 +184,7 @@ namespace ASCOM.Meade.net
                 }
 
                 var result = f.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == DialogResult.OK)
                 {
                     profileProperties = f.GetProfile();
 
@@ -264,9 +214,9 @@ namespace ASCOM.Meade.net
         /// The Key is the connection number that identifies the device, it could be the COM port name,
         /// USB ID or IP Address, the Value is the DeviceHardware class
         /// </summary>
-        private static readonly Dictionary<string, DeviceHardware> _connectedDevices = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
-        private static readonly Dictionary<string, DeviceHardware> _connectedDeviceIds = new Dictionary<string, DeviceHardware>();
+        private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
 
 
         /// <summary>
@@ -274,21 +224,22 @@ namespace ASCOM.Meade.net
         /// it add the device id to the list of devices if it's not there and increments the device count.
         /// </summary>
         /// <param name="deviceId"></param>
+        /// <param name="driverId"></param>
         public static ConnectionInfo Connect(string deviceId, string driverId)
         {
             lock (LockObject)
             {
-                if (!_connectedDevices.ContainsKey(deviceId))
-                    _connectedDevices.Add(deviceId, new DeviceHardware());
-                _connectedDevices[deviceId].Count++; // increment the value
+                if (!ConnectedDevices.ContainsKey(deviceId))
+                    ConnectedDevices.Add(deviceId, new DeviceHardware());
+                ConnectedDevices[deviceId].Count++; // increment the value
 
-                if (!_connectedDeviceIds.ContainsKey(driverId))
-                    _connectedDeviceIds.Add(driverId, new DeviceHardware());
-                _connectedDeviceIds[driverId].Count++; // increment the value
+                if (!ConnectedDeviceIds.ContainsKey(driverId))
+                    ConnectedDeviceIds.Add(driverId, new DeviceHardware());
+                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
-                    if (_connectedDevices[deviceId].Count == 1)
+                    if (ConnectedDevices[deviceId].Count == 1)
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
@@ -308,8 +259,8 @@ namespace ASCOM.Meade.net
 
                 return new ConnectionInfo
                 {
-                    Connections = _connectedDevices[deviceId].Count,
-                    SameDevice = _connectedDeviceIds[driverId].Count
+                    Connections = ConnectedDevices[deviceId].Count,
+                    SameDevice = ConnectedDeviceIds[driverId].Count
                 };
             }
         }
@@ -318,12 +269,12 @@ namespace ASCOM.Meade.net
         {
             lock (LockObject)
             {
-                if (_connectedDevices.ContainsKey(deviceId))
+                if (ConnectedDevices.ContainsKey(deviceId))
                 {
-                    _connectedDevices[deviceId].Count--;
-                    if (_connectedDevices[deviceId].Count <= 0)
+                    ConnectedDevices[deviceId].Count--;
+                    if (ConnectedDevices[deviceId].Count <= 0)
                     {
-                        _connectedDevices.Remove(deviceId);
+                        ConnectedDevices.Remove(deviceId);
                         if (deviceId == "Serial")
                         {
                             SharedSerial.Connected = false;
@@ -331,30 +282,22 @@ namespace ASCOM.Meade.net
                     }
                 }
 
-                if (_connectedDeviceIds.ContainsKey(driverId))
+                if (ConnectedDeviceIds.ContainsKey(driverId))
                 {
-                    _connectedDeviceIds[driverId].Count--;
+                    ConnectedDeviceIds[driverId].Count--;
                 }
             }
         }
 
-        public static bool IsConnected()
+        private static bool IsConnected()
         {
-            foreach (var device in _connectedDevices)
+            foreach (var device in ConnectedDevices)
             {
                 if (device.Value.Count > 0)
                     return true;
             }
 
             return false;
-        }
-
-        public static bool IsConnected(string deviceId)
-        {
-            if (_connectedDevices.ContainsKey(deviceId))
-                return (_connectedDevices[deviceId].Count > 0);
-            else
-                return false;
         }
 
         #endregion
@@ -379,46 +322,14 @@ namespace ASCOM.Meade.net
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
         /// in reality extra code will be needed to handle the hardware in some way
         /// </summary>
-        public class DeviceHardware
+        private class DeviceHardware
         {
-            private int _count;
-
-            internal int Count
-            {
-                set => _count = value;
-                get => _count;
-            }
+            internal int Count { set; get; }
 
             internal DeviceHardware()
             {
                 Count = 0;
             }
         }
-
-        //#region ServedClassName attribute
-        ///// <summary>
-        ///// This is only needed if the driver is targeted at  platform 5.5, it is included with Platform 6
-        ///// </summary>
-        //[global::System.AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-        //public sealed class ServedClassNameAttribute : Attribute
-        //{
-        //    // See the attribute guidelines at 
-        //    //  http://go.microsoft.com/fwlink/?LinkId=85236
-
-        //    /// <summary>
-        //    /// Gets or sets the 'friendly name' of the served class, as registered with the ASCOM Chooser.
-        //    /// </summary>
-        //    /// <value>The 'friendly name' of the served class.</value>
-        //    public string DisplayName { get; private set; }
-        //    /// <summary>
-        //    /// Initializes a new instance of the <see cref="ServedClassNameAttribute"/> class.
-        //    /// </summary>
-        //    /// <param name="servedClassName">The 'friendly name' of the served class.</param>
-        //    public ServedClassNameAttribute(string servedClassName)
-        //    {
-        //        DisplayName = servedClassName;
-        //    }
-        //}
-        //#endregion
     }
 }

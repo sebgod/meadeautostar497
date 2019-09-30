@@ -69,5 +69,71 @@ namespace ASCOM.Meade.net.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} was not {1} because you did not allow it..
+        /// </summary>
+        internal static string Server_ElevateSelf_The__0__was_not__1__because_you_did_not_allow_it_ {
+            get {
+                return ResourceManager.GetString("Server_ElevateSelf_The__0__was_not__1__because_you_did_not_allow_it_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load served COM class assembly {0} - {1}.
+        /// </summary>
+        internal static string Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_ {
+            get {
+                return ResourceManager.GetString("Server_LoadComObjectAssemblies_Failed_to_load_served_COM_class_assembly__0_____1_" +
+                        "", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown argument: {0}
+        ///Valid are : -register, -unregister and -embedding.
+        /// </summary>
+        internal static string Server_ProcessArguments_ {
+            get {
+                return ResourceManager.GetString("Server_ProcessArguments_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to register class factory for {0}.
+        /// </summary>
+        internal static string Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_ {
+            get {
+                return ResourceManager.GetString("Server_RegisterClassFactories_Failed_to_register_class_factory_for__0_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while registering the server:
+        ///{0}.
+        /// </summary>
+        internal static string Server_RegisterObjects_ {
+            get {
+                return ResourceManager.GetString("Server_RegisterObjects_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Settings ({1}).
+        /// </summary>
+        internal static string SetupDialogForm_SetupDialogForm__0__Settings___1__ {
+            get {
+                return ResourceManager.GetString("SetupDialogForm_SetupDialogForm__0__Settings___1__", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ({0:00.0}% of sidereal rate).
+        /// </summary>
+        internal static string SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_ {
+            get {
+                return ResourceManager.GetString("SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_", resourceCulture);
+            }
+        }
     }
 }
