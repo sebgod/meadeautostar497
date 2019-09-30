@@ -64,7 +64,7 @@ namespace ASCOM.Meade.net
         private static int _objsInUse;                       // Keeps a count on the total number of objects alive.
         private static int _serverLocks;                     // Keeps a lock count on this application.
         private static FrmMain _sMainForm;               // Reference to our main form
-        private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
+        //private static ArrayList _sComObjectAssys;              // Dynamically loaded assemblies containing served COM objects
         private static ArrayList _sComObjectTypes;              // Served COM object types
         private static ArrayList _sClassFactories;              // Served COM object class factories
         private static string _sAppId = "{4e68ec46-5ffc-49e7-b298-38a548df0bfd}";	// Our AppId
@@ -169,7 +169,7 @@ namespace ASCOM.Meade.net
         //
         private static bool LoadComObjectAssemblies()
         {
-            _sComObjectAssys = new ArrayList();
+            //_sComObjectAssys = new ArrayList();
             _sComObjectTypes = new ArrayList();
 
             // put everything into one folder, the same as the server.
@@ -200,7 +200,7 @@ namespace ASCOM.Meade.net
                         {
                             //MessageBox.Show("Adding Type: " + type.Name + " " + type.FullName);
                             _sComObjectTypes.Add(type); //PWGS - much simpler
-                            _sComObjectAssys.Add(so);
+                            //_sComObjectAssys.Add(so);
                         }
                     }
                 }
