@@ -365,7 +365,7 @@ namespace ASCOM.Meade.net
         {
             _sharedResourcesWrapper.Lock(() =>
             {
-                //_sharedResourcesWrapper.SendBlind(":FF#");
+                //_sharedResourcesWrapper.SendBlind("#:FF#");
                 //:FF# Set Focus speed to fastest setting
                 //Returns: Nothing
 
@@ -382,7 +382,7 @@ namespace ASCOM.Meade.net
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {
-                    _sharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
+                    _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
                     //:F+# Start Focuser moving inward (toward objective)
                     //Returns: None
 
