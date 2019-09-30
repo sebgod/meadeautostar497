@@ -481,7 +481,7 @@ namespace ASCOM.Meade.net
             return comparison >= 0;
         }
 
-        public bool IsLongFormat { get; private set; }
+        private bool IsLongFormat { get; set; }
 
         public void SetLongFormat(bool setLongFormat)
         {
