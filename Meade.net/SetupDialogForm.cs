@@ -55,9 +55,7 @@ namespace ASCOM.Meade.net
             chkTrace.Checked = profileProperties.TraceLogger;
             // set the list of com ports to those that are currently available
             comboBoxComPort.Items.Clear();
-            var portNames = SerialPort.GetPortNames().ToArray();
-
-            comboBoxComPort.Items.AddRange(portNames); // use System.IO because it's static
+            comboBoxComPort.Items.AddRange(SerialPort.GetPortNames().ToArray<object>()); // use System.IO because it's static
             // select the current port if possible
             if (comboBoxComPort.Items.Contains(profileProperties.ComPort))
             {
