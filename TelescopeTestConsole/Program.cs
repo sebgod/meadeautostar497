@@ -13,7 +13,7 @@ using ASCOM.DriverAccess;
 
 namespace ASCOM.Meade.net
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {

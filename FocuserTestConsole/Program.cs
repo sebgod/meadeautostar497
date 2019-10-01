@@ -14,7 +14,7 @@ using ASCOM.DriverAccess;
 
 namespace ASCOM.MeadeGeneric
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {
