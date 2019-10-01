@@ -1290,56 +1290,57 @@ namespace ASCOM.Meade.net
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _movingPrimary = false;
-                        _sharedResourcesWrapper.SendBlind("#:Qe#");
-                        //:Qe# Halt eastward Slews
-                        //Returns: Nothing
-                        _sharedResourcesWrapper.SendBlind("#:Qw#");
-                        //:Qw# Halt westward Slews
-                        //Returns: Nothing
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapper.SendBlind("#:Me#");
-                        //:Me# Move Telescope East at current slew rate
-                        //Returns: Nothing
-                        _movingPrimary = true;
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapper.SendBlind("#:Mw#");
-                        //:Mw# Move Telescope West at current slew rate
-                        //Returns: Nothing
-                        _movingPrimary = true;
-                    }
+                        case ComparisonResult.Equals:
+                            _movingPrimary = false;
+                            _sharedResourcesWrapper.SendBlind("#:Qe#");
+                            //:Qe# Halt eastward Slews
+                            //Returns: Nothing
+                            _sharedResourcesWrapper.SendBlind("#:Qw#");
+                            //:Qw# Halt westward Slews
+                            //Returns: Nothing
+                            break;
+                        case ComparisonResult.Greater:
 
+                            _sharedResourcesWrapper.SendBlind("#:Me#");
+                            //:Me# Move Telescope East at current slew rate
+                            //Returns: Nothing
+                            _movingPrimary = true;
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapper.SendBlind("#:Mw#");
+                            //:Mw# Move Telescope West at current slew rate
+                            //Returns: Nothing
+                            _movingPrimary = true;
+                            break;
+                    }
                     break;
                 case TelescopeAxes.axisSecondary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _movingSecondary = false;
-                        _sharedResourcesWrapper.SendBlind("#:Qn#");
-                        //:Qn# Halt northward Slews
-                        //Returns: Nothing
-                        _sharedResourcesWrapper.SendBlind("#:Qs#");
-                        //:Qs# Halt southward Slews
-                        //Returns: Nothing
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapper.SendBlind("#:Mn#");
-                        //:Mn# Move Telescope North at current slew rate
-                        //Returns: Nothing
-                        _movingSecondary = true;
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapper.SendBlind("#:Ms#");
-                        //:Ms# Move Telescope South at current slew rate
-                        //Returns: Nothing
-                        _movingSecondary = true;
+                        case ComparisonResult.Equals:
+                            _movingSecondary = false;
+                            _sharedResourcesWrapper.SendBlind("#:Qn#");
+                            //:Qn# Halt northward Slews
+                            //Returns: Nothing
+                            _sharedResourcesWrapper.SendBlind("#:Qs#");
+                            //:Qs# Halt southward Slews
+                            //Returns: Nothing
+                            break;
+                        case ComparisonResult.Greater:
+                            _sharedResourcesWrapper.SendBlind("#:Mn#");
+                            //:Mn# Move Telescope North at current slew rate
+                            //Returns: Nothing
+                            _movingSecondary = true;
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapper.SendBlind("#:Ms#");
+                            //:Ms# Move Telescope South at current slew rate
+                            //Returns: Nothing
+                            _movingSecondary = true;
+                            break;
+
                     }
 
                     break;
@@ -1857,7 +1858,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("SlewToTargetAsync");
 
-            if (TargetDeclination == InvalidParameter || TargetRightAscension == InvalidParameter)
+            if (TargetDeclination.Equals(InvalidParameter) || TargetRightAscension.Equals(InvalidParameter))
                 throw new InvalidOperationException("No target selected to slew to.");
 
             DoSlewAsync(true);
@@ -1938,7 +1939,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                if (_targetDeclination == InvalidParameter)
+                if (_targetDeclination.Equals(InvalidParameter))
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated("#:Gd#", "#");
@@ -1993,7 +1994,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                if (_targetRightAscension == InvalidParameter)
+                if (_targetRightAscension.Equals(InvalidParameter))
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated("#:Gr#", "#");

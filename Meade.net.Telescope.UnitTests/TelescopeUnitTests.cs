@@ -1154,33 +1154,33 @@ namespace Meade.net.Telescope.UnitTests
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qe#"), Times.Once);
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qw#"), Times.Once);
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Me#"), Times.Once);
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mw#"), Times.Once);
+                        case ComparisonResult.Equals:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qe#"), Times.Once);
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qw#"), Times.Once);
+                            break;
+                        case ComparisonResult.Greater:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Me#"), Times.Once);
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mw#"), Times.Once);
+                            break;
                     }
                     break;
                 case TelescopeAxes.axisSecondary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qn#"), Times.Once);
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qs#"), Times.Once);
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mn#"), Times.Once);
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Ms#"), Times.Once);
+                        case ComparisonResult.Equals:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qn#"), Times.Once);
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qs#"), Times.Once);
+                            break;
+                        case ComparisonResult.Greater:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mn#"), Times.Once);
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Ms#"), Times.Once);
+                            break;
                     }
                     break;
                 default:
