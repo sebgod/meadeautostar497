@@ -259,7 +259,7 @@ namespace ASCOM.Meade.net
 
                 return new ConnectionInfo
                 {
-                    Connections = ConnectedDevices[deviceId].Count,
+                    //Connections = ConnectedDevices[deviceId].Count,
                     SameDevice = ConnectedDeviceIds[driverId].Count
                 };
             }

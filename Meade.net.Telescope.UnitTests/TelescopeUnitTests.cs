@@ -49,7 +49,11 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( func => func());
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>(func => func());
 
-            _connectionInfo = new ConnectionInfo {Connections = 1, SameDevice = 1};
+            _connectionInfo = new ConnectionInfo
+            {
+                //Connections = 1,
+                SameDevice = 1
+            };
 
             _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>())).Returns( () => _connectionInfo );
 
@@ -831,7 +835,7 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.Precision = desiredPresision;
 
             _connectionInfo.SameDevice = 2;
-            _connectionInfo.Connections = 2;
+            //_connectionInfo.Connections = 2;
 
             _telescope.Connected = true;
 
