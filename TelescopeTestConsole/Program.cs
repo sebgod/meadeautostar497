@@ -13,9 +13,9 @@ using ASCOM.DriverAccess;
 
 namespace ASCOM.Meade.net
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
             // Uncomment the code that's required
 #if UseChooser

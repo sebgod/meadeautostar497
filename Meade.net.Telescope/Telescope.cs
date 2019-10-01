@@ -42,7 +42,7 @@ namespace ASCOM.Meade.net
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Telescope";
-        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
 
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>

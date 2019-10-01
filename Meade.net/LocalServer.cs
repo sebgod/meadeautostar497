@@ -175,6 +175,8 @@ namespace ASCOM.Meade.net
             // put everything into one folder, the same as the server.
             string assyPath = Assembly.GetEntryAssembly().Location;
             assyPath = Path.GetDirectoryName(assyPath);
+            if (assyPath == null)
+                throw new System.InvalidOperationException();
 
             DirectoryInfo d = new DirectoryInfo(assyPath);
             foreach (FileInfo fi in d.GetFiles("*.dll"))
