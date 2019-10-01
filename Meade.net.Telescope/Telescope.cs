@@ -552,12 +552,7 @@ namespace ASCOM.Meade.net
 
         public void SelectSite(int site)
         {
-            CheckConnected("SelectSite");
-
-            if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site),site,Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
-            if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
+            CheckConnectedAndValidateSite(site, "SelectSite");
 
             _sharedResourcesWrapper.SendBlind($"#:W{site}#");
             //:W<n>#
@@ -565,14 +560,21 @@ namespace ASCOM.Meade.net
             //Returns: Nothing
         }
 
-        private void SetSiteName(int site, string sitename)
+        private void CheckConnectedAndValidateSite(int site, string message)
         {
-            CheckConnected("SetSiteName");
+            CheckConnected(message);
 
             if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
+                throw new ArgumentOutOfRangeException(nameof(site), site,
+                    Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
             if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
+                throw new ArgumentOutOfRangeException(nameof(site), site,
+                    Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
+        }
+
+        private void SetSiteName(int site, string sitename)
+        {
+            CheckConnectedAndValidateSite(site, "SetSiteName");
 
             string command = String.Empty;
             switch (site)
@@ -609,7 +611,8 @@ namespace ASCOM.Meade.net
                     //0 – Invalid
                     //1 - Valid
                     break;
-
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_GetSiteName_Site_out_of_range);
             }
 
             var result = _sharedResourcesWrapper.SendChar(command);
@@ -621,12 +624,7 @@ namespace ASCOM.Meade.net
 
         private string GetSiteName(int site)
         {
-            CheckConnected("GetSiteName");
-
-            if (site < 1)
-                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_lower_than_1);
-            if (site > 4)
-                throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_SelectSite_Site_cannot_be_higher_than_4);
+            CheckConnectedAndValidateSite(site, "GetSiteName");
 
             switch (site)
             {
@@ -650,9 +648,9 @@ namespace ASCOM.Meade.net
                     //:GP# Get Site 4 Name
                     //Returns: <string>#
                     //A ‘#’ terminated string with the name of the requested site.
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_GetSiteName_Site_out_of_range);
             }
-
-            throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_GetSiteName_Site_out_of_range);
         }
 
         public string Description
