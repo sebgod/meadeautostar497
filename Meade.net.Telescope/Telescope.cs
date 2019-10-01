@@ -576,7 +576,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnectedAndValidateSite(site, "SetSiteName");
 
-            string command = String.Empty;
+            string command;
             switch (site)
             {
                 case 1:
