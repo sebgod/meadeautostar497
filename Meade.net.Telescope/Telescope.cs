@@ -1368,6 +1368,12 @@ namespace ASCOM.Meade.net
             LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
             CheckConnected("PulseGuide");
 
+            var coordinatesBeforeMove = new EquatorialCoordinates
+            {
+                RightAscension = RightAscension,
+                Declination = Declination
+            };
+
             string d = string.Empty;
             switch (direction)
             {
@@ -1428,6 +1434,14 @@ namespace ASCOM.Meade.net
                     //Returns: Nothing
                 });
             }
+
+            var coordinatesAfterMove = new EquatorialCoordinates
+            {
+                RightAscension = RightAscension,
+                Declination = Declination
+            };
+
+            LogMessage("PulseGuide", $"Complete - RA change: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.RightAscension - coordinatesAfterMove.RightAscension)} Dec change: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.Declination - coordinatesBeforeMove.Declination)}");
         }
 
         public double RightAscension
