@@ -25,7 +25,7 @@
       <![CDATA[Installed OR ASCOMPLATFORMVERSION >= "6.4.1"]]>
     </Condition>
 
-    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+    <PropertyRef Id="NETFRAMEWORK45"/>
     <Condition Message="This application requires .NET Framework 4.5 or higher. Please install the .NET Framework then run this installer again.">
       <![CDATA[Installed OR NETFRAMEWORK45]]>
     </Condition>
