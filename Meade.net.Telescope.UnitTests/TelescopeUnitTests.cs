@@ -348,6 +348,9 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(false)]
         public void Connected_Get_ReturnsExpectedValue(bool expectedConnected)
         {
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns("P");
+
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
             _telescope.Connected = expectedConnected;
@@ -366,6 +369,10 @@ namespace Meade.net.Telescope.UnitTests
         {
             var productName = TelescopeList.LX200GPS;
             var firmware = string.Empty;
+
+
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns("P");
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
@@ -409,6 +416,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns("P");
+
             ConnectTelescope();
             _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
@@ -804,6 +814,9 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("Low", true, false)]
         public void Precision_Set_WhenConnectedAndPrecisionSetHighScopeIsLow_ThenTelescopePrecisionChanged(string desiredPresision, bool telescopePrecision, bool finalPrecision)
         {
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns("P");
+
             _profileProperties.Precision = desiredPresision;
             var currentPrecision = telescopePrecision;
 

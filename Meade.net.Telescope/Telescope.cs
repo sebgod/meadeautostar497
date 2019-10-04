@@ -388,6 +388,10 @@ namespace ASCOM.Meade.net
                             if (connectionInfo.SameDevice == 1)
                             {
                                 LogMessage("Connected Set", "Making first connection telescope adjustments");
+
+                                AlignmentModes alignmode = AlignmentMode;
+                                LogMessage("Connected Set", alignmode.ToString());
+
                                 //These settings are applied only when the first device connects to the telescope.
                                 SetLongFormat(true);
 
