@@ -847,17 +847,22 @@ namespace ASCOM.Meade.net
                 UtcDateTime = UTCDate,
                 SiteLongitude = SiteLongitude,
                 SiteLatitude = SiteLatitude,
-                EquatorialCoordinates = new EquatorialCoordinates
-                {
-                    RightAscension = RightAscension,
-                    Declination = Declination
-                }
+                EquatorialCoordinates = GetTelescopeRaAndDec()
             });
 
             double hourAngle = _astroMaths.RightAscensionToHourAngle(altitudeData.UtcDateTime, altitudeData.SiteLongitude,
                 altitudeData.EquatorialCoordinates.RightAscension);
             var altAz = _astroMaths.ConvertEqToHoz(hourAngle, altitudeData.SiteLatitude, altitudeData.EquatorialCoordinates);
             return altAz;
+        }
+
+        private EquatorialCoordinates GetTelescopeRaAndDec()
+        {
+            return new EquatorialCoordinates
+            {
+                RightAscension = RightAscension,
+                Declination = Declination
+            };
         }
 
         public double ApertureArea
@@ -1368,13 +1373,7 @@ namespace ASCOM.Meade.net
             LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
             CheckConnected("PulseGuide");
 
-            var coordinatesBeforeMove = new EquatorialCoordinates
-            {
-                RightAscension = RightAscension,
-                Declination = Declination
-            };
-
-            
+            var coordinatesBeforeMove = GetTelescopeRaAndDec();
 
             if (_userNewerPulseGuiding && duration < 10000)
             {
@@ -1464,13 +1463,10 @@ namespace ASCOM.Meade.net
                 //});
             }
 
-            var coordinatesAfterMove = new EquatorialCoordinates
-            {
-                RightAscension = RightAscension,
-                Declination = Declination
-            };
+            var coordinatesAfterMove = GetTelescopeRaAndDec();
 
-            LogMessage("PulseGuide", $"Complete - RA change: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.RightAscension - coordinatesAfterMove.RightAscension)} Dec change: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.Declination - coordinatesBeforeMove.Declination)}");
+            LogMessage("PulseGuide", $"Complete Before RA: {_utilitiesExtra.HoursToHMS(coordinatesBeforeMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesBeforeMove.Declination)}");
+            LogMessage("PulseGuide", $"Complete Before RA: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesAfterMove.Declination)}");
         }
 
         public double RightAscension
