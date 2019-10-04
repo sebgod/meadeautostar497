@@ -1374,25 +1374,27 @@ namespace ASCOM.Meade.net
                 Declination = Declination
             };
 
-            string d = string.Empty;
-            switch (direction)
-            {
-                case GuideDirections.guideEast:
-                    d = "e";
-                    break;
-                case GuideDirections.guideNorth:
-                    d = "n";
-                    break;
-                case GuideDirections.guideSouth:
-                    d = "s";
-                    break;
-                case GuideDirections.guideWest:
-                    d = "w";
-                    break;
-            }
+            
 
             if (_userNewerPulseGuiding && duration < 10000)
             {
+                string d = string.Empty;
+                switch (direction)
+                {
+                    case GuideDirections.guideEast:
+                        d = "e";
+                        break;
+                    case GuideDirections.guideNorth:
+                        d = "n";
+                        break;
+                    case GuideDirections.guideSouth:
+                        d = "s";
+                        break;
+                    case GuideDirections.guideWest:
+                        d = "w";
+                        break;
+                }
+
                 LogMessage("PulseGuide", "Using new pulse guiding technique");
                 _sharedResourcesWrapper.SendBlind($"#:Mg{d}{duration:0000}#");
                 //:MgnDDDD#
@@ -1407,32 +1409,59 @@ namespace ASCOM.Meade.net
             }
             else
             {
-                LogMessage("PulseGuide", "Using old pulse guiding technique");
-                _sharedResourcesWrapper.Lock(() =>
+                string d = string.Empty;
+                switch (direction)
                 {
-                    _sharedResourcesWrapper.SendBlind("#:RG#"); //Make sure we are at guide rate
-                    //:RG# Set Slew rate to Guiding Rate (slowest)
-                    //Returns: Nothing
-                    _sharedResourcesWrapper.SendBlind($"#:M{d}#");
-                    //:Me# Move Telescope East at current slew rate
-                    //Returns: Nothing
-                    //:Mn# Move Telescope North at current slew rate
-                    //Returns: Nothing
-                    //:Ms# Move Telescope South at current slew rate
-                    //Returns: Nothing
-                    //:Mw# Move Telescope West at current slew rate
-                    //Returns: Nothing
-                    _utilities.WaitForMilliseconds(duration);
-                    _sharedResourcesWrapper.SendBlind($"#:Q{d}#");
-                    //:Qe# Halt eastward Slews
-                    //Returns: Nothing
-                    //:Qn# Halt northward Slews
-                    //Returns: Nothing
-                    //:Qs# Halt southward Slews
-                    //Returns: Nothing
-                    //:Qw# Halt westward Slews
-                    //Returns: Nothing
-                });
+                    case GuideDirections.guideEast:
+                        MoveAxis(TelescopeAxes.axisPrimary, 1);
+                        _utilities.WaitForMilliseconds(duration);
+                        MoveAxis(TelescopeAxes.axisPrimary, 0);
+                        break;
+                    case GuideDirections.guideNorth:
+                        MoveAxis(TelescopeAxes.axisSecondary, 1);
+                        _utilities.WaitForMilliseconds(duration);
+                        MoveAxis(TelescopeAxes.axisSecondary, 0);
+                        break;
+                    case GuideDirections.guideSouth:
+                        MoveAxis(TelescopeAxes.axisSecondary, -1);
+                        _utilities.WaitForMilliseconds(duration);
+                        MoveAxis(TelescopeAxes.axisSecondary, 0);
+                        break;
+                    case GuideDirections.guideWest:
+                        MoveAxis(TelescopeAxes.axisPrimary, -1);
+                        _utilities.WaitForMilliseconds(duration);
+                        MoveAxis(TelescopeAxes.axisPrimary, 0);
+                        break;
+                }
+
+                
+
+                //LogMessage("PulseGuide", "Using old pulse guiding technique");
+                //_sharedResourcesWrapper.Lock(() =>
+                //{
+                //    _sharedResourcesWrapper.SendBlind("#:RG#"); //Make sure we are at guide rate
+                //    //:RG# Set Slew rate to Guiding Rate (slowest)
+                //    //Returns: Nothing
+                //    _sharedResourcesWrapper.SendBlind($"#:M{d}#");
+                //    //:Me# Move Telescope East at current slew rate
+                //    //Returns: Nothing
+                //    //:Mn# Move Telescope North at current slew rate
+                //    //Returns: Nothing
+                //    //:Ms# Move Telescope South at current slew rate
+                //    //Returns: Nothing
+                //    //:Mw# Move Telescope West at current slew rate
+                //    //Returns: Nothing
+                //    _utilities.WaitForMilliseconds(duration);
+                //    _sharedResourcesWrapper.SendBlind($"#:Q{d}#");
+                //    //:Qe# Halt eastward Slews
+                //    //Returns: Nothing
+                //    //:Qn# Halt northward Slews
+                //    //Returns: Nothing
+                //    //:Qs# Halt southward Slews
+                //    //Returns: Nothing
+                //    //:Qw# Halt westward Slews
+                //    //Returns: Nothing
+                //});
             }
 
             var coordinatesAfterMove = new EquatorialCoordinates
@@ -1451,7 +1480,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("RightAscension Get");
                 var result = _sharedResourcesWrapper.SendString("#:GR#");
                 //:GR# Get Telescope RA
-                //Returns: HH: MM.T# or HH:MM:SS#
+                //Returns: HH:MM.T# or HH:MM:SS#
                 //Depending which precision is set for the telescope
 
                 double rightAscension = _utilities.HMSToHours(result);
