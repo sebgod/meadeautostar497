@@ -389,9 +389,6 @@ namespace ASCOM.Meade.net
                             {
                                 LogMessage("Connected Set", "Making first connection telescope adjustments");
 
-                                AlignmentModes alignmode = AlignmentMode;
-                                LogMessage("Connected Set", alignmode.ToString());
-
                                 //These settings are applied only when the first device connects to the telescope.
                                 SetLongFormat(true);
 
@@ -401,6 +398,10 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
+
+                                var raAndDec = GetTelescopeRaAndDec();
+
+                                LogMessage("Connected Set", $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
                             }
                             else
                             {
@@ -492,7 +493,10 @@ namespace ASCOM.Meade.net
             IsLongFormat = false;
 
             if (!IsLongFormatSupported())
+            {
+                LogMessage("SetLongFormat", "Long coordinate format not supported for this mount");
                 return;
+            }
 
             _sharedResourcesWrapper.Lock(() =>
             {
@@ -513,6 +517,8 @@ namespace ASCOM.Meade.net
                     //    Returns Nothing
                 }
             });
+
+            LogMessage("SetLongFormat", $"Long coordinate format: {setLongFormat} ");
         }
 
         private bool TogglePrecision()
