@@ -398,15 +398,14 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
-
-                                var raAndDec = GetTelescopeRaAndDec();
-
-                                LogMessage("Connected Set", $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
                             }
                             else
                             {
                                 LogMessage("Connected Set", $"Skipping first connection telescope adjustments (current connections: {connectionInfo.SameDevice})");
                             }
+
+                            var raAndDec = GetTelescopeRaAndDec();
+                            LogMessage("Connected Set", $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
                         }
                         catch (Exception)
                         {
