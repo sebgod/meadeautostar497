@@ -231,11 +231,9 @@ namespace ASCOM.Meade.net
             {
                 if (!ConnectedDevices.ContainsKey(deviceId))
                     ConnectedDevices.Add(deviceId, new DeviceHardware());
-                ConnectedDevices[deviceId].Count++; // increment the value
-
+                
                 if (!ConnectedDeviceIds.ContainsKey(driverId))
                     ConnectedDeviceIds.Add(driverId, new DeviceHardware());
-                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
@@ -252,10 +250,31 @@ namespace ASCOM.Meade.net
                         SharedSerial.Handshake = SerialHandshake.None;
                         SharedSerial.Connected = true;
 
-                        ProductName = SendString(":GVP#");
-                        FirmwareVersion = SendString(":GVN#");
+                        try
+                        {
+                            ProductName = SendString(":GVP#");
+                            FirmwareVersion = SendString(":GVN#");
+                        }
+                        catch (TimeoutException)
+                        {
+                            ProductName = TelescopeList.LX200CLASSIC;
+                            FirmwareVersion = "Unknown";
+                        }
+
+                        if (ProductName == ":GVP")
+                        {
+                            //This means that the serial port is looping back what's been sent, something is very wrong.
+                            SharedSerial.Connected = false;
+
+                            throw new Exception("Serial port is looping back data, something is wrong with the hardware.");
+                        }
                     }
                 }
+                else
+                    throw new ArgumentException($"deviceId {deviceId} not currently supported");
+
+                ConnectedDevices[deviceId].Count++; // increment the value
+                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 return new ConnectionInfo
                 {

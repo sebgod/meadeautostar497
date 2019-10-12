@@ -27,7 +27,7 @@
 
         #region LX200EMC
         // ReSharper disable once InconsistentNaming
-        public static readonly string LX200CLASSIC = ":GVP"; //GVP command is not supported!
+        public static readonly string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!
         #endregion
     }
 }
