@@ -237,7 +237,7 @@ namespace ASCOM.Meade.net
 
                 if (deviceId == "Serial")
                 {
-                    if (ConnectedDevices[deviceId].Count == 1)
+                    if (ConnectedDevices[deviceId].Count == 0)
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
