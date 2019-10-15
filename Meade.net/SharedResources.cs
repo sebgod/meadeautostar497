@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
 using ASCOM.Utilities;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
 {
@@ -36,7 +37,7 @@ namespace ASCOM.Meade.net
         private static readonly object LockObject = new object();
 
         // Shared serial port. This will allow multiple drivers to use one single serial port.
-        private static Serial _sSharedSerial; // Shared serial port
+        private static ISerial _sSharedSerial; // Shared serial port
 
         //
         // Public access to shared resources
@@ -59,9 +60,13 @@ namespace ASCOM.Meade.net
         //
 
         /// <summary>
-        /// Shared serial port
+        /// Shared serial port. Do not directly access this method.
         /// </summary>
-        private static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
+        public static ISerial SharedSerial
+        {
+            get => _sSharedSerial ?? (_sSharedSerial = new Serial());
+            set => _sSharedSerial = value;
+        }
 
         public static void SendBlind(string message)
         {
