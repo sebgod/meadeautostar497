@@ -260,7 +260,7 @@ namespace ASCOM.Meade.net
                             ProductName = SendString(":GVP#");
                             FirmwareVersion = SendString(":GVN#");
                         }
-                        catch (TimeoutException)
+                        catch (Exception)
                         {
                             ProductName = TelescopeList.LX200CLASSIC;
                             FirmwareVersion = "Unknown";
