@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
 using ASCOM.Utilities.Interfaces;
 
@@ -66,6 +67,12 @@ namespace ASCOM.Meade.net
         {
             get => _sSharedSerial ?? (_sSharedSerial = new Serial());
             set => _sSharedSerial = value;
+        }
+
+        public static IProfileFactory ProfileFactory
+        {
+            get => _profileFactory ?? ( _profileFactory = new ProfileFactory());
+            set => _profileFactory = value;
         }
 
         public static void SendBlind(string message)
@@ -132,12 +139,12 @@ namespace ASCOM.Meade.net
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
-
+         
         public static void WriteProfile(ProfileProperties profileProperties)
         {
             lock (LockObject)
             {
-                using (Profile driverProfile = new Profile())
+                using (IProfileWrapper driverProfile = ProfileFactory.Create())
                 {
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
@@ -158,7 +165,7 @@ namespace ASCOM.Meade.net
             lock (LockObject)
             {
                 ProfileProperties profileProperties = new ProfileProperties();
-                using (Profile driverProfile = new Profile())
+                using (IProfileWrapper driverProfile = ProfileFactory.Create())
                 {
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
@@ -222,6 +229,7 @@ namespace ASCOM.Meade.net
         private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
         private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
+        private static IProfileFactory _profileFactory ;
 
 
         /// <summary>

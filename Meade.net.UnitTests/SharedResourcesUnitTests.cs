@@ -1,5 +1,7 @@
 ﻿
+using System.Globalization;
 using ASCOM.Meade.net;
+using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
 using Moq;
 using NUnit.Framework;
@@ -89,6 +91,69 @@ namespace Meade.net.UnitTests
             SharedResources.ReadCharacters(numberOfCharacters);
 
             _serialMock.Verify(x => x.ReceiveCounted(numberOfCharacters), Times.Once);
+        }
+
+        [Test]
+        public void WriteProfile_WhenCalled_WritesExpectedProfileSettings()
+        {
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            IProfileWrapper profeWrapper = profileWrapperMock.Object;
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            var profileProperties = new ProfileProperties();
+            profileProperties.TraceLogger = false;
+            profileProperties.ComPort = "TestComPort";
+
+
+            SharedResources.WriteProfile(profileProperties);
+
+            Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
+            profileWrapperMock.Verify( x => x.WriteValue(DriverId, "Trace Level", profileProperties.TraceLogger.ToString()), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "COM Port", profileProperties.ComPort), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guide Rate Arc Seconds Per Second", profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture)), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Precision", profileProperties.Precision), Times.Once);
+        }
+
+        [Test]
+        public void ReadProfile_WhenCalled_ReturnsExpectedDefaultValues()
+        {
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+        string ComPortDefault = "COM1";
+        string TraceStateDefault = "false";
+        string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+        string PrecisionDefault = "Unchanged";
+
+        Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault)).Returns(TraceStateDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault)).Returns(ComPortDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty, GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault)).Returns(PrecisionDefault);
+
+            IProfileWrapper profeWrapper = profileWrapperMock.Object;
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            var profileProperties = SharedResources.ReadProfile();
+
+            Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
+            Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
+            Assert.That(profileProperties.GuideRateArcSecondsPerSecond, Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
+            Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
+            Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
         }
     }
 }
