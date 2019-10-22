@@ -10,5 +10,18 @@ namespace ASCOM.Meade.net
                 return false;
             return true;
         }
+
+        public static ComparisonResult Compare(this double value, double comparison)
+        {
+            var result = value.CompareTo(comparison);
+
+            if (result < 0)
+                return ComparisonResult.Lower;
+
+            if (result == 0)
+                return ComparisonResult.Equals;
+
+            return ComparisonResult.Greater;
+        }
     }
 }

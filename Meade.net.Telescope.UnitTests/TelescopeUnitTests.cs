@@ -42,14 +42,18 @@ namespace Meade.net.Telescope.UnitTests
             _astroUtilsMock = new Mock<IAstroUtils>();
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GZ#")).Returns("DDD*MM’SS");
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() =>_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( func => func());
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>(func => func());
 
-            _connectionInfo = new ConnectionInfo {Connections = 1, SameDevice = 1};
+            _connectionInfo = new ConnectionInfo
+            {
+                //Connections = 1,
+                SameDevice = 1
+            };
 
             _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>())).Returns( () => _connectionInfo );
 
@@ -117,36 +121,36 @@ namespace Meade.net.Telescope.UnitTests
         public void Action_Handbox_ReadDisplay()
         {
             string expectedResult = "test result string";
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#")).Returns(expectedResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:ED#")).Returns(expectedResult);
             _telescope.Connected = true;
 
             
 
             var actualResult = _telescope.Action("handbox", "readdisplay");
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":ED#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:ED#"), Times.Once);
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
-        [TestCase("enter", ":EK13#")]
-        [TestCase("mode", ":EK9#")]
-        [TestCase("longMode", ":EK11#")]
-        [TestCase("goto", ":EK24#")]
-        [TestCase("0", ":EK48#")]
-        [TestCase("1", ":EK49#")]
-        [TestCase("2", ":EK50#")]
-        [TestCase("3", ":EK51#")]
-        [TestCase("4", ":EK52#")]
-        [TestCase("5", ":EK53#")]
-        [TestCase("6", ":EK54#")]
-        [TestCase("7", ":EK55#")]
-        [TestCase("8", ":EK56#")]
-        [TestCase("9", ":EK57#")]
-        [TestCase("up", ":EK94#")]
-        [TestCase("down", ":EK118#")]
-        [TestCase("back", ":EK87#")]
-        [TestCase("forward", ":EK69#")]
-        [TestCase("?", ":EK63#")]
+        [TestCase("enter", "#:EK13#")]
+        [TestCase("mode", "#:EK9#")]
+        [TestCase("longMode", "#:EK11#")]
+        [TestCase("goto", "#:EK24#")]
+        [TestCase("0", "#:EK48#")]
+        [TestCase("1", "#:EK49#")]
+        [TestCase("2", "#:EK50#")]
+        [TestCase("3", "#:EK51#")]
+        [TestCase("4", "#:EK52#")]
+        [TestCase("5", "#:EK53#")]
+        [TestCase("6", "#:EK54#")]
+        [TestCase("7", "#:EK55#")]
+        [TestCase("8", "#:EK56#")]
+        [TestCase("9", "#:EK57#")]
+        [TestCase("up", "#:EK94#")]
+        [TestCase("down", "#:EK118#")]
+        [TestCase("back", "#:EK87#")]
+        [TestCase("forward", "#:EK69#")]
+        [TestCase("?", "#:EK63#")]
         public void Action_Handbox_WhenCalling_ThenSendsAppropriateBlindCommands(string action, string expectedString)
         {
             ConnectTelescope();
@@ -167,7 +171,7 @@ namespace Meade.net.Telescope.UnitTests
             string parameters = $"select {site}";
             _telescope.Action("site", parameters);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:W{site}#"), Times.Once);
         }
 
         [TestCase("0")]
@@ -182,15 +186,15 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
 
-        [TestCase("1", ":GM#", "Home")]
-        [TestCase("2", ":GN#", "Club")]
-        [TestCase("3", ":GO#", "GPS")]
-        [TestCase("4", ":GP#", "Parents")]
+        [TestCase("1", "#:GM#", "Home")]
+        [TestCase("2", "#:GN#", "Club")]
+        [TestCase("3", "#:GO#", "GPS")]
+        [TestCase("4", "#:GP#", "Parents")]
         public void Action_Site_GetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
         {
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendString(telescopeCommand)).Returns(siteName);
+
+            ConnectTelescope();
 
             string parameters = $"GetName {site}";
             var result = _telescope.Action("site", parameters);
@@ -211,15 +215,16 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
 
-        [TestCase("1", ":SMHome#", "Home")]
-        [TestCase("2", ":SNClub#", "Club")]
-        [TestCase("3", ":SOGPS Site#", "GPS Site")]
-        [TestCase("4", ":SPParents#", "Parents")]
+        [TestCase("1", "#:SMHome#", "Home")]
+        [TestCase("2", "#:SNClub#", "Club")]
+        [TestCase("3", "#:SOGPS Site#", "GPS Site")]
+        [TestCase("4", "#:SPParents#", "Parents")]
         public void Action_Site_SetName_WhenCallingWithValidValues_ThenSelectsCorrectSite(string site, string telescopeCommand, string siteName)
         {
-            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(telescopeCommand)).Returns("1");
+
+            ConnectTelescope();
 
             string parameters = $"SetName {site} {siteName}";
             _telescope.Action("site", parameters);
@@ -330,9 +335,9 @@ namespace Meade.net.Telescope.UnitTests
             string expectedMessage = "expected result message";
             string sendMessage = "test blind Message";
 
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage)).Returns(() => expectedMessage);
+
+            ConnectTelescope();
 
             var actualMessage = _telescope.CommandString(sendMessage, true);
 
@@ -352,8 +357,8 @@ namespace Meade.net.Telescope.UnitTests
 
             if (expectedConnected)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
             }
         }
         
@@ -368,9 +373,9 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Once);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
         }
 
         [Test]
@@ -384,8 +389,8 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#"), Times.Never);
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
         }
 
 
@@ -449,37 +454,37 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SetLongFormatFalse_WhenTelescopeReturnsShortFormat_ThenDoesNothing()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GZ#")).Returns("DDD*MM");
             _telescope.SetLongFormat(false);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"),Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:U#"),Times.Never);
         }
 
         [Test]
         public void SetLongFormatFalse_WhenTelescopeReturnsLongFormat_ThenTogglesPrecision()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GZ#")).Returns("DDD*MM’SS");
             _telescope.SetLongFormat(false);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:U#"), Times.Once);
         }
 
         [Test]
         public void SetLongFormatTrue_WhenTelescopeReturnsLongFormat_ThenDoesNothing()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM’SS");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GZ#")).Returns("DDD*MM’SS");
             _telescope.SetLongFormat(true);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:U#"), Times.Never);
         }
 
         [Test]
         public void SetLongFormatTrue_WhenTelescopeReturnsShortFormat_ThenTogglesPrecision()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GZ#")).Returns("DDD*MM");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GZ#")).Returns("DDD*MM");
             _telescope.SetLongFormat(true);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":U#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:U#"), Times.Once);
         }
 
         [Test]
@@ -521,7 +526,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.SelectSite(site);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":W{site}#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:W{site}#"), Times.Once);
         }
 
         [Test]
@@ -592,11 +597,11 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("G", AlignmentModes.algGermanPolar)]
         public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode)
         {
-            ConnectTelescope();
-
             const char ack = (char)6;
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns(telescopeMode);
 
+            ConnectTelescope();
+            
             var actualResult = _telescope.AlignmentMode;
             
             Assert.That(actualResult, Is.EqualTo(alignmentMode));
@@ -621,9 +626,9 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Set"));
         }
 
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algAltAz, ":AA#")]
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algPolar, ":AP#")]
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algGermanPolar, ":AP#")]
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algAltAz, "#:AA#")]
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algPolar, "#:AP#")]
+        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algGermanPolar, "#:AP#")]
         public void AlignmentMode_Set_WhenConnected_ThenSendsExpectedCommand(string productName, string firmware, AlignmentModes alignmentMode, string expectedCommand)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
@@ -791,7 +796,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":P#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString("#:P#"), Times.Never);
         }
 
         [TestCase("High", false, true)]
@@ -803,7 +808,7 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.Precision = desiredPresision;
             var currentPrecision = telescopePrecision;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":P#")).Returns(() =>
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:P#")).Returns(() =>
             {
                 currentPrecision = !currentPrecision;
 
@@ -819,7 +824,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             Assert.That(currentPrecision, Is.EqualTo(finalPrecision));
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.AtLeastOnce);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:P#"), Times.AtLeastOnce);
         }
 
         [TestCase("High", false, true)]
@@ -831,11 +836,11 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.Precision = desiredPresision;
 
             _connectionInfo.SameDevice = 2;
-            _connectionInfo.Connections = 2;
+            //_connectionInfo.Connections = 2;
 
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:P#"), Times.Never);
         }
 
         [Test]
@@ -942,13 +947,32 @@ namespace Meade.net.Telescope.UnitTests
         public void Declination_Get_WhenConnected_ThenReadsValueFromScope(string declincationString)
         {
             var expectedResult = 12.34;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GD#")).Returns(declincationString);
+            _utilMock.Setup(x => x.DMSToDegrees(declincationString)).Returns(expectedResult);
+
             ConnectTelescope();
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(declincationString);
-            _utilMock.Setup(x => x.DMSToDegrees(declincationString)).Returns(expectedResult);
-            
             var actualResult = _telescope.Declination;
             Assert.That(actualResult, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void Declination_Get_WhenConnected_ThenReturnsExpectedResult()
+        {
+            var telescopeRaResult = "s12*34’56";
+            var dmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GD#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeRaResult)).Returns(dmsResult);
+
+            ConnectTelescope();
+
+            var result = _telescope.Declination;
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GD#"), Times.Exactly(2));
+            _utilMock.Verify(x => x.DMSToDegrees(telescopeRaResult), Times.Exactly(2));
+
+            Assert.That(result, Is.EqualTo(dmsResult));
         }
 
         [Test]
@@ -1059,7 +1083,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.GuideRateDeclination = newGuideRate;
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Rg01.2#"), Times.Once);
 
             Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
         }
@@ -1092,7 +1116,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.GuideRateRightAscension = newGuideRate;
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Rg01.2#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Rg01.2#"), Times.Once);
 
             Assert.That(_telescope.GuideRateDeclination, Is.EqualTo(newGuideRate));
         }
@@ -1114,23 +1138,23 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [TestCase( 0, "", TelescopeAxes.axisPrimary)]
-        [TestCase( 1, ":RG#", TelescopeAxes.axisPrimary)]
-        [TestCase(-1, ":RG#", TelescopeAxes.axisPrimary)]
-        [TestCase( 2, ":RC#", TelescopeAxes.axisPrimary)]
-        [TestCase(-2, ":RC#", TelescopeAxes.axisPrimary)]
-        [TestCase( 3, ":RM#", TelescopeAxes.axisPrimary)]
-        [TestCase(-3, ":RM#", TelescopeAxes.axisPrimary)]
-        [TestCase( 4, ":RS#", TelescopeAxes.axisPrimary)]
-        [TestCase(-4, ":RS#", TelescopeAxes.axisPrimary)]
+        [TestCase( 1, "#:RG#", TelescopeAxes.axisPrimary)]
+        [TestCase(-1, "#:RG#", TelescopeAxes.axisPrimary)]
+        [TestCase( 2, "#:RC#", TelescopeAxes.axisPrimary)]
+        [TestCase(-2, "#:RC#", TelescopeAxes.axisPrimary)]
+        [TestCase( 3, "#:RM#", TelescopeAxes.axisPrimary)]
+        [TestCase(-3, "#:RM#", TelescopeAxes.axisPrimary)]
+        [TestCase( 4, "#:RS#", TelescopeAxes.axisPrimary)]
+        [TestCase(-4, "#:RS#", TelescopeAxes.axisPrimary)]
         [TestCase(0, "", TelescopeAxes.axisSecondary)]
-        [TestCase(1, ":RG#", TelescopeAxes.axisSecondary)]
-        [TestCase(-1, ":RG#", TelescopeAxes.axisSecondary)]
-        [TestCase(2, ":RC#", TelescopeAxes.axisSecondary)]
-        [TestCase(-2, ":RC#", TelescopeAxes.axisSecondary)]
-        [TestCase(3, ":RM#", TelescopeAxes.axisSecondary)]
-        [TestCase(-3, ":RM#", TelescopeAxes.axisSecondary)]
-        [TestCase(4, ":RS#", TelescopeAxes.axisSecondary)]
-        [TestCase(-4, ":RS#", TelescopeAxes.axisSecondary)]
+        [TestCase(1, "#:RG#", TelescopeAxes.axisSecondary)]
+        [TestCase(-1, "#:RG#", TelescopeAxes.axisSecondary)]
+        [TestCase(2, "#:RC#", TelescopeAxes.axisSecondary)]
+        [TestCase(-2, "#:RC#", TelescopeAxes.axisSecondary)]
+        [TestCase(3, "#:RM#", TelescopeAxes.axisSecondary)]
+        [TestCase(-3, "#:RM#", TelescopeAxes.axisSecondary)]
+        [TestCase(4, "#:RS#", TelescopeAxes.axisSecondary)]
+        [TestCase(-4, "#:RS#", TelescopeAxes.axisSecondary)]
         public void MoveAxis_WhenConnected_ThenExecutesCorrectCommandSequence(double rate, string slewRateCommand, TelescopeAxes axis)
         {
             ConnectTelescope();
@@ -1141,42 +1165,42 @@ namespace Meade.net.Telescope.UnitTests
                 _sharedResourcesWrapperMock.Verify( x => x.SendBlind(slewRateCommand), Times.Once);
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RC#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RM#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RS#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RG#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RC#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RM#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RS#"), Times.Never);
             }
 
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qe#"), Times.Once);
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qw#"), Times.Once);
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Me#"), Times.Once);
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Mw#"), Times.Once);
+                        case ComparisonResult.Equals:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qe#"), Times.Once);
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qw#"), Times.Once);
+                            break;
+                        case ComparisonResult.Greater:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Me#"), Times.Once);
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mw#"), Times.Once);
+                            break;
                     }
                     break;
                 case TelescopeAxes.axisSecondary:
-                    if (rate == 0)
+                    switch (rate.Compare(0))
                     {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qn#"), Times.Once);
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Qs#"), Times.Once);
-                    }
-                    else if (rate > 0)
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Mn#"), Times.Once);
-                    }
-                    else
-                    {
-                        _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":Ms#"), Times.Once);
+                        case ComparisonResult.Equals:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qn#"), Times.Once);
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Qs#"), Times.Once);
+                            break;
+                        case ComparisonResult.Greater:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Mn#"), Times.Once);
+                            break;
+                        case ComparisonResult.Lower:
+                            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:Ms#"), Times.Once);
+                            break;
                     }
                     break;
                 default:
@@ -1221,11 +1245,11 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
             Assert.That(_telescope.AtPark, Is.False);
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:hP#"), Times.Never);
 
             _telescope.Park();
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:hP#"), Times.Once);
             Assert.That(_telescope.AtPark, Is.True);
         }
 
@@ -1236,7 +1260,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.Park();
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:hP#"), Times.Once);
             Assert.That(_telescope.AtPark, Is.True);
 
 
@@ -1244,7 +1268,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Park();
 
             //no change from previous state.
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":hP#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:hP#"), Times.Once);
             Assert.That(_telescope.AtPark, Is.True);
         }
 
@@ -1283,7 +1307,7 @@ namespace Meade.net.Telescope.UnitTests
                     break;
             }
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Mg{d}{duration:0000}#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Mg{d}{duration:0000}#"));
             _utilMock.Verify( x => x.WaitForMilliseconds(duration), Times.Once);
         }
 
@@ -1317,10 +1341,10 @@ namespace Meade.net.Telescope.UnitTests
                     break;
             }
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"));
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":M{d}#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RG#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:M{d}#"));
             _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Q{d}#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Q{d}#"));
         }
 
         [TestCase(GuideDirections.guideEast)]
@@ -1353,10 +1377,10 @@ namespace Meade.net.Telescope.UnitTests
                     break;
             }
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":RG#"));
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":M{d}#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:RG#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:M{d}#"));
             _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Q{d}#"));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Q{d}#"));
         }
 
         [Test]
@@ -1376,15 +1400,15 @@ namespace Meade.net.Telescope.UnitTests
             var telescopeRaResult = "HH:MM:SS";
             var hmsResult = 1.2;
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GR#")).Returns(telescopeRaResult);
             _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
 
+            ConnectTelescope();
+            
             var result = _telescope.RightAscension;
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":GR#"), Times.Once);
-            _utilMock.Verify( x => x.HMSToHours(telescopeRaResult), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString("#:GR#"), Times.Exactly(2));
+            _utilMock.Verify( x => x.HMSToHours(telescopeRaResult), Times.Exactly(2));
 
             Assert.That(result,Is.EqualTo(hmsResult));
         }
@@ -1505,13 +1529,14 @@ namespace Meade.net.Telescope.UnitTests
             var siteLatitudeString = "testLatString";
             var siteLatitudeValue = 123.45;
 
-            ConnectTelescope();
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gt#")).Returns(siteLatitudeString);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:Gt#")).Returns(siteLatitudeString);
             _utilMock.Setup(x => x.DMSToDegrees(siteLatitudeString)).Returns(siteLatitudeValue);
+
+            ConnectTelescope();
 
             var result = _telescope.SiteLatitude;
             
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":Gt#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString("#:Gt#"), Times.Once);
 
             Assert.That(result,Is.EqualTo(siteLatitudeValue));
         }
@@ -1545,22 +1570,22 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(20.75)]
         public void SiteLatitude_Set_WhenValueSetAndTelescopRejects_ThenExceptionThrown(double siteLatitude)
         {
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLatitude = siteLatitude; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
         }
 
-        [TestCase(-10.5, ":St-10*30#")]
-        [TestCase(20.75, ":St+20*45#")]
+        [TestCase(-10.5, "#:St-10*30#")]
+        [TestCase(20.75, "#:St+20*45#")]
         public void SiteLatitude_Set_WhenValidValues_ThenValueSentToTelescope(double siteLatitude, string expectedCommand)
         {
-            ConnectTelescope();
-            
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.SiteLatitude = siteLatitude;
 
@@ -1588,10 +1613,10 @@ namespace Meade.net.Telescope.UnitTests
         {
             var telescopeLongitude = "testLongitude";
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:Gg#")).Returns(telescopeLongitude);
             _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
+
+            ConnectTelescope();
 
             var result = _telescope.SiteLongitude;
 
@@ -1626,20 +1651,21 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
             ConnectTelescope();
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLongitude = 10; });
             Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
         }
 
-        [TestCase(10, ":Sg350*00#")]
+        [TestCase(10, "#:Sg350*00#")]
         public void SiteLongitude_Set_WhenConnectedAndTelescopeFails_ThenThrowsException(double longitude, string expectedCommand)
         {
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(expectedCommand)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.SiteLongitude = longitude;
 
@@ -1666,26 +1692,26 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenSyncToTargetFails_ThenThrowsException()
         {
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:CM#")).Returns(string.Empty);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(string.Empty);
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SyncToTarget(); } );
 
             Assert.That(exception.Message, Is.EqualTo("Unable to perform sync"));
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":CM#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:CM#"), Times.Once);
         }
 
         [Test]
         public void SyncToTarget_WhenSyncToTargetWorks_ThennoExceptionThrown()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:CM#")).Returns(" M31 EX GAL MAG 3.5 SZ178.0'#");
+
             ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(" M31 EX GAL MAG 3.5 SZ178.0'#");
-
+            
             Assert.DoesNotThrow(() => { _telescope.SyncToTarget(); });
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":CM#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:CM#"), Times.Once);
         }
 
         [Test]
@@ -1716,24 +1742,25 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenTelescopeReportsInvalidDec_ThenThrowsException()
         {
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetDeclination = 50; });
             Assert.That(exception.Message, Is.EqualTo("Target declination invalid"));
         }
 
-        [TestCase(-30.5, "-30*30:00", ":Sd-30*30:00#")]
-        [TestCase(30.5, "30*30:00", ":Sd+30*30:00#")]
-        [TestCase(-75.25, "-75*15:00", ":Sd-75*15:00#")]
-        [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
+        [TestCase(-30.5, "-30*30:00", "#:Sd-30*30:00#")]
+        [TestCase(30.5, "30*30:00", "#:Sd+30*30:00#")]
+        [TestCase(-75.25, "-75*15:00", "#:Sd-75*15:00#")]
+        [TestCase(50, "50*00:00", "#:Sd+50*00:00#")]
         public void TargetDeclination_Set_WhenValueOK_ThenSetsNewTargetDeclination( double declination,string decstring, string commandString)
         {
-            ConnectTelescope();
 
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.TargetDeclination = declination;
 
@@ -1753,13 +1780,13 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
         }
 
-        [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
+        [TestCase(50, "50*00:00", "#:Sd+50*00:00#")]
         public void TargetDeclination_Get_WhenValueOK_ThenSetsNewTargetDeclination(double declination, string decstring, string commandString)
         {
-            ConnectTelescope();
-
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.TargetDeclination = declination;
 
@@ -1796,22 +1823,22 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenTelescopeReportsInvalidRA_ThenThrowsException()
         {
-            ConnectTelescope();
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(It.IsAny<string>())).Returns("0");
+
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetRightAscension = 1; });
             Assert.That(exception.Message, Is.EqualTo("Failed to set TargetRightAscension."));
         }
 
-        [TestCase(5.5, "05:30:00", ":Sr05:30:00#")]
-        [TestCase(10, "10:00:00", ":Sr10:00:00#")]
+        [TestCase(5.5, "05:30:00", "#:Sr05:30:00#")]
+        [TestCase(10, "10:00:00", "#:Sr10:00:00#")]
         public void TargetRightAscension_Set_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
-            ConnectTelescope();
-
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = rightAscension;
 
@@ -1831,13 +1858,13 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
         }
 
-        [TestCase(15, "15:00:00", ":Sr15:00:00#")]
+        [TestCase(15, "15:00:00", "#:Sr15:00:00#")]
         public void TargetRightAscension_Get_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
-            ConnectTelescope();
-
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
+
+            ConnectTelescope();
 
             _telescope.TargetRightAscension = rightAscension;
 
@@ -1868,8 +1895,8 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TrackingRate Set"));
         }
 
-        [TestCase(DriveRates.driveSidereal, ":TQ#")]
-        [TestCase(DriveRates.driveLunar, ":TL#")]
+        [TestCase(DriveRates.driveSidereal, "#:TQ#")]
+        [TestCase(DriveRates.driveLunar, "#:TL#")]
         public void TrackingRate_Set_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string commandString)
         {
             ConnectTelescope();
@@ -1937,11 +1964,11 @@ namespace Meade.net.Telescope.UnitTests
         public void UTCDate_Get_WhenConnected_ThenReturnsUTCDateTime(string telescopeDate, string telescopeTime,
             string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
         {
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GC#")).Returns(telescopeDate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GL#")).Returns(telescopeTime);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns(telescopeUtcCorrection);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns(telescopeDate);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns(telescopeTime);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
+            ConnectTelescope();
 
             var result = _telescope.UTCDate;
 
@@ -1972,10 +1999,10 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:SL{telescopeTime}#")).Returns("0");
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("0");
+            ConnectTelescope();
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; } );
 
@@ -1991,12 +2018,12 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:SC{newDate:MM/dd/yy}#")).Returns("0");
+
             ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{newDate:MM/dd/yy}#")).Returns("0");
-
+            
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; });
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
@@ -2013,11 +2040,11 @@ namespace Meade.net.Telescope.UnitTests
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns(telescopeUtcCorrection);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:SC{telescopeDate}#")).Returns("1");
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns(telescopeUtcCorrection);
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{telescopeDate}#")).Returns("1");
+            ConnectTelescope();
 
             _telescope.UTCDate = newDate;
 
@@ -2033,17 +2060,17 @@ namespace Meade.net.Telescope.UnitTests
             double declination = -30.5;
             string dec = "-30*30:00";
 
-            ConnectTelescope();
-
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{hms}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:Sr{hms}#")).Returns("1");
 
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(dec);
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sd{dec}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($"#:Sd{dec}#")).Returns("1");
 
+            ConnectTelescope();
+            
             _telescope.SyncToCoordinates(rightAscension, declination);
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":CM#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString("#:CM#"), Times.Once);
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
         }
@@ -2055,7 +2082,7 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(result, Is.False);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:D#"), Times.Never);
         }
 
         [Test]
@@ -2067,21 +2094,21 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(result, Is.False);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:D#"), Times.Once);
         }
 
         [Test]
         public void Slewing_WhenTelescopeIsSlewing_ThenReturnsTrue()
         {
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns("|");
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns("|");
+            ConnectTelescope();
 
             var result = _telescope.Slewing;
 
             Assert.That(result, Is.True);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"),Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:D#"),Times.Once);
         }
 
         [TestCase(1, TelescopeAxes.axisPrimary)]
@@ -2097,7 +2124,7 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.Slewing;
 
             Assert.That(result, Is.True);
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("#:D#"), Times.Never);
         }
 
 
@@ -2145,29 +2172,29 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetSetAndSlewIsPossible_ThenAttemptsSlew()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
             _telescope.SlewToTargetAsync();
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:MS#"), Times.Once);
         }
 
         [Test]
         public void SlewToTargetAsync_WhenTargetBelowHorizon_ThenThrowsException()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Below horizon");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("1");
-
-            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Below horizon");
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
             Assert.That(exception.Message, Is.EqualTo("Below horizon"));
@@ -2176,14 +2203,13 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetBelowElevation_ThenThrowsException()
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("2");
+            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Above below elevation");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("2");
-
-            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Above below elevation");
 
             var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
             Assert.That(exception.Message, Is.EqualTo("Above below elevation"));
@@ -2199,22 +2225,22 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
         {
-            ConnectTelescope();
-
-            _telescope.TargetRightAscension = 2;
-            _telescope.TargetDeclination = 1;
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
 
             var slewCounter = 0;
             var iterations = 10;
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns(() =>
             {
                 slewCounter++;
                 if (slewCounter <= iterations)
                     return "|";
                 return "";
             });
+
+            ConnectTelescope();
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
 
             _telescope.SlewToTarget();
 
@@ -2234,13 +2260,11 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 1;
             var declination = 2;
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
 
             //var slewCounter = 0;
             //var iterations = 10;
-            //_sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            //_sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns(() =>
             //{
             //    slewCounter++;
             //    if (slewCounter <= iterations)
@@ -2249,12 +2273,14 @@ namespace Meade.net.Telescope.UnitTests
             //        return "";
             //});
 
+            ConnectTelescope();
+
             _telescope.SlewToCoordinatesAsync(rightAscension, declination);
 
             //_utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
-            _sharedResourcesWrapperMock.Verify( x => x.SendChar(":MS#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendChar("#:MS#"), Times.Once);
         }
 
         [Test]
@@ -2270,13 +2296,11 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 1;
             var declination = 2;
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
 
             var slewCounter = 0;
             var iterations = 10;
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns(() =>
             {
                 slewCounter++;
                 if (slewCounter <= iterations)
@@ -2284,10 +2308,12 @@ namespace Meade.net.Telescope.UnitTests
                 return "";
             });
 
+            ConnectTelescope();
+
             _telescope.SlewToCoordinates(rightAscension, declination);
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:MS#"), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
@@ -2343,23 +2369,23 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 20;
             var declination = 10;
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns("-1.0");
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
                     It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = rightAscension });
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
+
+            ConnectTelescope();
 
             _telescope.SlewToAltAzAsync(azimuth, altitude);
             
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:MS#"), Times.Once);
         }
 
         [Test]
@@ -2377,21 +2403,19 @@ namespace Meade.net.Telescope.UnitTests
             var azimuth = 30;
             var altitude = 40;
 
-            ConnectTelescope();
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns("-1.0");
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
                     It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = rightAscension });
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("0");
 
             var slewCounter = 0;
             var iterations = 10;
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(() =>
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns(() =>
             {
                 slewCounter++;
                 if (slewCounter <= iterations)
@@ -2399,11 +2423,13 @@ namespace Meade.net.Telescope.UnitTests
                 return "";
             });
 
+            ConnectTelescope();
+            
             _telescope.SlewToAltAz( azimuth, altitude);
 
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
-            _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("#:MS#"), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
 
@@ -2431,21 +2457,21 @@ namespace Meade.net.Telescope.UnitTests
 
             var mockHourAngle = 3;
 
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns("-1.0");
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:Gg#")).Returns(telescopeLongitude);
             _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeLatitude);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GR#")).Returns(telescopeLatitude);
             _utilMock.Setup(x => x.HMSToHours(telescopeLatitude)).Returns(telescopeLatitudeValue);
 
             _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
 
-            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns( new HorizonCoordinates{ Altitude = 45, Azimuth = expectedAzimuth });
+            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = 45, Azimuth = expectedAzimuth });
+
+            ConnectTelescope();
 
             var result = _telescope.Azimuth;
 
@@ -2476,21 +2502,21 @@ namespace Meade.net.Telescope.UnitTests
 
             var mockHourAngle = 3;
 
-            ConnectTelescope();
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GC#")).Returns("10/15/20");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GL#")).Returns("20:15:10");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GG#")).Returns("-1.0");
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gg#")).Returns(telescopeLongitude);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:Gg#")).Returns(telescopeLongitude);
             _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeLatitude);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:GR#")).Returns(telescopeLatitude);
             _utilMock.Setup(x => x.HMSToHours(telescopeLatitude)).Returns(telescopeLatitudeValue);
 
             _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
 
             _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = expectedAltitude, Azimuth = 200 });
+
+            ConnectTelescope();
 
             var result = _telescope.Altitude;
 
@@ -2511,12 +2537,12 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.AbortSlew();
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":Q#"),Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendBlind("#:Q#"),Times.Once);
 
             var isSloSlewing = _telescope.Slewing;
 
             Assert.That(isSloSlewing, Is.False);
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":D#"), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString("#:D#"), Times.Once);
         }
     }
 }

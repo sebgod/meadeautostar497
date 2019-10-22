@@ -365,7 +365,7 @@ namespace ASCOM.Meade.net
         {
             _sharedResourcesWrapper.Lock(() =>
             {
-                //_sharedResourcesWrapper.SendBlind(":FF#");
+                //_sharedResourcesWrapper.SendBlind("#:FF#");
                 //:FF# Set Focus speed to fastest setting
                 //Returns: Nothing
 
@@ -382,7 +382,7 @@ namespace ASCOM.Meade.net
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < steps)
                 {
-                    _sharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
+                    _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
                     //:F+# Start Focuser moving inward (toward objective)
                     //Returns: None
 
@@ -451,6 +451,13 @@ namespace ASCOM.Meade.net
 
         #region ASCOM Registration
 
+        private static IProfileFactory _profileFactory;
+        public static IProfileFactory ProfileFactory
+        {
+            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
+            set => _profileFactory = value;
+        }
+
         // Register or unregister driver for ASCOM. This is harmless if already
         // registered or unregistered. 
         //
@@ -461,7 +468,7 @@ namespace ASCOM.Meade.net
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregAscom(bool bRegister)
         {
-            using (var p = new Profile())
+            using (IProfileWrapper p = ProfileFactory.Create())
             {
                 p.DeviceType = "Focuser";
                 if (bRegister)

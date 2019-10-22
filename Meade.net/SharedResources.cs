@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
 {
@@ -36,7 +38,7 @@ namespace ASCOM.Meade.net
         private static readonly object LockObject = new object();
 
         // Shared serial port. This will allow multiple drivers to use one single serial port.
-        private static Serial _sSharedSerial; // Shared serial port
+        private static ISerial _sSharedSerial; // Shared serial port
 
         //
         // Public access to shared resources
@@ -59,9 +61,19 @@ namespace ASCOM.Meade.net
         //
 
         /// <summary>
-        /// Shared serial port
+        /// Shared serial port. Do not directly access this method.
         /// </summary>
-        private static Serial SharedSerial => _sSharedSerial ?? (_sSharedSerial = new Serial());
+        public static ISerial SharedSerial
+        {
+            get => _sSharedSerial ?? (_sSharedSerial = new Serial());
+            set => _sSharedSerial = value;
+        }
+
+        public static IProfileFactory ProfileFactory
+        {
+            get => _profileFactory ?? ( _profileFactory = new ProfileFactory());
+            set => _profileFactory = value;
+        }
 
         public static void SendBlind(string message)
         {
@@ -127,12 +139,12 @@ namespace ASCOM.Meade.net
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
-
+         
         public static void WriteProfile(ProfileProperties profileProperties)
         {
             lock (LockObject)
             {
-                using (Profile driverProfile = new Profile())
+                using (IProfileWrapper driverProfile = ProfileFactory.Create())
                 {
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
@@ -153,7 +165,7 @@ namespace ASCOM.Meade.net
             lock (LockObject)
             {
                 ProfileProperties profileProperties = new ProfileProperties();
-                using (Profile driverProfile = new Profile())
+                using (IProfileWrapper driverProfile = ProfileFactory.Create())
                 {
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
@@ -217,6 +229,7 @@ namespace ASCOM.Meade.net
         private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
         private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
+        private static IProfileFactory _profileFactory ;
 
 
         /// <summary>
@@ -231,15 +244,13 @@ namespace ASCOM.Meade.net
             {
                 if (!ConnectedDevices.ContainsKey(deviceId))
                     ConnectedDevices.Add(deviceId, new DeviceHardware());
-                ConnectedDevices[deviceId].Count++; // increment the value
-
+                
                 if (!ConnectedDeviceIds.ContainsKey(driverId))
                     ConnectedDeviceIds.Add(driverId, new DeviceHardware());
-                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 if (deviceId == "Serial")
                 {
-                    if (ConnectedDevices[deviceId].Count == 1)
+                    if (ConnectedDevices[deviceId].Count == 0)
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
@@ -252,14 +263,35 @@ namespace ASCOM.Meade.net
                         SharedSerial.Handshake = SerialHandshake.None;
                         SharedSerial.Connected = true;
 
-                        ProductName = SendString(":GVP#");
-                        FirmwareVersion = SendString(":GVN#");
+                        try
+                        {
+                            ProductName = SendString(":GVP#");
+                            FirmwareVersion = SendString(":GVN#");
+                        }
+                        catch (Exception)
+                        {
+                            ProductName = TelescopeList.LX200CLASSIC;
+                            FirmwareVersion = "Unknown";
+                        }
+
+                        if (ProductName == ":GVP")
+                        {
+                            //This means that the serial port is looping back what's been sent, something is very wrong.
+                            SharedSerial.Connected = false;
+
+                            throw new Exception("Serial port is looping back data, something is wrong with the hardware.");
+                        }
                     }
                 }
+                else
+                    throw new ArgumentException($"deviceId {deviceId} not currently supported");
+
+                ConnectedDevices[deviceId].Count++; // increment the value
+                ConnectedDeviceIds[driverId].Count++; // increment the value
 
                 return new ConnectionInfo
                 {
-                    Connections = ConnectedDevices[deviceId].Count,
+                    //Connections = ConnectedDevices[deviceId].Count,
                     SameDevice = ConnectedDeviceIds[driverId].Count
                 };
             }

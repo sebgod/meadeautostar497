@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ASCOM.Meade.net</RootNamespace>
     <AssemblyName>ASCOM.Meade.net.Server</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -82,6 +82,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
@@ -133,10 +134,12 @@
     </Compile>
     <Compile Include="GarbageCollection.cs" />
     <Compile Include="LocalServer.cs" />
+    <Compile Include="ProfileFactory.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TelescopeList.cs" />
     <Compile Include="Win32Utilities.cs" />
+    <Compile Include="Wrapper\IProfileWrapper.cs" />
     <Compile Include="Wrapper\SharedResourcesWrapper.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <SubType>Designer</SubType>

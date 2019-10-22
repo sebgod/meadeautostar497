@@ -401,13 +401,13 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":F-#"), Times.AtLeastOnce);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify( x => x.SendBlind("#:F-#"), Times.AtLeastOnce);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Never);
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.AtLeastOnce);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F-#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.AtLeastOnce);
             }
 
             _sharedResourcesWrapperMock.Verify( x => x.Lock(It.IsAny<Action>()), Times.Once);

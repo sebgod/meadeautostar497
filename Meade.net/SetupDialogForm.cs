@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Ports;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Properties;
@@ -54,8 +55,7 @@ namespace ASCOM.Meade.net
             chkTrace.Checked = profileProperties.TraceLogger;
             // set the list of com ports to those that are currently available
             comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(SerialPort
-                .GetPortNames()); // use System.IO because it's static
+            comboBoxComPort.Items.AddRange(SerialPort.GetPortNames().ToArray<object>()); // use System.IO because it's static
             // select the current port if possible
             if (comboBoxComPort.Items.Contains(profileProperties.ComPort))
             {

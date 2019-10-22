@@ -2,6 +2,10 @@
   <Settings>
     <AllowParallelTestExecution>True</AllowParallelTestExecution>
     <CopyReferencedAssembliesToWorkspace>True</CopyReferencedAssembliesToWorkspace>
+    <MetricsExclusionList>
+      <Value>FocuserTestConsole\FocuserTestConsole.csproj</Value>
+      <Value>TelescopeTestConsole\TelescopeTestConsole.csproj</Value>
+    </MetricsExclusionList>
     <SolutionConfigured>True</SolutionConfigured>
   </Settings>
 </SolutionConfiguration>

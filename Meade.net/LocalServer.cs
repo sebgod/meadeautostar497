@@ -173,8 +173,10 @@ namespace ASCOM.Meade.net
             _sComObjectTypes = new ArrayList();
 
             // put everything into one folder, the same as the server.
-            string assyPath = Assembly.GetEntryAssembly().Location;
+            string assyPath = Assembly.GetEntryAssembly()?.Location;
             assyPath = Path.GetDirectoryName(assyPath);
+            if (assyPath == null)
+                throw new System.InvalidOperationException();
 
             DirectoryInfo d = new DirectoryInfo(assyPath);
             foreach (FileInfo fi in d.GetFiles("*.dll"))
@@ -295,9 +297,9 @@ namespace ASCOM.Meade.net
                 //
                 using (RegistryKey key = Registry.ClassesRoot.CreateSubKey("APPID\\" + _sAppId))
                 {
-                    key.SetValue(null, assyDescription);
-                    key.SetValue("AppID", _sAppId);
-                    key.SetValue("AuthenticationLevel", 1, RegistryValueKind.DWord);
+                    key?.SetValue(null, assyDescription);
+                    key?.SetValue("AppID", _sAppId);
+                    key?.SetValue("AuthenticationLevel", 1, RegistryValueKind.DWord);
                 }
                 //
                 // HKCR\APPID\exename.ext
@@ -305,7 +307,7 @@ namespace ASCOM.Meade.net
                 using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(
                     $"APPID\\{Application.ExecutablePath.Substring(Application.ExecutablePath.LastIndexOf('\\') + 1)}"))
                 {
-                    key.SetValue("AppID", _sAppId);
+                    key?.SetValue("AppID", _sAppId);
                 }
             }
             catch (Exception ex)
@@ -333,20 +335,20 @@ namespace ASCOM.Meade.net
 
                     using (RegistryKey key = Registry.ClassesRoot.CreateSubKey($"CLSID\\{clsid}"))
                     {
-                        key.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
-                        key.SetValue("AppId", _sAppId);
+                        key?.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
+                        key?.SetValue("AppId", _sAppId);
                         using (RegistryKey key2 = key.CreateSubKey("Implemented Categories"))
                         {
-                            key2.CreateSubKey("{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}");
+                            key2?.CreateSubKey("{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}");
                         }
                         using (RegistryKey key2 = key.CreateSubKey("ProgId"))
                         {
-                            key2.SetValue(null, progid);
+                            key2?.SetValue(null, progid);
                         }
                         key.CreateSubKey("Programmable");
                         using (RegistryKey key2 = key.CreateSubKey("LocalServer32"))
                         {
-                            key2.SetValue(null, Application.ExecutablePath);
+                            key2?.SetValue(null, Application.ExecutablePath);
                         }
                     }
                     //
@@ -354,10 +356,10 @@ namespace ASCOM.Meade.net
                     //
                     using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(progid))
                     {
-                        key.SetValue(null, assyTitle);
+                        key?.SetValue(null, assyTitle);
                         using (RegistryKey key2 = key.CreateSubKey("CLSID"))
                         {
-                            key2.SetValue(null, clsid);
+                            key2?.SetValue(null, clsid);
                         }
                     }
                     //

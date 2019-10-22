@@ -22,7 +22,7 @@ namespace ASCOM.Meade.net.AstroMaths
             return h;
         }
 
-        public double HourAngleToRightAscension(DateTime utcDateTime, double longitude, double hourAngle )
+        private double HourAngleToRightAscension(DateTime utcDateTime, double longitude, double hourAngle )
         {
             var gst = UTtoGst(utcDateTime);
             var lst = GsTtoLst( gst, longitude);
