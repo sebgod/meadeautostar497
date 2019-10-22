@@ -1,5 +1,4 @@
 ﻿using ASCOM.Meade.net.Wrapper;
-using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
 {

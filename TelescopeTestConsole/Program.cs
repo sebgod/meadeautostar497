@@ -58,26 +58,26 @@ namespace ASCOM.Meade.net
 
             var seconds = 10;
 
-            Console.WriteLine($"Slewing tests 10 second in each direction");
-            Console.WriteLine($"test 1");
+            Console.WriteLine("Slewing tests 10 second in each direction");
+            Console.WriteLine("test 1");
             device.MoveAxis(TelescopeAxes.axisPrimary, 4);
             Thread.Sleep(seconds * 1000);
             device.MoveAxis(TelescopeAxes.axisPrimary, 0);
-            Console.WriteLine($"test 2");
+            Console.WriteLine("test 2");
             device.MoveAxis(TelescopeAxes.axisPrimary, -4);
             Thread.Sleep(seconds * 1000);
             device.MoveAxis(TelescopeAxes.axisPrimary, 0);
 
-            Console.WriteLine($"test 3");
+            Console.WriteLine("test 3");
             device.MoveAxis(TelescopeAxes.axisSecondary, 4);
             Thread.Sleep(seconds * 1000);
             device.MoveAxis(TelescopeAxes.axisSecondary, 0);
 
-            Console.WriteLine($"test 4");
+            Console.WriteLine("test 4");
             device.MoveAxis(TelescopeAxes.axisSecondary, -4);
             Thread.Sleep(seconds * 1000);
             device.MoveAxis(TelescopeAxes.axisSecondary, 0);
-            Console.WriteLine($"Slewing tests complete");
+            Console.WriteLine("Slewing tests complete");
 
 
             seconds = 120;
@@ -89,7 +89,7 @@ namespace ASCOM.Meade.net
                 Console.WriteLine($"{direction.ToString()}");
                 device.PulseGuide(direction, seconds* 1000);
             }
-            Console.WriteLine($"Guiding Finished");
+            Console.WriteLine("Guiding Finished");
 
 
 

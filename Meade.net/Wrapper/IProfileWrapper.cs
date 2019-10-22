@@ -14,59 +14,59 @@ namespace ASCOM.Meade.net.Wrapper
     {
         private readonly Profile _profile = new Profile();
 
-        public ArrayList RegisteredDevices(string DeviceType)
+        public ArrayList RegisteredDevices(string deviceType)
         {
-            return _profile.RegisteredDevices(DeviceType);
+            return _profile.RegisteredDevices(deviceType);
         }
 
-        public bool IsRegistered(string DriverID)
+        public bool IsRegistered(string driverId)
         {
-            return _profile.IsRegistered(DriverID);
+            return _profile.IsRegistered(driverId);
         }
 
-        public void Register(string DriverID, string DescriptiveName)
+        public void Register(string driverId, string descriptiveName)
         {
-            _profile.Register(DriverID, DescriptiveName);
+            _profile.Register(driverId, descriptiveName);
         }
 
-        public void Unregister(string DriverID)
+        public void Unregister(string driverId)
         {
-            _profile.Unregister(DriverID);
+            _profile.Unregister(driverId);
         }
 
-        public string GetValue(string DriverID, string Name, string SubKey, string DefaultValue)
+        public string GetValue(string driverId, string name, string subKey, string defaultValue)
         {
-            return _profile.GetValue(DriverID, Name, SubKey, DefaultValue);
+            return _profile.GetValue(driverId, name, subKey, defaultValue);
         }
 
-        public void WriteValue(string DriverID, string Name, string Value, string SubKey)
+        public void WriteValue(string driverId, string name, string value, string subKey)
         {
-            _profile.WriteValue(DriverID, Name, Value);
+            _profile.WriteValue(driverId, name, value);
         }
 
-        public ArrayList Values(string DriverID, string SubKey)
+        public ArrayList Values(string driverId, string subKey)
         {
-            return _profile.Values(DriverID, SubKey);
+            return _profile.Values(driverId, subKey);
         }
 
-        public void DeleteValue(string DriverID, string Name, string SubKey)
+        public void DeleteValue(string driverId, string name, string subKey)
         {
-            _profile.DeleteValue(DriverID, Name, SubKey);
+            _profile.DeleteValue(driverId, name, subKey);
         }
 
-        public void CreateSubKey(string DriverID, string SubKey)
+        public void CreateSubKey(string driverId, string subKey)
         {
-            _profile.CreateSubKey(DriverID, SubKey);
+            _profile.CreateSubKey(driverId, subKey);
         }
 
-        public ArrayList SubKeys(string DriverID, string SubKey)
+        public ArrayList SubKeys(string driverId, string subKey)
         {
-            return _profile.SubKeys(DriverID, SubKey);
+            return _profile.SubKeys(driverId, subKey);
         }
 
-        public void DeleteSubKey(string DriverID, string SubKey)
+        public void DeleteSubKey(string driverId, string subKey)
         {
-            _profile.DeleteSubKey(DriverID, SubKey);
+            _profile.DeleteSubKey(driverId, subKey);
         }
 
         public string GetProfileXML(string deviceId)
@@ -86,49 +86,49 @@ namespace ASCOM.Meade.net.Wrapper
         }
         public ArrayList RegisteredDeviceTypes => _profile.RegisteredDeviceTypes;
 
-        public void MigrateProfile(string CurrentPlatformVersion)
+        public void MigrateProfile(string currentPlatformVersion)
         {
-            _profile.MigrateProfile(CurrentPlatformVersion);
+            _profile.MigrateProfile(currentPlatformVersion);
         }
 
-        public void DeleteValue(string DriverID, string Name)
+        public void DeleteValue(string driverId, string name)
         {
-            _profile.DeleteValue(DriverID, Name);
+            _profile.DeleteValue(driverId, name);
         }
 
-        public string GetValue(string DriverID, string Name)
+        public string GetValue(string driverId, string name)
         {
-            return _profile.GetValue(DriverID, Name);
+            return _profile.GetValue(driverId, name);
         }
 
-        public string GetValue(string DriverID, string Name, string SubKey)
+        public string GetValue(string driverId, string name, string subKey)
         {
-            return _profile.GetValue(DriverID, Name, SubKey);
+            return _profile.GetValue(driverId, name, subKey);
         }
 
-        public ArrayList SubKeys(string DriverID)
+        public ArrayList SubKeys(string driverId)
         {
-            return _profile.SubKeys(DriverID);
+            return _profile.SubKeys(driverId);
         }
 
-        public ArrayList Values(string DriverID)
+        public ArrayList Values(string driverId)
         {
-            return _profile.Values(DriverID);
+            return _profile.Values(driverId);
         }
 
-        public void WriteValue(string DriverID, string Name, string Value)
+        public void WriteValue(string driverId, string name, string value)
         {
-            _profile.WriteValue(DriverID, Name, Value);
+            _profile.WriteValue(driverId, name, value);
         }
 
-        public ASCOMProfile GetProfile(string DriverId)
+        public ASCOMProfile GetProfile(string driverId)
         {
-            return _profile.GetProfile(DriverId);
+            return _profile.GetProfile(driverId);
         }
 
-        public void SetProfile(string DriverId, ASCOMProfile XmlProfileKey)
+        public void SetProfile(string driverId, ASCOMProfile xmlProfileKey)
         {
-            _profile.SetProfile(DriverId, XmlProfileKey);
+            _profile.SetProfile(driverId, xmlProfileKey);
         }
 
         public void Dispose()

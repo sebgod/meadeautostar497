@@ -1417,7 +1417,6 @@ namespace ASCOM.Meade.net
             }
             else
             {
-                string d = string.Empty;
                 switch (direction)
                 {
                     case GuideDirections.guideEast:
@@ -1441,35 +1440,6 @@ namespace ASCOM.Meade.net
                         MoveAxis(TelescopeAxes.axisPrimary, 0);
                         break;
                 }
-
-                
-
-                //LogMessage("PulseGuide", "Using old pulse guiding technique");
-                //_sharedResourcesWrapper.Lock(() =>
-                //{
-                //    _sharedResourcesWrapper.SendBlind("#:RG#"); //Make sure we are at guide rate
-                //    //:RG# Set Slew rate to Guiding Rate (slowest)
-                //    //Returns: Nothing
-                //    _sharedResourcesWrapper.SendBlind($"#:M{d}#");
-                //    //:Me# Move Telescope East at current slew rate
-                //    //Returns: Nothing
-                //    //:Mn# Move Telescope North at current slew rate
-                //    //Returns: Nothing
-                //    //:Ms# Move Telescope South at current slew rate
-                //    //Returns: Nothing
-                //    //:Mw# Move Telescope West at current slew rate
-                //    //Returns: Nothing
-                //    _utilities.WaitForMilliseconds(duration);
-                //    _sharedResourcesWrapper.SendBlind($"#:Q{d}#");
-                //    //:Qe# Halt eastward Slews
-                //    //Returns: Nothing
-                //    //:Qn# Halt northward Slews
-                //    //Returns: Nothing
-                //    //:Qs# Halt southward Slews
-                //    //Returns: Nothing
-                //    //:Qw# Halt westward Slews
-                //    //Returns: Nothing
-                //});
             }
 
             var coordinatesAfterMove = GetTelescopeRaAndDec();

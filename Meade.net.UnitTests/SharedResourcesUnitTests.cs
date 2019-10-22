@@ -110,10 +110,11 @@ namespace Meade.net.UnitTests
 
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
-            var profileProperties = new ProfileProperties();
-            profileProperties.TraceLogger = false;
-            profileProperties.ComPort = "TestComPort";
-
+            var profileProperties = new ProfileProperties
+            {
+                TraceLogger = false,
+                ComPort = "TestComPort"
+            };
 
             SharedResources.WriteProfile(profileProperties);
 
@@ -246,10 +247,8 @@ namespace Meade.net.UnitTests
 
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
-            string serialPortReturn = string.Empty;
-
-            _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
-            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => { throw new Exception("Testerror"); });
+            _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => {  });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => throw new Exception("Testerror"));
 
             var connectionResult = SharedResources.Connect(deviceId, string.Empty);
             
