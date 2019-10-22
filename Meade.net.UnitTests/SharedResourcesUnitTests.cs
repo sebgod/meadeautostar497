@@ -255,6 +255,8 @@ namespace Meade.net.UnitTests
             
             Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
             Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200CLASSIC));
+
+            SharedResources.Disconnect(deviceId, String.Empty);
         }
 
         [Test]
@@ -300,6 +302,8 @@ namespace Meade.net.UnitTests
             Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
             Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.Autostar497));
             Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.Autostar497_43Eg));
+
+            SharedResources.Disconnect(deviceId, String.Empty);
         }
     }
 }
