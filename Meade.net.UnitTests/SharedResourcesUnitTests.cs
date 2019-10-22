@@ -199,8 +199,6 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
 
-            IProfileWrapper profeWrapper = profileWrapperMock.Object;
-
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
 
@@ -211,7 +209,7 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns( () => serialPortReturn);
 
-            var result = Assert.Throws<Exception>(() => { var connectionResult = SharedResources.Connect(deviceId, string.Empty); });
+            var result = Assert.Throws<Exception>(() => { SharedResources.Connect(deviceId, string.Empty); });
             Assert.That(result.Message, Is.EqualTo("Serial port is looping back data, something is wrong with the hardware."));
         }
 
@@ -239,8 +237,6 @@ namespace Meade.net.UnitTests
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
             profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
-
-            IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -282,8 +278,6 @@ namespace Meade.net.UnitTests
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
             profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
-
-            IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
