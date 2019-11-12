@@ -215,6 +215,17 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
 
+        [Test]
+        public void Action_Site_Count_WhenCalling_ThenReturnsFour()
+        {
+            ConnectTelescope();
+
+            string parameters = $"Count";
+            var result = _telescope.Action("site", parameters);
+
+            Assert.That(result, Is.EqualTo("4"));
+        }
+
         [TestCase("1", "#:SMHome#", "Home")]
         [TestCase("2", "#:SNClub#", "Club")]
         [TestCase("3", "#:SOGPS Site#", "GPS Site")]
