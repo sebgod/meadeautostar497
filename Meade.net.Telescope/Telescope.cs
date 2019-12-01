@@ -5,6 +5,8 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
 using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Astrometry.NOVAS;
@@ -79,15 +81,45 @@ namespace ASCOM.Meade.net
         /// </summary>
         public Telescope()
         {
-            //todo move this out to IOC
-            var util = new Util(); //Initialise util object
-            _utilities = util; 
-            _utilitiesExtra = util; //Initialise util object
-            _astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            _sharedResourcesWrapper = new SharedResourcesWrapper();
-            _astroMaths = new AstroMaths.AstroMaths();
+            try
+            {
+                //todo move this out to IOC
+                var util = new Util(); //Initialise util object
+                _utilities = util;
+                _utilitiesExtra = util; //Initialise util object
+                _astroUtilities = new AstroUtils(); // Initialise astro utilities object
+                _sharedResourcesWrapper = new SharedResourcesWrapper();
+                _astroMaths = new AstroMaths.AstroMaths();
 
-            Initialise();
+                Initialise();
+            }
+            catch (Exception e)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                var currentException = e;
+
+                while (currentException != null)
+                {
+                    AppendException(sb, currentException);
+
+                    currentException = currentException.InnerException;
+
+                    if (currentException != null)
+                        sb.AppendLine("-----");
+                }
+
+                MessageBox.Show(sb.ToString());
+                throw;
+            }
+        }
+
+        private void AppendException(StringBuilder sb, Exception currentException)
+        {
+            sb.AppendLine(currentException.Message);
+            sb.AppendLine();
+            sb.AppendLine(currentException.StackTrace);
+            sb.AppendLine();
         }
 
         public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths)

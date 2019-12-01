@@ -220,7 +220,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            string parameters = $"Count";
+            string parameters = "Count";
             var result = _telescope.Action("site", parameters);
 
             Assert.That(result, Is.EqualTo("4"));
