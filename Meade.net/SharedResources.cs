@@ -149,7 +149,7 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
-                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture));
+                    driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                 }
             }
@@ -170,7 +170,7 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
                     profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
-                    profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault));
+                    profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
                 }
 
