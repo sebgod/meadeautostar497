@@ -1360,6 +1360,29 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideWest)]
         [TestCase(GuideDirections.guideNorth)]
         [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenIsSlewingRespondsFalse(GuideDirections direction)
+        {
+            var duration = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
+
+            var isSlewing = true;
+            _utilMock.Setup(x => x.WaitForMilliseconds(duration)).Callback(() =>
+                {
+                    isSlewing = _telescope.Slewing;
+                });
+
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, duration);
+            
+            Assert.That(isSlewing, Is.False);
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
             var duration = 0;
