@@ -134,7 +134,8 @@ namespace ASCOM.Meade.net
         }
 
         private double _guideRate;
-        
+        private bool _isGuiding = false;
+
         private void Initialise()
         {
             //todo move the TraceLogger out to a factory class.
@@ -1415,6 +1416,15 @@ namespace ASCOM.Meade.net
             LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
             CheckConnected("PulseGuide");
 
+            if (IsSlewingToTarget())
+                throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
+
+            if (_movingPrimary && (direction == GuideDirections.guideEast || direction == GuideDirections.guideWest))
+                throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
+
+            if (_movingSecondary && (direction == GuideDirections.guideNorth || direction == GuideDirections.guideSouth))
+                throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
+
             var coordinatesBeforeMove = GetTelescopeRaAndDec();
 
             if (_userNewerPulseGuiding && duration < 10000)
@@ -1450,28 +1460,36 @@ namespace ASCOM.Meade.net
             }
             else
             {
-                switch (direction)
+                _isGuiding = true;
+                try
                 {
-                    case GuideDirections.guideEast:
-                        MoveAxis(TelescopeAxes.axisPrimary, 1);
-                        _utilities.WaitForMilliseconds(duration);
-                        MoveAxis(TelescopeAxes.axisPrimary, 0);
-                        break;
-                    case GuideDirections.guideNorth:
-                        MoveAxis(TelescopeAxes.axisSecondary, 1);
-                        _utilities.WaitForMilliseconds(duration);
-                        MoveAxis(TelescopeAxes.axisSecondary, 0);
-                        break;
-                    case GuideDirections.guideSouth:
-                        MoveAxis(TelescopeAxes.axisSecondary, -1);
-                        _utilities.WaitForMilliseconds(duration);
-                        MoveAxis(TelescopeAxes.axisSecondary, 0);
-                        break;
-                    case GuideDirections.guideWest:
-                        MoveAxis(TelescopeAxes.axisPrimary, -1);
-                        _utilities.WaitForMilliseconds(duration);
-                        MoveAxis(TelescopeAxes.axisPrimary, 0);
-                        break;
+                    switch (direction)
+                    {
+                        case GuideDirections.guideEast:
+                            MoveAxis(TelescopeAxes.axisPrimary, 1);
+                            _utilities.WaitForMilliseconds(duration);
+                            MoveAxis(TelescopeAxes.axisPrimary, 0);
+                            break;
+                        case GuideDirections.guideNorth:
+                            MoveAxis(TelescopeAxes.axisSecondary, 1);
+                            _utilities.WaitForMilliseconds(duration);
+                            MoveAxis(TelescopeAxes.axisSecondary, 0);
+                            break;
+                        case GuideDirections.guideSouth:
+                            MoveAxis(TelescopeAxes.axisSecondary, -1);
+                            _utilities.WaitForMilliseconds(duration);
+                            MoveAxis(TelescopeAxes.axisSecondary, 0);
+                            break;
+                        case GuideDirections.guideWest:
+                            MoveAxis(TelescopeAxes.axisPrimary, -1);
+                            _utilities.WaitForMilliseconds(duration);
+                            MoveAxis(TelescopeAxes.axisPrimary, 0);
+                            break;
+                    }
+                }
+                finally
+                {
+                    _isGuiding = false;
                 }
             }
 
@@ -1915,6 +1933,9 @@ namespace ASCOM.Meade.net
 
         private bool MovingAxis()
         {
+            if (_isGuiding)
+                return false;
+
             return _movingPrimary || _movingSecondary;
         }
 
@@ -1928,24 +1949,32 @@ namespace ASCOM.Meade.net
                 if (MovingAxis())
                     return true;
 
-                CheckConnected("Slewing Get");
-
-                var result = _sharedResourcesWrapper.SendString("#:D#");
-                //:D# Requests a string of bars indicating the distance to the current target location.
-                //Returns:
-                //LX200's – a string of bar characters indicating the distance.
-                //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
-
-                if (result == null)
-                {
-                    return false;
-                }
-
-                bool isSlewing = result != string.Empty;
-
-                LogMessage("Slewing Get", $"Result = {isSlewing}");
-                return isSlewing;
+                return IsSlewingToTarget();
             }
+        }
+
+        private bool IsSlewingToTarget()
+        {
+            CheckConnected("Slewing Get");
+
+            if (_isGuiding)
+                return false;
+
+            var result = _sharedResourcesWrapper.SendString("#:D#");
+            //:D# Requests a string of bars indicating the distance to the current target location.
+            //Returns:
+            //LX200's – a string of bar characters indicating the distance.
+            //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
+
+            if (result == null)
+            {
+                return false;
+            }
+
+            bool isSlewing = result != string.Empty;
+
+            LogMessage("Slewing Get", $"Result = {isSlewing}");
+            return isSlewing;
         }
 
         public void SyncToAltAz(double azimuth, double altitude)

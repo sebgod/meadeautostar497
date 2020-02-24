@@ -1326,6 +1326,63 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideWest)]
         [TestCase(GuideDirections.guideNorth)]
         [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenSlewingAndPulseGuideAttempted_ThenThrowsExpectedException(GuideDirections direction)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns("|");
+
+            var duration = 0;
+            ConnectTelescope();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.PulseGuide(direction, duration); });
+
+            Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide whilst slewing to target."));
+        }
+
+        [TestCase(GuideDirections.guideEast, TelescopeAxes.axisPrimary)]
+        [TestCase(GuideDirections.guideWest, TelescopeAxes.axisPrimary)]
+        [TestCase(GuideDirections.guideNorth, TelescopeAxes.axisSecondary)]
+        [TestCase(GuideDirections.guideSouth, TelescopeAxes.axisSecondary)]
+        public void PulseGuide_WhenMovingAxisAndPulseGuideAttempted_ThenThrowsExpectedException(GuideDirections direction, TelescopeAxes axes)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("#:D#")).Returns("");
+
+            var duration = 0;
+            ConnectTelescope();
+
+            _telescope.MoveAxis(axes, 1);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.PulseGuide(direction, duration); });
+
+            Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide while moving same axis."));
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenIsSlewingRespondsFalse(GuideDirections direction)
+        {
+            var duration = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
+
+            var isSlewing = true;
+            _utilMock.Setup(x => x.WaitForMilliseconds(duration)).Callback(() =>
+                {
+                    isSlewing = _telescope.Slewing;
+                });
+
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, duration);
+            
+            Assert.That(isSlewing, Is.False);
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
             var duration = 0;
