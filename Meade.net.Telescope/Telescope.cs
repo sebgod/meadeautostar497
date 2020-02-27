@@ -481,17 +481,26 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            if (_sharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+            switch (_guidingStyle)
             {
-                return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
-            }
+                case "guide rate slew":
+                    return false;
+                case "pulse guiding":
+                    return true;
 
-            if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-            {
-                return true;
-            }
+                default:
+                    if (_sharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+                    {
+                        return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
+                    }
 
-            return false;
+                    if (_sharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                    {
+                        return true;
+                    }
+
+                    return false;
+            }
         }
 
         private bool IsLongFormatSupported()
@@ -2131,6 +2140,7 @@ namespace ASCOM.Meade.net
 
         private DriveRates _trackingRate = DriveRates.driveSidereal;
         private string _precision;
+        private string _guidingStyle;
 
         public DriveRates TrackingRate
         {
@@ -2427,11 +2437,13 @@ namespace ASCOM.Meade.net
             _comPort = profileProperties.ComPort;
             _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
             _precision = profileProperties.Precision;
+            _guidingStyle = profileProperties.GuidingStyle.ToLower();
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");
             LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
             LogMessage("ReadProfile", $"Precision: {_precision}");
+            LogMessage("ReadProfile", $"Guiding Style: {_guidingStyle}");
         }
 
         private void WriteProfile()

@@ -71,6 +71,16 @@ namespace ASCOM.Meade.net
             {
                 cboPrecision.SelectedItem = "Unchanged";
             }
+
+            try
+            {
+                cboGuidingStyle.SelectedItem = profileProperties.GuidingStyle;
+            }
+            catch (Exception e)
+            {
+                cboGuidingStyle.SelectedItem = "Auto";
+            }
+
         }
 
     public ProfileProperties GetProfile()
@@ -80,7 +90,8 @@ namespace ASCOM.Meade.net
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
-                Precision = cboPrecision.SelectedItem.ToString()
+                Precision = cboPrecision.SelectedItem.ToString(),
+                GuidingStyle = cboGuidingStyle.SelectedItem.ToString()
             };
 
             return profileProperties;

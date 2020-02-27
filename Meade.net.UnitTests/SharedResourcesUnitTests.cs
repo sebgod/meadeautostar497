@@ -123,6 +123,7 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "COM Port", profileProperties.ComPort), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guide Rate Arc Seconds Per Second", profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture)), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Precision", profileProperties.Precision), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guiding Style", profileProperties.GuidingStyle), Times.Once);
         }
 
         [Test]
@@ -134,6 +135,7 @@ namespace Meade.net.UnitTests
             string TraceStateDefault = "false";
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
+            string GuidingStyleDefault = "Auto";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -147,6 +149,8 @@ namespace Meade.net.UnitTests
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Guiding Style", string.Empty, GuidingStyleDefault))
+                .Returns(GuidingStyleDefault);
 
             IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
@@ -163,6 +167,7 @@ namespace Meade.net.UnitTests
                 Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
+            Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
         }
 
         [TestCase("TCP")]
@@ -247,11 +252,17 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => throw new Exception("Testerror"));
 
             var connectionResult = SharedResources.Connect(deviceId, string.Empty);
-            
-            Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
-            Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200CLASSIC));
+            try
+            {
 
-            SharedResources.Disconnect(deviceId, String.Empty);
+
+                Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
+                Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200CLASSIC));
+            }
+            finally
+            {
+                SharedResources.Disconnect(deviceId, String.Empty);
+            }
         }
 
         [Test]
@@ -291,12 +302,16 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
             var connectionResult = SharedResources.Connect(deviceId, string.Empty);
-
-            Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
-            Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.Autostar497));
-            Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.Autostar497_43Eg));
-
-            SharedResources.Disconnect(deviceId, String.Empty);
+            try
+            {
+                Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
+                Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.Autostar497));
+                Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.Autostar497_43Eg));
+            }
+            finally
+            {
+                SharedResources.Disconnect(deviceId, String.Empty);
+            }
         }
     }
 }

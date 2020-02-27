@@ -45,6 +45,8 @@ namespace ASCOM.Meade.net
             this.lblPercentOfSiderealRate = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.cboPrecision = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cboGuidingStyle = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -133,10 +135,28 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.cboPrecision, "cboPrecision");
             this.cboPrecision.Name = "cboPrecision";
             // 
+            // label6
+            // 
+            resources.ApplyResources(this.label6, "label6");
+            this.label6.Name = "label6";
+            // 
+            // cboGuidingStyle
+            // 
+            this.cboGuidingStyle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboGuidingStyle.FormattingEnabled = true;
+            this.cboGuidingStyle.Items.AddRange(new object[] {
+            resources.GetString("cboGuidingStyle.Items"),
+            resources.GetString("cboGuidingStyle.Items1"),
+            resources.GetString("cboGuidingStyle.Items2")});
+            resources.ApplyResources(this.cboGuidingStyle, "cboGuidingStyle");
+            this.cboGuidingStyle.Name = "cboGuidingStyle";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cboGuidingStyle);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.cboPrecision);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.lblPercentOfSiderealRate);
@@ -178,5 +198,7 @@ namespace ASCOM.Meade.net
         private Label lblPercentOfSiderealRate;
         private Label label5;
         private ComboBox cboPrecision;
+        private Label label6;
+        private ComboBox cboGuidingStyle;
     }
 }

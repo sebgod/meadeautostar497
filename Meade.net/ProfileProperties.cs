@@ -7,5 +7,6 @@ namespace ASCOM.Meade.net
         public bool TraceLogger { get; set; }
         public double GuideRateArcSecondsPerSecond { get; set; }
         public string Precision { get; set; }
+        public string GuidingStyle { get; set; }
     }
 }
