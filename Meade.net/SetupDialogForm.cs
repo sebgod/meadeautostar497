@@ -76,7 +76,7 @@ namespace ASCOM.Meade.net
             {
                 cboGuidingStyle.SelectedItem = profileProperties.GuidingStyle;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 cboGuidingStyle.SelectedItem = "Auto";
             }
