@@ -243,6 +243,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="driverId"></param>
+        /// <param name="traceLogger"></param>
         public static ConnectionInfo Connect(string deviceId, string driverId, ITraceLogger traceLogger)
         {
             lock (LockObject)

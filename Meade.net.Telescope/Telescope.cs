@@ -134,7 +134,7 @@ namespace ASCOM.Meade.net
         }
 
         private double _guideRate;
-        private bool _isGuiding = false;
+        private bool _isGuiding;
 
         private void Initialise()
         {
