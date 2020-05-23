@@ -56,7 +56,7 @@ namespace Meade.net.Telescope.UnitTests
                 SameDevice = 1
             };
 
-            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>())).Returns( () => _connectionInfo );
+            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
 
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
@@ -384,7 +384,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Once);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
@@ -400,7 +400,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Never);
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
         }
@@ -410,20 +410,20 @@ namespace Meade.net.Telescope.UnitTests
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>(), It.IsAny<string>()),Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()),Times.Once);
 
             //act
             _telescope.Connected = true;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
         }
 
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
 
             //act
             _telescope.Connected = false;

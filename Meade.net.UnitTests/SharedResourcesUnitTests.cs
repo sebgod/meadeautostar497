@@ -13,12 +13,15 @@ namespace Meade.net.UnitTests
     public class SharedResourcesUnitTests
     {
         private Mock<ISerial> _serialMock;
+        private Mock<ITraceLogger> _traceLoggerMock;
 
         [SetUp]
         public void Setup()
         {
             _serialMock = new Mock<ISerial>();
             _serialMock.SetupAllProperties();
+
+            _traceLoggerMock = new Mock<ITraceLogger>();
 
             SharedResources.SharedSerial = _serialMock.Object;
         }
@@ -174,7 +177,7 @@ namespace Meade.net.UnitTests
         [TestCase("Carrier Pigeon")]
         public void Connect_WhenDeviceIdIsNotSerial_ThenThrowsException( string deviceId)
         {
-            var result = Assert.Throws<ArgumentException>( () => { SharedResources.Connect(deviceId, string.Empty); } );
+            var result = Assert.Throws<ArgumentException>( () => { SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); } );
 
             Assert.That( result.Message, Is.EqualTo($"deviceId {deviceId} not currently supported") );
         }
@@ -214,7 +217,7 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns( () => serialPortReturn);
 
-            var result = Assert.Throws<Exception>(() => { SharedResources.Connect(deviceId, string.Empty); });
+            var result = Assert.Throws<Exception>(() => { SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); });
             Assert.That(result.Message, Is.EqualTo("Serial port is looping back data, something is wrong with the hardware."));
         }
 
@@ -251,7 +254,7 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => {  });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => throw new Exception("Testerror"));
 
-            var connectionResult = SharedResources.Connect(deviceId, string.Empty);
+            var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
             try
             {
 
@@ -301,7 +304,7 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.Transmit(":GVN#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497_43Eg; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
-            var connectionResult = SharedResources.Connect(deviceId, string.Empty);
+            var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
             try
             {
                 Assert.That(connectionResult.SameDevice, Is.EqualTo(1));

@@ -406,7 +406,7 @@ namespace ASCOM.Meade.net
                         ReadProfile();
 
                         LogMessage("Connected Set", "Connecting to port {0}", _comPort);
-                        var connectionInfo = _sharedResourcesWrapper.Connect("Serial", DriverId);
+                        var connectionInfo = _sharedResourcesWrapper.Connect("Serial", DriverId, _tl);
                         try
                         {
                             LogMessage("Connected Set", $"Connected to port {_comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");

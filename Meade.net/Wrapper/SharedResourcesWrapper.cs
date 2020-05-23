@@ -1,10 +1,11 @@
 ﻿using System;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net.Wrapper
 {
     public interface ISharedResourcesWrapper
     {
-        ConnectionInfo Connect(string deviceId, string driverId);
+        ConnectionInfo Connect(string deviceId, string driverId, ITraceLogger traceLogger);
         void Disconnect(string deviceId, string driverId);
 
         string ProductName { get; }
@@ -29,9 +30,9 @@ namespace ASCOM.Meade.net.Wrapper
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
     {
-        public ConnectionInfo Connect(string deviceId, string driverId)
+        public ConnectionInfo Connect(string deviceId, string driverId, ITraceLogger traceLogger)
         {
-            return SharedResources.Connect(deviceId, driverId);
+            return SharedResources.Connect(deviceId, driverId, traceLogger);
         }
 
         public void Disconnect(string deviceId, string driverId)

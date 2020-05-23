@@ -243,7 +243,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="driverId"></param>
-        public static ConnectionInfo Connect(string deviceId, string driverId)
+        public static ConnectionInfo Connect(string deviceId, string driverId, ITraceLogger traceLogger)
         {
             lock (LockObject)
             {
@@ -273,14 +273,16 @@ namespace ASCOM.Meade.net
                             ProductName = SendString(":GVP#");
                             FirmwareVersion = SendString(":GVN#");
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            traceLogger.LogIssue("Connect", $"Error getting telescope information \"{ex.Message}\" setting to LX200 Classic mode.");
                             ProductName = TelescopeList.LX200CLASSIC;
                             FirmwareVersion = "Unknown";
                         }
 
                         if (ProductName == ":GVP")
                         {
+                            traceLogger.LogIssue("Connect", "Serial port is looping back data, something is wrong with the hardware.");
                             //This means that the serial port is looping back what's been sent, something is very wrong.
                             SharedSerial.Connected = false;
 
