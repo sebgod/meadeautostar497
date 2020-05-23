@@ -187,7 +187,7 @@ namespace ASCOM.Meade.net
                     try
                     {
                         ReadProfile();
-                        _sharedResourcesWrapper.Connect("Serial", DriverId);
+                        _sharedResourcesWrapper.Connect("Serial", DriverId, _tl);
                         try
                         {
                             IsConnected = true;

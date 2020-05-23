@@ -34,7 +34,8 @@ namespace Meade.net.Telescope.UnitTests
                 TraceLogger = false,
                 ComPort = "TestCom1",
                 GuideRateArcSecondsPerSecond = 1.23,
-                Precision = "Unchanged"
+                Precision = "Unchanged", 
+                GuidingStyle = "Auto"
             };
 
             _utilMock = new Mock<IUtil>();
@@ -55,7 +56,7 @@ namespace Meade.net.Telescope.UnitTests
                 SameDevice = 1
             };
 
-            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>())).Returns( () => _connectionInfo );
+            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
 
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
@@ -383,7 +384,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Once);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
@@ -399,7 +400,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString("#:GZ#"), Times.Never);
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"#:Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"), Times.Never);
         }
@@ -409,20 +410,20 @@ namespace Meade.net.Telescope.UnitTests
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>(), It.IsAny<string>()),Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()),Times.Once);
 
             //act
             _telescope.Connected = true;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
         }
 
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
             ConnectTelescope();
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
 
             //act
             _telescope.Connected = false;
@@ -446,16 +447,23 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.Disconnect(It.IsAny<string>(), It.IsAny<string>()), Times.Once());
         }
 
-        [TestCase("Autostar", "30Ab", false)]
-        [TestCase("Autostar", "31Ee", true)]
-        [TestCase("Autostar", "43Eg", true)]
-        [TestCase("Autostar II", "", false)]
-        [TestCase("LX2001", "", true)]
-        [TestCase(":GVP", "", false)] //LX200 Classic
-        public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string productName, string firmware, bool isSupported)
+        [TestCase("Auto", "Autostar", "30Ab", false)]
+        [TestCase("Auto","Autostar", "31Ee", true)]
+        [TestCase("Auto","Autostar", "43Eg", true)]
+        [TestCase("Auto","Autostar II", "", false)]
+        [TestCase("Auto","LX2001", "", true)]
+        [TestCase("Auto",":GVP", "", false)] //LX200 Classic
+        [TestCase("Guide Rate Slew", "LX2001", "", false)] //force old style
+        [TestCase("Pulse Guiding", ":GVP", "", true)] //force new style
+        
+        public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string guidingStyle, string productName, string firmware, bool isSupported)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
+
+            _profileProperties.GuidingStyle = guidingStyle;
+
+            _telescope.Connected = true;
 
             var result = _telescope.IsNewPulseGuidingSupported();
 

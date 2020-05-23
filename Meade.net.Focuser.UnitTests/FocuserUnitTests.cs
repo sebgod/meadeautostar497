@@ -181,7 +181,7 @@ namespace Meade.net.Focuser.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _focuser.Connected = true;
 
-            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
         }
 
 
@@ -189,20 +189,20 @@ namespace Meade.net.Focuser.UnitTests
         public void Connected_Set_SettingTrueWhenTrue_ThenDoesNothing()
         {
             ConnectFocuser();
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
 
             //act
             _focuser.Connected = true;
 
             //assert
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
         }
 
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
             ConnectFocuser();
-            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
 
             //act
             _focuser.Connected = false;

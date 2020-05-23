@@ -139,7 +139,8 @@ namespace ASCOM.Meade.net
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
-         
+        private const string GuidingStyleProfileName = "Guiding Style";
+
         public static void WriteProfile(ProfileProperties profileProperties)
         {
             lock (LockObject)
@@ -151,6 +152,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
+                    driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
                 }
             }
         }
@@ -159,6 +161,8 @@ namespace ASCOM.Meade.net
         private const string TraceStateDefault = "false";
         private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
         private const string PrecisionDefault = "Unchanged";
+        private const string GuidingStyleDefault = "Auto";
+        
 
         public static ProfileProperties ReadProfile()
         {
@@ -172,6 +176,7 @@ namespace ASCOM.Meade.net
                     profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
                     profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
+                    profileProperties.GuidingStyle = driverProfile.GetValue(DriverId, GuidingStyleProfileName, string.Empty, GuidingStyleDefault);
                 }
 
                 return profileProperties;
@@ -238,7 +243,8 @@ namespace ASCOM.Meade.net
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="driverId"></param>
-        public static ConnectionInfo Connect(string deviceId, string driverId)
+        /// <param name="traceLogger"></param>
+        public static ConnectionInfo Connect(string deviceId, string driverId, ITraceLogger traceLogger)
         {
             lock (LockObject)
             {
@@ -268,14 +274,16 @@ namespace ASCOM.Meade.net
                             ProductName = SendString(":GVP#");
                             FirmwareVersion = SendString(":GVN#");
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            traceLogger.LogIssue("Connect", $"Error getting telescope information \"{ex.Message}\" setting to LX200 Classic mode.");
                             ProductName = TelescopeList.LX200CLASSIC;
                             FirmwareVersion = "Unknown";
                         }
 
                         if (ProductName == ":GVP")
                         {
+                            traceLogger.LogIssue("Connect", "Serial port is looping back data, something is wrong with the hardware.");
                             //This means that the serial port is looping back what's been sent, something is very wrong.
                             SharedSerial.Connected = false;
 
