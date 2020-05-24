@@ -2292,6 +2292,21 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
+        public void SlewToTargetAsync_WhenTelescopeCanHitTripod_ThenThrowsException()
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("#:MS#")).Returns("3");
+            _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("the telescope can hit the tripod");
+
+            ConnectTelescope();
+
+            _telescope.TargetRightAscension = 2;
+            _telescope.TargetDeclination = 1;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.That(exception.Message, Is.EqualTo("the telescope can hit the tripod"));
+        }
+
+        [Test]
         public void SlewToTarget_WhenNotConnected_ThenThrowsException()
         {
             var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTarget(); });
