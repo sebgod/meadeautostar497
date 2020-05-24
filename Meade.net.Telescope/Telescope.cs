@@ -1996,7 +1996,7 @@ namespace ASCOM.Meade.net
                 return false;
             }
 
-            bool isSlewing = result != string.Empty;
+            bool isSlewing = result.Trim() != string.Empty;
 
             LogMessage("Slewing Get", $"Result = {isSlewing}");
             return isSlewing;
