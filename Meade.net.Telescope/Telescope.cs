@@ -1868,10 +1868,15 @@ namespace ASCOM.Meade.net
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
                                 throw new InvalidOperationException(belowHorizonMessage);
                             case "2":
-                                //Below Horizon 
+                                //Below minimum elevation 
                                 string belowMinimumElevationMessage = _sharedResourcesWrapper.ReadTerminated();
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
                                 throw new InvalidOperationException(belowMinimumElevationMessage);
+                            case "3":
+                                //Telescope can hit the mount
+                                string canHistMountMessage = _sharedResourcesWrapper.ReadTerminated();
+                                LogMessage("DoSlewAsync", $"Slew failed \"{canHistMountMessage}\"");
+                                throw new InvalidOperationException(canHistMountMessage);
                             default:
                                 LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
                                 throw new DriverException("This error should not happen");
