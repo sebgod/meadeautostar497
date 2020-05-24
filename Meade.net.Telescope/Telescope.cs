@@ -47,7 +47,6 @@ namespace ASCOM.Meade.net
         //internal static string driverID = "ASCOM.Meade.net.Telescope";
         private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
 
-        // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
@@ -707,7 +706,6 @@ namespace ASCOM.Meade.net
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 LogMessage("Description Get", DriverDescription);
@@ -719,7 +717,6 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                // TODO customise this driver description
                 string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
                 LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -1423,89 +1420,103 @@ namespace ASCOM.Meade.net
         public void PulseGuide(GuideDirections direction, int duration)
         {
             LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
-            CheckConnected("PulseGuide");
-
-            if (IsSlewingToTarget())
-                throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
-
-            if (_movingPrimary && (direction == GuideDirections.guideEast || direction == GuideDirections.guideWest))
-                throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
-
-            if (_movingSecondary && (direction == GuideDirections.guideNorth || direction == GuideDirections.guideSouth))
-                throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
-
-            var coordinatesBeforeMove = GetTelescopeRaAndDec();
-
-            if (_userNewerPulseGuiding && duration < 10000)
+            try
             {
-                string d = string.Empty;
-                switch (direction)
-                {
-                    case GuideDirections.guideEast:
-                        d = "e";
-                        break;
-                    case GuideDirections.guideNorth:
-                        d = "n";
-                        break;
-                    case GuideDirections.guideSouth:
-                        d = "s";
-                        break;
-                    case GuideDirections.guideWest:
-                        d = "w";
-                        break;
-                }
+                CheckConnected("PulseGuide");
+                if (IsSlewingToTarget())
+                    throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
 
-                LogMessage("PulseGuide", "Using new pulse guiding technique");
-                _sharedResourcesWrapper.SendBlind($"#:Mg{d}{duration:0000}#");
-                //:MgnDDDD#
-                //:MgsDDDD#
-                //:MgeDDDD#
-                //:MgwDDDD#
-                //Guide telescope in the commanded direction(nsew) for the number of milliseconds indicated by the unsigned number
-                //passed in the command.These commands support serial port driven guiding.
-                //Returns – Nothing
-                //LX200 – Not Supported
-                _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
-            }
-            else
-            {
                 _isGuiding = true;
                 try
                 {
-                    switch (direction)
+                    if (_movingPrimary &&
+                        (direction == GuideDirections.guideEast || direction == GuideDirections.guideWest))
+                        throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
+
+                    if (_movingSecondary &&
+                        (direction == GuideDirections.guideNorth || direction == GuideDirections.guideSouth))
+                        throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
+
+                    var coordinatesBeforeMove = GetTelescopeRaAndDec();
+
+                    if (_userNewerPulseGuiding && duration < 10000)
                     {
-                        case GuideDirections.guideEast:
-                            MoveAxis(TelescopeAxes.axisPrimary, 1);
-                            _utilities.WaitForMilliseconds(duration);
-                            MoveAxis(TelescopeAxes.axisPrimary, 0);
-                            break;
-                        case GuideDirections.guideNorth:
-                            MoveAxis(TelescopeAxes.axisSecondary, 1);
-                            _utilities.WaitForMilliseconds(duration);
-                            MoveAxis(TelescopeAxes.axisSecondary, 0);
-                            break;
-                        case GuideDirections.guideSouth:
-                            MoveAxis(TelescopeAxes.axisSecondary, -1);
-                            _utilities.WaitForMilliseconds(duration);
-                            MoveAxis(TelescopeAxes.axisSecondary, 0);
-                            break;
-                        case GuideDirections.guideWest:
-                            MoveAxis(TelescopeAxes.axisPrimary, -1);
-                            _utilities.WaitForMilliseconds(duration);
-                            MoveAxis(TelescopeAxes.axisPrimary, 0);
-                            break;
+                        string d = string.Empty;
+                        switch (direction)
+                        {
+                            case GuideDirections.guideEast:
+                                d = "e";
+                                break;
+                            case GuideDirections.guideNorth:
+                                d = "n";
+                                break;
+                            case GuideDirections.guideSouth:
+                                d = "s";
+                                break;
+                            case GuideDirections.guideWest:
+                                d = "w";
+                                break;
+                        }
+
+                        LogMessage("PulseGuide", "Using new pulse guiding technique");
+                        _sharedResourcesWrapper.SendBlind($"#:Mg{d}{duration:0000}#");
+                        //:MgnDDDD#
+                        //:MgsDDDD#
+                        //:MgeDDDD#
+                        //:MgwDDDD#
+                        //Guide telescope in the commanded direction(nsew) for the number of milliseconds indicated by the unsigned number
+                        //passed in the command.These commands support serial port driven guiding.
+                        //Returns – Nothing
+                        //LX200 – Not Supported
+                        _utilities.WaitForMilliseconds(duration); //todo figure out if this is really needed
                     }
+                    else
+                    {
+                        LogMessage("PulseGuide", "Using old pulse guiding technique");
+                        switch (direction)
+                        {
+                            case GuideDirections.guideEast:
+                                MoveAxis(TelescopeAxes.axisPrimary, 1);
+                                _utilities.WaitForMilliseconds(duration);
+                                MoveAxis(TelescopeAxes.axisPrimary, 0);
+                                break;
+                            case GuideDirections.guideNorth:
+                                MoveAxis(TelescopeAxes.axisSecondary, 1);
+                                _utilities.WaitForMilliseconds(duration);
+                                MoveAxis(TelescopeAxes.axisSecondary, 0);
+                                break;
+                            case GuideDirections.guideSouth:
+                                MoveAxis(TelescopeAxes.axisSecondary, -1);
+                                _utilities.WaitForMilliseconds(duration);
+                                MoveAxis(TelescopeAxes.axisSecondary, 0);
+                                break;
+                            case GuideDirections.guideWest:
+                                MoveAxis(TelescopeAxes.axisPrimary, -1);
+                                _utilities.WaitForMilliseconds(duration);
+                                MoveAxis(TelescopeAxes.axisPrimary, 0);
+                                break;
+                        }
+
+                        LogMessage("PulseGuide", "Using old pulse guiding technique complete");
+                    }
+
+                    var coordinatesAfterMove = GetTelescopeRaAndDec();
+
+                    LogMessage("PulseGuide",
+                        $"Complete Before RA: {_utilitiesExtra.HoursToHMS(coordinatesBeforeMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesBeforeMove.Declination)}");
+                    LogMessage("PulseGuide",
+                        $"Complete After RA: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesAfterMove.Declination)}");
                 }
                 finally
                 {
                     _isGuiding = false;
                 }
             }
-
-            var coordinatesAfterMove = GetTelescopeRaAndDec();
-
-            LogMessage("PulseGuide", $"Complete Before RA: {_utilitiesExtra.HoursToHMS(coordinatesBeforeMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesBeforeMove.Declination)}");
-            LogMessage("PulseGuide", $"Complete Before RA: {_utilitiesExtra.HoursToHMS(coordinatesAfterMove.RightAscension)} Dec:{_utilitiesExtra.DegreesToDMS(coordinatesAfterMove.Declination)}");
+            catch (Exception ex)
+            {
+                LogMessage("PulseGuide", $"Error performing pulse guide: {ex.Message}");
+                throw;
+            }
         }
 
         public double RightAscension
