@@ -1874,9 +1874,9 @@ namespace ASCOM.Meade.net
                                 throw new InvalidOperationException(belowMinimumElevationMessage);
                             case "3":
                                 //Telescope can hit the mount
-                                string canHistMountMessage = _sharedResourcesWrapper.ReadTerminated();
-                                LogMessage("DoSlewAsync", $"Slew failed \"{canHistMountMessage}\"");
-                                throw new InvalidOperationException(canHistMountMessage);
+                                string canHitMountMessage = _sharedResourcesWrapper.ReadTerminated();
+                                LogMessage("DoSlewAsync", $"Slew failed \"{canHitMountMessage}\"");
+                                throw new InvalidOperationException(canHitMountMessage);
                             default:
                                 LogMessage("DoSlewAsync", $"Slew failed - unknown response \"{response}\"");
                                 throw new DriverException("This error should not happen");
