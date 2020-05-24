@@ -271,8 +271,8 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            ProductName = SendString(":GVP#");
-                            FirmwareVersion = SendString(":GVN#");
+                            ProductName = SendString("#:GVP#");
+                            FirmwareVersion = SendString("#:GVN#");
                         }
                         catch (Exception ex)
                         {
@@ -288,6 +288,30 @@ namespace ASCOM.Meade.net
                             SharedSerial.Connected = false;
 
                             throw new Exception("Serial port is looping back data, something is wrong with the hardware.");
+                        }
+
+                        try
+                        {
+                            string utcOffSet = SendString("#:GG#");
+                            //:GG# Get UTC offset time
+                            //Returns: sHH# or sHH.H#
+                            //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
+                            //sHH# form is returned, otherwise the longer form is returned.
+                            try
+                            {
+                                double utcOffsetHours = double.Parse(utcOffSet);
+                            }
+                            catch (Exception ex)
+                            {
+                                traceLogger.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error.");
+                                throw;
+                            }
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            SharedSerial.Connected = false;
+                            throw;
                         }
                     }
                 }

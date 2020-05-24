@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Globalization;
+using System.Runtime.Remoting.Contexts;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
@@ -214,7 +215,8 @@ namespace Meade.net.UnitTests
 
             string serialPortReturn = string.Empty;
 
-            _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = "0"; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns( () => serialPortReturn);
 
             var result = Assert.Throws<Exception>(() => { SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); });
@@ -251,8 +253,14 @@ namespace Meade.net.UnitTests
 
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
-            _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => {  });
-            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => throw new Exception("Testerror"));
+            string serialPortReturn = string.Empty;
+
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { 
+                serialPortReturn = string.Empty;
+                throw new Exception("Testerror");
+            });
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = "0"; });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
             var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
             try
@@ -300,8 +308,9 @@ namespace Meade.net.UnitTests
 
             string serialPortReturn = string.Empty;
 
-            _serialMock.Setup(x => x.Transmit(":GVP#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497; });
-            _serialMock.Setup(x => x.Transmit(":GVN#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497_43Eg; });
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497; });
+            _serialMock.Setup(x => x.Transmit("#:GVN#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497_43Eg; });
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = "0"; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
             var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
@@ -315,6 +324,49 @@ namespace Meade.net.UnitTests
             {
                 SharedResources.Disconnect(deviceId, String.Empty);
             }
+        }
+
+        [Test]
+        public void Connect_WhenSerialPortIsNotRespondingCorrectly_ThenExceptionThrown()
+        {
+            string deviceId = "Serial";
+
+            string driverDriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string ComPortDefault = "COM1";
+            string TraceStateDefault = "false";
+            string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+            string PrecisionDefault = "Unchanged";
+
+            Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Trace Level", string.Empty, TraceStateDefault))
+                .Returns(TraceStateDefault);
+            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "COM Port", string.Empty, ComPortDefault))
+                .Returns(ComPortDefault);
+            profileWrapperMock
+                .Setup(x => x.GetValue(driverDriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                    GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
+            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
+                .Returns(PrecisionDefault);
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            string serialPortReturn = string.Empty;
+
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497; });
+            _serialMock.Setup(x => x.Transmit("#:GVN#")).Callback(() => { serialPortReturn = TelescopeList.Autostar497_43Eg; });
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = ""; });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
+
+            var result = Assert.Throws<FormatException>(() => { var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); });
+            Assert.That(result.Message, Is.EqualTo("Input string was not in a correct format."));
+
+            _traceLoggerMock.Verify( x => x.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error."), Times.Once);
         }
     }
 }
