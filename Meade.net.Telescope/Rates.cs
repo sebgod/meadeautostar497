@@ -33,7 +33,7 @@ namespace ASCOM.Meade.net
 
         public void Dispose()
         {
-            // TODO Add any required object cleanup here
+            // Add any required object cleanup here
         }
 
         public double Maximum { get; set; }
@@ -106,7 +106,7 @@ namespace ASCOM.Meade.net
 
         public void Dispose()
         {
-            // TODO Add any required object cleanup here
+            // Add any required object cleanup here
         }
 
         public IEnumerator GetEnumerator()
@@ -176,7 +176,7 @@ namespace ASCOM.Meade.net
 
         public void Dispose()
         {
-            // TODO Add any required object cleanup here
+            // Add any required object cleanup here
         }
 
         public DriveRates this[int index] => _trackingRates[index - 1];

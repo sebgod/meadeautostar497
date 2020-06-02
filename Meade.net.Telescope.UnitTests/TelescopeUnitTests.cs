@@ -1680,7 +1680,6 @@ namespace Meade.net.Telescope.UnitTests
         }
 
 
-        //todo figure out if this is right.  don't feel right to me
         [TestCase("5", 5, -5)]
         [TestCase("-5", -5, 5)]
         [TestCase("185", 185, 175)]

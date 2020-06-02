@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using ASCOM.DeviceInterface;
@@ -19,7 +18,7 @@ namespace ASCOM.Meade.net
     // The ClassInterface/None addribute prevents an empty interface called
     // _Meade.net from being created and used as the [default] interface
     //
-    // TODO Replace the not implemented exceptions with code to implement the function or
+    // Replace the not implemented exceptions with code to implement the function or
     // throw the appropriate ASCOM exception.
     //
 
@@ -146,7 +145,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("CommandBool");
             //string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
+            // decode the return string and return true or false
             // or
             throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
@@ -215,7 +214,6 @@ namespace ASCOM.Meade.net
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 _tl.LogMessage("Description Get", DriverDescription);
@@ -227,7 +225,6 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                // TODO customise this driver description
                 string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
                 LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -342,7 +339,6 @@ namespace ASCOM.Meade.net
             _tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
 
-            //todo implement backlash compensation
             //todo implement direction reverse
             //todo implement dynamic braking
 

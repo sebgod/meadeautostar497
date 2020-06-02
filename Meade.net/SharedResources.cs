@@ -75,6 +75,7 @@ namespace ASCOM.Meade.net
             set => _profileFactory = value;
         }
 
+        //todo add code to ensure that there is a minimum gap between commands. 5ms as default.
         public static void SendBlind(string message)
         {
             lock (LockObject)

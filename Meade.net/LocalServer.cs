@@ -390,7 +390,7 @@ namespace ASCOM.Meade.net
         //
         // Remove all traces of this from the registry. 
         //
-        // **TODO** If the above does AppID/DCOM stuff, this would have
+        // If the above does AppID/DCOM stuff, this would have
         // to remove that stuff too.
         //
         private static void UnregisterObjects()
@@ -494,7 +494,7 @@ namespace ASCOM.Meade.net
             bool bRet = true;
 
             //
-            //**TODO** -Embedding is "ActiveX start". Prohibit non_AX starting?
+            // -Embedding is "ActiveX start". Prohibit non_AX starting?
             //
             if (args.Length > 0)
             {
