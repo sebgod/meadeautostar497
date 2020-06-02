@@ -306,14 +306,14 @@ namespace ASCOM.Meade.net
                             {
                                 double utcOffsetHours = double.Parse(utcOffSet);
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 traceLogger.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error.");
                                 throw;
                             }
                             
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             SharedSerial.Connected = false;
                             throw;
