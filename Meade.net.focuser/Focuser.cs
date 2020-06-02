@@ -47,6 +47,7 @@ namespace ASCOM.Meade.net
 
         private static string _comPort; // Variables to hold the currrent device configuration
 
+        private static int _backlashCompensation;
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
@@ -286,17 +287,11 @@ namespace ASCOM.Meade.net
 
             CheckConnected("Halt");
 
-            //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
-            //todo make this mockable
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            while (stopwatch.ElapsedMilliseconds < 1000)
-            {
-                _sharedResourcesWrapper.SendBlind(":FQ#");
-                //:FQ# Halt Focuser Motion
-                //Returns: Nothing
+            //todo fix this issue: A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
 
-                _utilities.WaitForMilliseconds(250);
-            }
+            _sharedResourcesWrapper.SendBlind(":FQ#");
+            //:FQ# Halt Focuser Motion
+            //Returns: Nothing
         }
 
         public bool IsMoving
@@ -359,45 +354,56 @@ namespace ASCOM.Meade.net
             if (position == 0)
                 return;
 
-            MoveFocuser(position > 0, Math.Abs(position));
+            _sharedResourcesWrapper.Lock(() =>
+            {
+                MoveFocuser(position > 0, Math.Abs(position));
+                ApplyBacklashCompensation(position > 0);
+                //This gives the focuser time to physically stop.
+                _utilities.WaitForMilliseconds(1000);
+            });
+        }
+
+        private void ApplyBacklashCompensation(bool directionOut)
+        {
+            if (_backlashCompensation == 0)
+                return;
+
+            _tl.LogMessage("Move", "Applying backlash compensation");
+
+            if (directionOut)
+            {
+                MoveFocuser(directionOut, Math.Abs(_backlashCompensation));
+                _utilities.WaitForMilliseconds(Math.Abs(_backlashCompensation));
+                MoveFocuser(!directionOut, Math.Abs(_backlashCompensation));
+            }
         }
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            _sharedResourcesWrapper.Lock(() =>
-            {
-                //_sharedResourcesWrapper.SendBlind("#:FF#");
-                //:FF# Set Focus speed to fastest setting
-                //Returns: Nothing
+            //_sharedResourcesWrapper.SendBlind("#:FF#");
+            //:FF# Set Focus speed to fastest setting
+            //Returns: Nothing
 
-                //:FS# Set Focus speed to slowest setting
-                //Returns: Nothing
+            //:FS# Set Focus speed to slowest setting
+            //Returns: Nothing
 
-                //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
-                //Returns: Nothing
-                //All others – Not Supported
-                _utilities.WaitForMilliseconds(100);
+            //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+            //Returns: Nothing
+            //All others – Not Supported
+            _utilities.WaitForMilliseconds(100);
 
-                //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
-                //todo make this mockable
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                while (stopwatch.ElapsedMilliseconds < steps)
-                {
-                    _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
-                    //:F+# Start Focuser moving inward (toward objective)
-                    //Returns: None
+            //Todo fix this issue. A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
 
-                    //:F-# Start Focuser moving outward (away from objective)
-                    //Returns: None
+            _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
+            //:F+# Start Focuser moving inward (toward objective)
+            //Returns: None
 
-                    _utilities.WaitForMilliseconds(250);
-                }
+            //:F-# Start Focuser moving outward (away from objective)
+            //Returns: None
 
-                Halt();
+            _utilities.WaitForMilliseconds(steps);
 
-                //This gives the focuser time to physically stop.
-                _utilities.WaitForMilliseconds(1000);
-            });
+            Halt();
         }
 
         public int Position => throw new PropertyNotImplementedException("Position", false);
@@ -556,9 +562,11 @@ namespace ASCOM.Meade.net
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
+            _backlashCompensation = profileProperties.BacklashCompensation;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");
+            LogMessage("ReadProfile", $"Backlash Steps: {_backlashCompensation}");
         }
 
         /// <summary>

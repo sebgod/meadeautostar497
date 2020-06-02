@@ -8,5 +8,6 @@ namespace ASCOM.Meade.net
         public double GuideRateArcSecondsPerSecond { get; set; }
         public string Precision { get; set; }
         public string GuidingStyle { get; set; }
+        public int BacklashCompensation { get; set; }
     }
 }

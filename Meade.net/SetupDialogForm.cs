@@ -81,6 +81,7 @@ namespace ASCOM.Meade.net
                 cboGuidingStyle.SelectedItem = "Auto";
             }
 
+            txtBacklashSteps.Text = profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture);
         }
 
     public ProfileProperties GetProfile()
@@ -91,7 +92,8 @@ namespace ASCOM.Meade.net
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
                 Precision = cboPrecision.SelectedItem.ToString(),
-                GuidingStyle = cboGuidingStyle.SelectedItem.ToString()
+                GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),
+                BacklashCompensation = int.Parse(txtBacklashSteps.Text)
             };
 
             return profileProperties;

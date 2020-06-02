@@ -140,6 +140,7 @@ namespace ASCOM.Meade.net
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
         private const string GuidingStyleProfileName = "Guiding Style";
+        private const string BacklashCompensationName = "Backlash Compensation";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -153,6 +154,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
+                    driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
                 }
             }
         }
@@ -162,7 +164,9 @@ namespace ASCOM.Meade.net
         private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
         private const string PrecisionDefault = "Unchanged";
         private const string GuidingStyleDefault = "Auto";
-        
+        private const string BacklashCompensationDefault = "3000";
+
+
 
         public static ProfileProperties ReadProfile()
         {
@@ -177,6 +181,7 @@ namespace ASCOM.Meade.net
                     profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
                     profileProperties.GuidingStyle = driverProfile.GetValue(DriverId, GuidingStyleProfileName, string.Empty, GuidingStyleDefault);
+                    profileProperties.BacklashCompensation = Convert.ToInt32(driverProfile.GetValue(DriverId, BacklashCompensationName, string.Empty, BacklashCompensationDefault));
                 }
 
                 return profileProperties;

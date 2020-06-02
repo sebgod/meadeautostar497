@@ -47,6 +47,12 @@ namespace ASCOM.Meade.net
             this.cboPrecision = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cboGuidingStyle = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.txtBacklashSteps = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -151,10 +157,46 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.cboGuidingStyle, "cboGuidingStyle");
             this.cboGuidingStyle.Name = "cboGuidingStyle";
             // 
+            // label7
+            // 
+            resources.ApplyResources(this.label7, "label7");
+            this.label7.Name = "label7";
+            // 
+            // label8
+            // 
+            resources.ApplyResources(this.label8, "label8");
+            this.label8.Name = "label8";
+            // 
+            // txtBacklashSteps
+            // 
+            resources.ApplyResources(this.txtBacklashSteps, "txtBacklashSteps");
+            this.txtBacklashSteps.Name = "txtBacklashSteps";
+            // 
+            // label9
+            // 
+            resources.ApplyResources(this.label9, "label9");
+            this.label9.Name = "label9";
+            // 
+            // label10
+            // 
+            resources.ApplyResources(this.label10, "label10");
+            this.label10.Name = "label10";
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.Name = "label11";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.txtBacklashSteps);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.cboGuidingStyle);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.cboPrecision);
@@ -200,5 +242,11 @@ namespace ASCOM.Meade.net
         private ComboBox cboPrecision;
         private Label label6;
         private ComboBox cboGuidingStyle;
+        private Label label7;
+        private Label label8;
+        private TextBox txtBacklashSteps;
+        private Label label9;
+        private Label label10;
+        private Label label11;
     }
 }

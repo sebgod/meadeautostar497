@@ -140,6 +140,7 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
+            string BacklashCompensationDefault = "3000";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -155,6 +156,8 @@ namespace Meade.net.UnitTests
                 .Returns(PrecisionDefault);
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "Guiding Style", string.Empty, GuidingStyleDefault))
                 .Returns(GuidingStyleDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Backlash Compensation", string.Empty, BacklashCompensationDefault))
+                .Returns(BacklashCompensationDefault);
 
             IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
@@ -172,6 +175,7 @@ namespace Meade.net.UnitTests
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
+            Assert.That(profileProperties.BacklashCompensation, Is.EqualTo(int.Parse(BacklashCompensationDefault)));
         }
 
         [TestCase("TCP")]
