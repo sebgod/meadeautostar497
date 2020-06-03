@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Globalization;
-using System.Runtime.Remoting.Contexts;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
