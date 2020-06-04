@@ -142,6 +142,7 @@ namespace ASCOM.Meade.net
         private const string PrecisionProfileName = "Precision";
         private const string GuidingStyleProfileName = "Guiding Style";
         private const string BacklashCompensationName = "Backlash Compensation";
+        private const string ReverseFocusDirectionName = "Reverse Focuser Direction";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -156,6 +157,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
                     driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
+                    driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
                 }
             }
         }
@@ -166,8 +168,7 @@ namespace ASCOM.Meade.net
         private const string PrecisionDefault = "Unchanged";
         private const string GuidingStyleDefault = "Auto";
         private const string BacklashCompensationDefault = "3000";
-
-
+        private const string ReverseFocuserDiectionDefault = "true";
 
         public static ProfileProperties ReadProfile()
         {
@@ -183,6 +184,7 @@ namespace ASCOM.Meade.net
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
                     profileProperties.GuidingStyle = driverProfile.GetValue(DriverId, GuidingStyleProfileName, string.Empty, GuidingStyleDefault);
                     profileProperties.BacklashCompensation = Convert.ToInt32(driverProfile.GetValue(DriverId, BacklashCompensationName, string.Empty, BacklashCompensationDefault));
+                    profileProperties.ReverseFocusDirection = Convert.ToBoolean(driverProfile.GetValue(DriverId, ReverseFocusDirectionName, string.Empty, ReverseFocuserDiectionDefault));
                 }
 
                 return profileProperties;

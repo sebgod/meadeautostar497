@@ -53,6 +53,7 @@ namespace ASCOM.Meade.net
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
+            this.cbxReverseDirection = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -187,10 +188,17 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label11, "label11");
             this.label11.Name = "label11";
             // 
+            // cbxReverseDirection
+            // 
+            resources.ApplyResources(this.cbxReverseDirection, "cbxReverseDirection");
+            this.cbxReverseDirection.Name = "cbxReverseDirection";
+            this.cbxReverseDirection.UseVisualStyleBackColor = true;
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cbxReverseDirection);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.txtBacklashSteps);
@@ -248,5 +256,6 @@ namespace ASCOM.Meade.net
         private Label label9;
         private Label label10;
         private Label label11;
+        private CheckBox cbxReverseDirection;
     }
 }

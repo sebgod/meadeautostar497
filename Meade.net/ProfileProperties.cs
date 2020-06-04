@@ -9,5 +9,6 @@ namespace ASCOM.Meade.net
         public string Precision { get; set; }
         public string GuidingStyle { get; set; }
         public int BacklashCompensation { get; set; }
+        public bool ReverseFocusDirection { get; set; }
     }
 }

@@ -47,6 +47,9 @@ namespace ASCOM.Meade.net
         private static string _comPort; // Variables to hold the currrent device configuration
 
         private static int _backlashCompensation;
+
+        private static bool _reverseFocusDirection;
+
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
@@ -339,7 +342,6 @@ namespace ASCOM.Meade.net
             _tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
 
-            //todo implement direction reverse
             //todo implement dynamic braking
 
             if (position < -MaxIncrement || position > MaxIncrement)
@@ -350,10 +352,14 @@ namespace ASCOM.Meade.net
             if (position == 0)
                 return;
 
+            var direction = position > 0;
+            if (_reverseFocusDirection)
+                direction = !direction;
+
             _sharedResourcesWrapper.Lock(() =>
             {
-                MoveFocuser(position > 0, Math.Abs(position));
-                ApplyBacklashCompensation(position > 0);
+                MoveFocuser(direction, Math.Abs(position));
+                ApplyBacklashCompensation(direction);
                 //This gives the focuser time to physically stop.
                 _utilities.WaitForMilliseconds(1000);
             });
@@ -559,6 +565,7 @@ namespace ASCOM.Meade.net
             _tl.Enabled = profileProperties.TraceLogger;
             _comPort = profileProperties.ComPort;
             _backlashCompensation = profileProperties.BacklashCompensation;
+            _reverseFocusDirection = profileProperties.ReverseFocusDirection;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");

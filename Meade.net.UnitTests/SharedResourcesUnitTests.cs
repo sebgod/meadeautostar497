@@ -127,6 +127,8 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guide Rate Arc Seconds Per Second", profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture)), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Precision", profileProperties.Precision), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guiding Style", profileProperties.GuidingStyle), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Backlash Compensation", profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture)), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Reverse Focuser Direction", profileProperties.ReverseFocusDirection.ToString()), Times.Once);
         }
 
         [Test]
@@ -140,12 +142,14 @@ namespace Meade.net.UnitTests
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
             string BacklashCompensationDefault = "3000";
+            string ReverseFocuserDiectionDefault = "true";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
-                .Returns(TraceStateDefault);
+                .Returns(() =>
+                    TraceStateDefault);
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
                 .Returns(ComPortDefault);
             profileWrapperMock
@@ -155,8 +159,12 @@ namespace Meade.net.UnitTests
                 .Returns(PrecisionDefault);
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "Guiding Style", string.Empty, GuidingStyleDefault))
                 .Returns(GuidingStyleDefault);
-            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Backlash Compensation", string.Empty, BacklashCompensationDefault))
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Backlash Compensation", string.Empty, BacklashCompensationDefault))
                 .Returns(BacklashCompensationDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Reverse Focuser Direction", string.Empty, ReverseFocuserDiectionDefault))
+                .Returns(() => ReverseFocuserDiectionDefault);
 
             IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
@@ -175,6 +183,7 @@ namespace Meade.net.UnitTests
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
             Assert.That(profileProperties.BacklashCompensation, Is.EqualTo(int.Parse(BacklashCompensationDefault)));
+            Assert.That(profileProperties.ReverseFocusDirection, Is.EqualTo(bool.Parse(ReverseFocuserDiectionDefault)));
         }
 
         [TestCase("TCP")]
