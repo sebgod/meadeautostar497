@@ -317,7 +317,7 @@ namespace ASCOM.Meade.net
                                 throw new Exception(message);
                             }
 
-                            traceLogger.LogMessage("Connect", $"Offset from UTC: {utcOffSet}", false);
+                            traceLogger.LogMessage("Connect", $"Offset from UTC: {utcOffsetHours}", false);
                         }
                         catch (Exception)
                         {
