@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Wrapper;
@@ -309,16 +310,13 @@ namespace ASCOM.Meade.net
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
                             //sHH# form is returned, otherwise the longer form is returned.
-                            try
-                            {
-                                double.Parse(utcOffSet);
-                            }
-                            catch (Exception)
-                            {
-                                traceLogger.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error.");
-                                throw;
-                            }
-                            
+                                double utcOffsetHours;
+                                if (!double.TryParse(utcOffSet, out utcOffsetHours))
+                                {
+                                    var message = "Unable to decode response from the telescope, This is likely a hardware serial communications error.";
+                                    traceLogger.LogIssue("Connect", message);
+                                    throw new Exception(message);
+                                }
                         }
                         catch (Exception)
                         {
