@@ -28,7 +28,8 @@ namespace Meade.net.Focuser.UnitTests
                 TraceLogger = false,
                 ComPort = "TestCom1",
                 GuideRateArcSecondsPerSecond = 1.23,
-                Precision = "Unchanged"
+                Precision = "Unchanged",
+                GuidingStyle = "Auto"
             };
 
             _utilMock = new Mock<IUtil>();

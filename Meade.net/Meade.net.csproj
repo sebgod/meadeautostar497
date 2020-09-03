@@ -134,6 +134,7 @@
     </Compile>
     <Compile Include="GarbageCollection.cs" />
     <Compile Include="LocalServer.cs" />
+    <Compile Include="MeadeTelescopeBase.cs" />
     <Compile Include="ProfileFactory.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

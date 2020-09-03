@@ -38,7 +38,7 @@ namespace ASCOM.Meade.net
     [ServedClassName("Meade Generic")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class Telescope : ReferenceCountedObjectBase, ITelescopeV3
+    public class Telescope : MeadeTelescopeBase, ITelescopeV3
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -46,13 +46,6 @@ namespace ASCOM.Meade.net
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Telescope";
         private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
-
-        /// <summary>
-        /// Driver description that displays in the ASCOM Chooser.
-        /// </summary>
-        private static readonly string DriverDescription = "Meade Generic";
-
-        private static string _comPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -66,19 +59,12 @@ namespace ASCOM.Meade.net
         private readonly IAstroUtils _astroUtilities;
 
         private readonly IAstroMaths _astroMaths;
-
-        /// <summary>
-        /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        private TraceLogger _tl;
-
-        private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Telescope()
+        public Telescope() : base()
         {
             try
             {
@@ -87,7 +73,6 @@ namespace ASCOM.Meade.net
                 _utilities = util;
                 _utilitiesExtra = util; //Initialise util object
                 _astroUtilities = new AstroUtils(); // Initialise astro utilities object
-                _sharedResourcesWrapper = new SharedResourcesWrapper();
                 _astroMaths = new AstroMaths.AstroMaths();
 
                 Initialise();
@@ -121,33 +106,17 @@ namespace ASCOM.Meade.net
             sb.AppendLine();
         }
 
-        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths)
+        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths) : base(sharedResourcesWrapper)
         {
             _utilities = util; //Initialise util object
             _utilitiesExtra = utilExtra; //Initialise util object
             _astroUtilities = astroUtilities; // Initialise astro utilities object
-            _sharedResourcesWrapper = sharedResourcesWrapper;
             _astroMaths = astroMaths;
 
             Initialise();
         }
 
-        private double _guideRate;
         private bool _isGuiding;
-
-        private void Initialise()
-        {
-            //todo move the TraceLogger out to a factory class.
-            _tl = new TraceLogger("", "Meade.Generic.Telescope");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            IsConnected = false; // Initialise connected to false
-            
-            LogMessage("Telescope", "Completed initialisation");
-            LogMessage("Telescope", $"Driver version: {DriverVersion}");
-        }
-
-
         //
         // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
         //
@@ -701,36 +670,6 @@ namespace ASCOM.Meade.net
                     //A ‘#’ terminated string with the name of the requested site.
                 default:
                     throw new ArgumentOutOfRangeException(nameof(site), site, Resources.Telescope_GetSiteName_Site_out_of_range);
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                LogMessage("Description Get", DriverDescription);
-                return DriverDescription;
-            }
-        }
-
-        public string DriverInfo
-        {
-            get
-            {
-                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
-                LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
-            }
-        }
-
-        public string DriverVersion
-        {
-            get
-            {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-                LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
             }
         }
 
@@ -2095,8 +2034,6 @@ namespace ASCOM.Meade.net
         }
 
         private DriveRates _trackingRate = DriveRates.driveSidereal;
-        private string _precision;
-        private string _guidingStyle;
 
         public DriveRates TrackingRate
         {
@@ -2368,11 +2305,6 @@ namespace ASCOM.Meade.net
         #endregion
 
         /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected { get; set; }
-
-        /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
         /// <param name="message"></param>
@@ -2382,25 +2314,6 @@ namespace ASCOM.Meade.net
             {
                 throw new NotConnectedException($"Not connected to telescope when trying to execute: {message}");
             }
-        }
-
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        private void ReadProfile()
-        {
-            ProfileProperties profileProperties = _sharedResourcesWrapper.ReadProfile();
-            _tl.Enabled = profileProperties.TraceLogger;
-            _comPort = profileProperties.ComPort;
-            _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
-            _precision = profileProperties.Precision;
-            _guidingStyle = profileProperties.GuidingStyle.ToLower();
-
-            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
-            LogMessage("ReadProfile", $"Com Port: {_comPort}");
-            LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
-            LogMessage("ReadProfile", $"Precision: {_precision}");
-            LogMessage("ReadProfile", $"Guiding Style: {_guidingStyle}");
         }
 
         private void WriteProfile()
@@ -2413,18 +2326,6 @@ namespace ASCOM.Meade.net
             };
 
             _sharedResourcesWrapper.WriteProfile(profileProperties);
-        }
-        
-        /// <summary>
-        /// Log helper function that takes formatted strings and arguments
-        /// </summary>
-        /// <param name="identifier"></param>
-        /// <param name="message"></param>
-        /// <param name="args"></param>
-        private void LogMessage(string identifier, string message, params object[] args)
-        {
-            var msg = string.Format(message, args);
-            _tl.LogMessage(identifier, msg);
         }
         #endregion
     }

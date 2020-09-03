@@ -30,7 +30,7 @@ namespace ASCOM.Meade.net
     [ServedClassName("Meade Generic")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class Focuser : ReferenceCountedObjectBase, IFocuserV3
+    public class Focuser : MeadeTelescopeBase, IFocuserV3
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -38,68 +38,32 @@ namespace ASCOM.Meade.net
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Focuser";
         private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
-        // TODO Change the descriptive string for your driver then remove this line
-        /// <summary>
-        /// Driver description that displays in the ASCOM Chooser.
-        /// </summary>
-        private static readonly string DriverDescription = "Meade Generic";
-
-        private static string _comPort; // Variables to hold the currrent device configuration
-
-        private static int _backlashCompensation;
-
-        private static bool _reverseFocusDirection;
-
-        private static bool _useDynamicBreaking;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private readonly IUtil _utilities;
-
-        /// <summary>
-        /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        private static TraceLogger _tl;
-
-        private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Focuser()
+        public Focuser() : base()
         {
             //todo move this out to IOC
             var util = new Util(); //Initialise util object
             _utilities = util;
-            _sharedResourcesWrapper = new SharedResourcesWrapper();
 
             Initialise();
         }
 
-        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper)
+        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper) : base(sharedResourcesWrapper)
         {
             _utilities = util;
-            _sharedResourcesWrapper = sharedResourcesWrapper;
 
             Initialise();
         }
-
-        private void Initialise()
-        {
-            //todo move the TraceLogger out to a factory class.
-            _tl = new TraceLogger("", "Meade.Generic.focusser");
-
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            IsConnected = false; // Initialise connected to false
-
-            LogMessage("Focuser", "Completed initialisation");
-            LogMessage("Focuser", $"Driver version: {DriverVersion}");
-        }
-
-
+        
         //
         // PUBLIC COM INTERFACE IFocuserV3 IMPLEMENTATION
         //
@@ -214,36 +178,6 @@ namespace ASCOM.Meade.net
                     _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                _tl.LogMessage("Description Get", DriverDescription);
-                return DriverDescription;
-            }
-        }
-
-        public string DriverInfo
-        {
-            get
-            {
-                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
-                LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
-            }
-        }
-
-        public string DriverVersion
-        {
-            get
-            {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-                LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
             }
         }
 
@@ -476,6 +410,7 @@ namespace ASCOM.Meade.net
         #region ASCOM Registration
 
         private static IProfileFactory _profileFactory;
+
         public static IProfileFactory ProfileFactory
         {
             get => _profileFactory ?? (_profileFactory = new ProfileFactory());
@@ -553,12 +488,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected { get; set; }
-
+        
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
@@ -569,36 +499,6 @@ namespace ASCOM.Meade.net
             {
                 throw new NotConnectedException($"Not connected to focuser when trying to execute: {message}");
             }
-        }
-
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        private void ReadProfile()
-        {
-            var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            _tl.Enabled = profileProperties.TraceLogger;
-            _comPort = profileProperties.ComPort;
-            _backlashCompensation = profileProperties.BacklashCompensation;
-            _reverseFocusDirection = profileProperties.ReverseFocusDirection;
-            _useDynamicBreaking = profileProperties.DynamicBreaking;
-
-            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
-            LogMessage("ReadProfile", $"Com Port: {_comPort}");
-            LogMessage("ReadProfile", $"Backlash Steps: {_backlashCompensation}");
-            LogMessage("ReadProfile", $"Dynamic breaking: {_useDynamicBreaking}");
-        }
-
-        /// <summary>
-        /// Log helper function that takes formatted strings and arguments
-        /// </summary>
-        /// <param name="identifier"></param>
-        /// <param name="message"></param>
-        /// <param name="args"></param>
-        private static void LogMessage(string identifier, string message, params object[] args)
-        {
-            var msg = string.Format(message, args);
-            _tl.LogMessage(identifier, msg);
         }
         #endregion
     }
