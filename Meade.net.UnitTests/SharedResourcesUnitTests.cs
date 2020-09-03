@@ -375,7 +375,10 @@ namespace Meade.net.UnitTests
             _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = ""; });
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
-            var result = Assert.Throws<FormatException>(() => { var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); });
+            var result = Assert.Throws<FormatException>(() =>
+            {
+                SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
+            });
             Assert.That(result.Message, Is.EqualTo("Input string was not in a correct format."));
 
             _traceLoggerMock.Verify( x => x.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error."), Times.Once);

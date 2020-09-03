@@ -12,7 +12,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        protected static TraceLogger _tl;
+        protected static TraceLogger Tl;
 
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -27,23 +27,23 @@ namespace ASCOM.Meade.net
         protected string Precision;
         protected string GuidingStyle;
 
-        protected readonly ISharedResourcesWrapper _sharedResourcesWrapper;
+        protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
         public MeadeTelescopeBase()
         {
-            _sharedResourcesWrapper = new SharedResourcesWrapper();
+            SharedResourcesWrapper = new SharedResourcesWrapper();
         }
 
         public MeadeTelescopeBase(ISharedResourcesWrapper sharedResourcesWrapper)
         {
-            _sharedResourcesWrapper = sharedResourcesWrapper;
+            SharedResourcesWrapper = sharedResourcesWrapper;
         }
 
         protected void Initialise()
         {
             var typeName = GetType().Name;
 
-            _tl = new TraceLogger("", $"Meade.Generic.{typeName}");
+            Tl = new TraceLogger("", $"Meade.Generic.{typeName}");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
@@ -58,8 +58,8 @@ namespace ASCOM.Meade.net
         /// </summary>
         protected void ReadProfile()
         {
-            var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            _tl.Enabled = profileProperties.TraceLogger;
+            var profileProperties = SharedResourcesWrapper.ReadProfile();
+            Tl.Enabled = profileProperties.TraceLogger;
             ComPort = profileProperties.ComPort;
             BacklashCompensation = profileProperties.BacklashCompensation;
             ReverseFocusDirection = profileProperties.ReverseFocusDirection;
@@ -68,7 +68,7 @@ namespace ASCOM.Meade.net
             Precision = profileProperties.Precision;
             GuidingStyle = profileProperties.GuidingStyle.ToLower();
 
-            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
+            LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
             LogMessage("ReadProfile", $"Backlash Steps: {BacklashCompensation}");
             LogMessage("ReadProfile", $"Dynamic breaking: {UseDynamicBreaking}");
@@ -86,7 +86,7 @@ namespace ASCOM.Meade.net
         public static void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = String.Format(message, args);
-            _tl.LogMessage(identifier, msg);
+            Tl.LogMessage(identifier, msg);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("Description Get", DriverDescription);
+                Tl.LogMessage("Description Get", DriverDescription);
                 return DriverDescription;
             }
         }
