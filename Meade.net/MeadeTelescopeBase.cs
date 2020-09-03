@@ -9,6 +9,13 @@ namespace ASCOM.Meade.net
     [ComVisible(false)]
     public class MeadeTelescopeBase : ReferenceCountedObjectBase
     {
+        static MeadeTelescopeBase()
+        {
+            ClassName = nameof(MeadeTelescopeBase);
+        }
+
+        public static string ClassName { get; protected set; }
+
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
@@ -41,16 +48,14 @@ namespace ASCOM.Meade.net
 
         protected void Initialise()
         {
-            var typeName = GetType().Name;
-
-            Tl = new TraceLogger("", $"Meade.Generic.{typeName}");
+            Tl = new TraceLogger("", $"Meade.Generic.{ClassName}");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             IsConnected = false; // Initialise connected to false
 
-            LogMessage(typeName, "Completed initialisation");
-            LogMessage(typeName, $"Driver version: {DriverVersion}");
+            LogMessage(ClassName, "Completed initialisation");
+            LogMessage(ClassName, $"Driver version: {DriverVersion}");
         }
 
         /// <summary>
@@ -123,5 +128,17 @@ namespace ASCOM.Meade.net
                 return driverVersion;
             }
         }
+
+        #region ASCOM Registration
+
+        private static IProfileFactory _profileFactory;
+
+        public static IProfileFactory ProfileFactory
+        {
+            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
+            set => _profileFactory = value;
+        }
+
+        #endregion
     }
 }

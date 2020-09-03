@@ -309,8 +309,7 @@ namespace ASCOM.Meade.net
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
                             //sHH# form is returned, otherwise the longer form is returned.
-                            double utcOffsetHours;
-                            if (!double.TryParse(utcOffSet, out utcOffsetHours))
+                            if (!double.TryParse(utcOffSet, out var utcOffsetHours))
                             {
                                 var message = "Unable to decode response from the telescope, This is likely a hardware serial communications error.";
                                 traceLogger.LogIssue("Connect", message);

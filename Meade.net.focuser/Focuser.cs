@@ -32,6 +32,11 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Focuser : MeadeTelescopeBase, IFocuserV3
     {
+        static Focuser()
+        {
+            ClassName = nameof(Focuser);
+        }
+
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -264,6 +269,7 @@ namespace ASCOM.Meade.net
         }
 
         private readonly int _maxStep = 7000;
+
         public int MaxStep
         {
             get
@@ -409,14 +415,6 @@ namespace ASCOM.Meade.net
 
         #region ASCOM Registration
 
-        private static IProfileFactory _profileFactory;
-
-        public static IProfileFactory ProfileFactory
-        {
-            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
-            set => _profileFactory = value;
-        }
-
         // Register or unregister driver for ASCOM. This is harmless if already
         // registered or unregistered. 
         //
@@ -429,7 +427,7 @@ namespace ASCOM.Meade.net
         {
             using (IProfileWrapper p = ProfileFactory.Create())
             {
-                p.DeviceType = "Focuser";
+                p.DeviceType = ClassName;
                 if (bRegister)
                 {
                     p.Register(DriverId, DriverDescription);

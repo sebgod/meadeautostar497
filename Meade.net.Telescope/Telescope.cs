@@ -40,6 +40,11 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Telescope : MeadeTelescopeBase, ITelescopeV3
     {
+        static Telescope()
+        {
+            ClassName = nameof(Telescope);
+        }
+
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -2224,13 +2229,6 @@ namespace ASCOM.Meade.net
         // to help with driver development
 
         #region ASCOM Registration
-
-        private static IProfileFactory _profileFactory;
-        public static IProfileFactory ProfileFactory
-        {
-            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
-            set => _profileFactory = value;
-        }
 
         // Register or unregister driver for ASCOM. This is harmless if already
         // registered or unregistered. 
