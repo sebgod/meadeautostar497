@@ -402,13 +402,13 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify( x => x.SendBlind("#:F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F-#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
             }
 
             _sharedResourcesWrapperMock.Verify( x => x.Lock(It.IsAny<Action>()), Times.Once);
@@ -430,16 +430,16 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(1));
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position) + _profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(_profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(2));

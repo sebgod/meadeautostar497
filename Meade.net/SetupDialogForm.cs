@@ -84,6 +84,7 @@ namespace ASCOM.Meade.net
             txtBacklashSteps.Text = profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture);
 
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
+            cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
         }
 
     public ProfileProperties GetProfile()
@@ -96,8 +97,9 @@ namespace ASCOM.Meade.net
                 Precision = cboPrecision.SelectedItem.ToString(),
                 GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),
                 BacklashCompensation = int.Parse(txtBacklashSteps.Text),
-                ReverseFocusDirection = cbxReverseDirection.Checked
-            };
+                ReverseFocusDirection = cbxReverseDirection.Checked,
+                DynamicBreaking = cbxDynamicBreaking.Checked
+        };
 
             return profileProperties;
         }

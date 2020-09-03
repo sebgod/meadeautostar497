@@ -50,6 +50,8 @@ namespace ASCOM.Meade.net
 
         private static bool _reverseFocusDirection;
 
+        private static bool _useDynamicBreaking;
+
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
@@ -372,19 +374,27 @@ namespace ASCOM.Meade.net
                     _tl.LogMessage("Move", "Applying backlash compensation");
                     MoveFocuser(!direction, backlashCompensationSteps);
                 }
-                
-                //This gives the focuser time to physically stop.  Not sure if this is really needed.
-                //_utilities.WaitForMilliseconds(1000);
 
-
+                DynamicBreaking(direction);
                 //todo implement dynamic braking
                 //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
             });
         }
 
+        private void DynamicBreaking(bool directionOut)
+        {
+            if (!_useDynamicBreaking)
+                return;
+
+            _tl.LogMessage("Move", "Applying dynamic breaking");
+
+            PerformFocuserMove(directionOut);
+            Halt();
+        }
+
         private void MoveFocuser(bool directionOut, int steps)
         {
-            //_sharedResourcesWrapper.SendBlind("#:FF#");
+            //_sharedResourcesWrapper.SendBlind(":FF#");
             //:FF# Set Focus speed to fastest setting
             //Returns: Nothing
 
@@ -396,16 +406,21 @@ namespace ASCOM.Meade.net
             //All others – Not Supported
             _utilities.WaitForMilliseconds(100);
             
-            _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
+            PerformFocuserMove(directionOut);
+
+            _utilities.WaitForMilliseconds(steps);
+
+            Halt();
+        }
+
+        private void PerformFocuserMove(bool directionOut)
+        {
+            _sharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
             //:F+# Start Focuser moving inward (toward objective)
             //Returns: None
 
             //:F-# Start Focuser moving outward (away from objective)
             //Returns: None
-
-            _utilities.WaitForMilliseconds(steps);
-
-            Halt();
         }
 
         public int Position => throw new PropertyNotImplementedException("Position", false);
@@ -566,10 +581,12 @@ namespace ASCOM.Meade.net
             _comPort = profileProperties.ComPort;
             _backlashCompensation = profileProperties.BacklashCompensation;
             _reverseFocusDirection = profileProperties.ReverseFocusDirection;
+            _useDynamicBreaking = profileProperties.DynamicBreaking;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {_comPort}");
             LogMessage("ReadProfile", $"Backlash Steps: {_backlashCompensation}");
+            LogMessage("ReadProfile", $"Dynamic breaking: {_useDynamicBreaking}");
         }
 
         /// <summary>

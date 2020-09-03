@@ -143,6 +143,7 @@ namespace ASCOM.Meade.net
         private const string GuidingStyleProfileName = "Guiding Style";
         private const string BacklashCompensationName = "Backlash Compensation";
         private const string ReverseFocusDirectionName = "Reverse Focuser Direction";
+        private const string DynamicBreakingName = "Dynamic Breaking";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -158,6 +159,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
                     driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
                     driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
+                    driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
                 }
             }
         }
@@ -169,6 +171,7 @@ namespace ASCOM.Meade.net
         private const string GuidingStyleDefault = "Auto";
         private const string BacklashCompensationDefault = "3000";
         private const string ReverseFocuserDiectionDefault = "true";
+        private const string DynamicBreakingDefault = "true";
 
         public static ProfileProperties ReadProfile()
         {
@@ -185,6 +188,7 @@ namespace ASCOM.Meade.net
                     profileProperties.GuidingStyle = driverProfile.GetValue(DriverId, GuidingStyleProfileName, string.Empty, GuidingStyleDefault);
                     profileProperties.BacklashCompensation = Convert.ToInt32(driverProfile.GetValue(DriverId, BacklashCompensationName, string.Empty, BacklashCompensationDefault));
                     profileProperties.ReverseFocusDirection = Convert.ToBoolean(driverProfile.GetValue(DriverId, ReverseFocusDirectionName, string.Empty, ReverseFocuserDiectionDefault));
+                    profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
                 }
 
                 return profileProperties;
