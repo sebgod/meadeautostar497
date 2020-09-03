@@ -872,7 +872,7 @@ namespace ASCOM.Meade.net
                 LogMessage("Altitude", $"{altAz.Altitude}");
                 return altAz.Altitude;
 
-                ////todo firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
+                //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
                 //var result = _sharedResourcesWrapper.SendString("#:GA#");
                 ////:GA# Get Telescope Altitude
                 ////Returns: sDD* MM# or sDD*MM’SS#

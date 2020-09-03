@@ -18,14 +18,14 @@ namespace AstroMath.UnitTests
         [Test]
         public void DegreesToRadians()
         {
-            var radians = _astroMath.DegreesToRadians(90);
+            var radians = 90.0.DegreesToRadians();
             Assert.That(radians, Is.EqualTo(1.5707963267948966));
         }
 
         [Test]
         public void RadiansToDegrees()
         {
-            var degrees = _astroMath.RadiansToDegrees(1.5707963267948966);
+            var degrees = 1.5707963267948966.RadiansToDegrees();
             Assert.That(degrees, Is.EqualTo(90));
         }
 
@@ -34,7 +34,7 @@ namespace AstroMath.UnitTests
         public void DateTimeToDecimalHours_book()
         {
             DateTime dateTime = new DateTime(2019, 05, 18, 18, 31, 27, DateTimeKind.Utc);
-            var decimalHours = _astroMath.DateTimeToDecimalHours(dateTime);
+            var decimalHours = dateTime.DateTimeToDecimalHours();
 
             Assert.That(decimalHours, Is.EqualTo(18.524166666666666));
         }
@@ -43,7 +43,7 @@ namespace AstroMath.UnitTests
         public void DateTimeToDecimalHours()
         {
             DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
-            var decimalHours = _astroMath.DateTimeToDecimalHours(dateTime);
+            var decimalHours = dateTime.DateTimeToDecimalHours();
 
             Assert.That(decimalHours, Is.EqualTo(22.4375));
         }
@@ -52,7 +52,7 @@ namespace AstroMath.UnitTests
         public void UTtoGST_book()
         {
             DateTime dateTime = new DateTime(1980, 04, 22, 14, 36, 51, 670, DateTimeKind.Utc);
-            double gst = _astroMath.UTtoGst(dateTime);
+            double gst = dateTime.UTtoGst();
 
             Assert.That(gst, Is.EqualTo(4.667932706211154));
         }
@@ -61,7 +61,7 @@ namespace AstroMath.UnitTests
         public void UTtoGst()
         {
             DateTime dateTime = new DateTime(2019, 05, 18, 22, 26, 15, DateTimeKind.Utc);
-            double gst = _astroMath.UTtoGst(dateTime);
+            double gst = dateTime.UTtoGst();
 
             Assert.That(gst, Is.EqualTo(14.191879687876451));
         }

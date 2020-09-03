@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstroMaths\AltitudeData.cs" />
+    <Compile Include="AstroMaths\AstroMathExtensions.cs" />
     <Compile Include="AstroMaths\AstroMaths.cs" />
     <Compile Include="AstroMaths\EquatorialCoordinates.cs" />
     <Compile Include="AstroMaths\HorizonCoordinates.cs" />
