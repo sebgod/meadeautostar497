@@ -2275,6 +2275,7 @@ namespace ASCOM.Meade.net
 
         public void Unpark()
         {
+            //todo heard a rumour that it's possible to unpark an LX200GPS.
             LogMessage("Unpark", "Not implemented");
             throw new MethodNotImplementedException("Unpark");
         }
