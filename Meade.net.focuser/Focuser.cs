@@ -342,8 +342,6 @@ namespace ASCOM.Meade.net
             _tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
 
-            //todo implement dynamic braking
-
             if (position < -MaxIncrement || position > MaxIncrement)
             {
                 throw new InvalidValueException($"position out of range {-MaxIncrement} < {position} < {MaxIncrement}");
@@ -358,26 +356,30 @@ namespace ASCOM.Meade.net
 
             _sharedResourcesWrapper.Lock(() =>
             {
-                MoveFocuser(direction, Math.Abs(position));
-                ApplyBacklashCompensation(direction);
-                //This gives the focuser time to physically stop.
-                _utilities.WaitForMilliseconds(1000);
+                //backlash compensation.
+                var backlashCompensationSteps = direction ? Math.Abs(_backlashCompensation) : 0;
+
+                var steps = Math.Abs(position) + backlashCompensationSteps;
+                
+
+                MoveFocuser(direction, steps);
+
+
+                //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
+                //ApplyBacklashCompensation(direction);
+                if (direction & backlashCompensationSteps != 0)
+                {
+                    _tl.LogMessage("Move", "Applying backlash compensation");
+                    MoveFocuser(!direction, backlashCompensationSteps);
+                }
+                
+                //This gives the focuser time to physically stop.  Not sure if this is really needed.
+                //_utilities.WaitForMilliseconds(1000);
+
+
+                //todo implement dynamic braking
+                //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
             });
-        }
-
-        private void ApplyBacklashCompensation(bool directionOut)
-        {
-            if (_backlashCompensation == 0)
-                return;
-
-            _tl.LogMessage("Move", "Applying backlash compensation");
-
-            if (directionOut)
-            {
-                MoveFocuser(directionOut, Math.Abs(_backlashCompensation));
-                _utilities.WaitForMilliseconds(Math.Abs(_backlashCompensation));
-                MoveFocuser(!directionOut, Math.Abs(_backlashCompensation));
-            }
         }
 
         private void MoveFocuser(bool directionOut, int steps)
@@ -393,9 +395,7 @@ namespace ASCOM.Meade.net
             //Returns: Nothing
             //All others – Not Supported
             _utilities.WaitForMilliseconds(100);
-
-            //Todo fix this issue. A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
-
+            
             _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
             //:F+# Start Focuser moving inward (toward objective)
             //Returns: None
