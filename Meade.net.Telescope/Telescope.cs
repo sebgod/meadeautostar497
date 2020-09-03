@@ -64,7 +64,7 @@ namespace ASCOM.Meade.net
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Telescope() : base()
+        public Telescope()
         {
             try
             {
@@ -373,11 +373,11 @@ namespace ASCOM.Meade.net
                     {
                         ReadProfile();
 
-                        LogMessage("Connected Set", "Connecting to port {0}", _comPort);
+                        LogMessage("Connected Set", "Connecting to port {0}", ComPort);
                         var connectionInfo = _sharedResourcesWrapper.Connect("Serial", DriverId, _tl);
                         try
                         {
-                            LogMessage("Connected Set", $"Connected to port {_comPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
+                            LogMessage("Connected Set", $"Connected to port {ComPort}. Product: {_sharedResourcesWrapper.ProductName} Version:{_sharedResourcesWrapper.FirmwareVersion}");
 
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
                             _targetDeclination = InvalidParameter;
@@ -396,7 +396,7 @@ namespace ASCOM.Meade.net
 
                                 if (CanSetGuideRates)
                                 {
-                                    SetNewGuideRate(_guideRate, "Connect");
+                                    SetNewGuideRate(GuideRate, "Connect");
                                 }
 
                                 SetTelescopePrecision("Connect");
@@ -417,12 +417,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _comPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
                     _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
@@ -431,7 +431,7 @@ namespace ASCOM.Meade.net
 
         private void SetTelescopePrecision(string propertyName)
         {
-            switch (_precision.ToLower())
+            switch (Precision.ToLower())
             {
                 case "high":
                     TelescopePointingPrecision(true);
@@ -449,7 +449,7 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            switch (_guidingStyle)
+            switch (GuidingStyle)
             {
                 case "guide rate slew":
                     return false;
@@ -1181,7 +1181,7 @@ namespace ASCOM.Meade.net
 
             //info from RickB says that 15.04107 is a better value for 
 
-            _guideRate = value;
+            GuideRate = value;
 
             WriteProfile();
         }
@@ -1200,8 +1200,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
-                LogMessage("GuideRateDeclination Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(GuideRate);
+                LogMessage("GuideRateDeclination Get", $"{GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
@@ -1215,8 +1215,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_guideRate);
-                LogMessage("GuideRateRightAscension Get", $"{_guideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(GuideRate);
+                LogMessage("GuideRateRightAscension Get", $"{GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
@@ -2321,8 +2321,8 @@ namespace ASCOM.Meade.net
             var profileProperties = new ProfileProperties
             {
                 TraceLogger = _tl.Enabled,
-                ComPort = _comPort,
-                GuideRateArcSecondsPerSecond = _guideRate
+                ComPort = ComPort,
+                GuideRateArcSecondsPerSecond = GuideRate
             };
 
             _sharedResourcesWrapper.WriteProfile(profileProperties);

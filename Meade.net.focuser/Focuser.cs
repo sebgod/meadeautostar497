@@ -48,7 +48,7 @@ namespace ASCOM.Meade.net
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Focuser() : base()
+        public Focuser()
         {
             //todo move this out to IOC
             var util = new Util(); //Initialise util object
@@ -169,12 +169,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _comPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
                     _sharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
@@ -287,13 +287,13 @@ namespace ASCOM.Meade.net
                 return;
 
             var direction = position > 0;
-            if (_reverseFocusDirection)
+            if (ReverseFocusDirection)
                 direction = !direction;
 
             _sharedResourcesWrapper.Lock(() =>
             {
                 //backlash compensation.
-                var backlashCompensationSteps = direction ? Math.Abs(_backlashCompensation) : 0;
+                var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
 
                 var steps = Math.Abs(position) + backlashCompensationSteps;
                 
@@ -317,7 +317,7 @@ namespace ASCOM.Meade.net
 
         private void DynamicBreaking(bool directionOut)
         {
-            if (!_useDynamicBreaking)
+            if (!UseDynamicBreaking)
                 return;
 
             _tl.LogMessage("Move", "Applying dynamic breaking");

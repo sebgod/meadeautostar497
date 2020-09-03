@@ -19,13 +19,13 @@ namespace ASCOM.Meade.net
         /// </summary>
         protected static readonly string DriverDescription = "Meade Generic";
 
-        protected static string _comPort; // Variables to hold the currrent device configuration
-        protected static int _backlashCompensation;
-        protected static bool _reverseFocusDirection;
-        protected static bool _useDynamicBreaking;
-        protected double _guideRate;
-        protected string _precision;
-        protected string _guidingStyle;
+        protected static string ComPort; // Variables to hold the currrent device configuration
+        protected static int BacklashCompensation;
+        protected static bool ReverseFocusDirection;
+        protected static bool UseDynamicBreaking;
+        protected double GuideRate;
+        protected string Precision;
+        protected string GuidingStyle;
 
         protected readonly ISharedResourcesWrapper _sharedResourcesWrapper;
 
@@ -60,21 +60,21 @@ namespace ASCOM.Meade.net
         {
             var profileProperties = _sharedResourcesWrapper.ReadProfile();
             _tl.Enabled = profileProperties.TraceLogger;
-            _comPort = profileProperties.ComPort;
-            _backlashCompensation = profileProperties.BacklashCompensation;
-            _reverseFocusDirection = profileProperties.ReverseFocusDirection;
-            _useDynamicBreaking = profileProperties.DynamicBreaking;
-            _guideRate = profileProperties.GuideRateArcSecondsPerSecond;
-            _precision = profileProperties.Precision;
-            _guidingStyle = profileProperties.GuidingStyle.ToLower();
+            ComPort = profileProperties.ComPort;
+            BacklashCompensation = profileProperties.BacklashCompensation;
+            ReverseFocusDirection = profileProperties.ReverseFocusDirection;
+            UseDynamicBreaking = profileProperties.DynamicBreaking;
+            GuideRate = profileProperties.GuideRateArcSecondsPerSecond;
+            Precision = profileProperties.Precision;
+            GuidingStyle = profileProperties.GuidingStyle.ToLower();
 
             LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
-            LogMessage("ReadProfile", $"Com Port: {_comPort}");
-            LogMessage("ReadProfile", $"Backlash Steps: {_backlashCompensation}");
-            LogMessage("ReadProfile", $"Dynamic breaking: {_useDynamicBreaking}");
-            LogMessage("ReadProfile", $"Guide Rate: {_guideRate}");
-            LogMessage("ReadProfile", $"Precision: {_precision}");
-            LogMessage("ReadProfile", $"Guiding Style: {_guidingStyle}");
+            LogMessage("ReadProfile", $"Com Port: {ComPort}");
+            LogMessage("ReadProfile", $"Backlash Steps: {BacklashCompensation}");
+            LogMessage("ReadProfile", $"Dynamic breaking: {UseDynamicBreaking}");
+            LogMessage("ReadProfile", $"Guide Rate: {GuideRate}");
+            LogMessage("ReadProfile", $"Precision: {Precision}");
+            LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
         }
 
         /// <summary>
