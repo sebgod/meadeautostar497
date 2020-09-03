@@ -311,7 +311,7 @@ namespace ASCOM.Meade.net
                             //sHH# form is returned, otherwise the longer form is returned.
                             try
                             {
-                                double utcOffsetHours = double.Parse(utcOffSet);
+                                double.Parse(utcOffSet);
                             }
                             catch (Exception)
                             {
