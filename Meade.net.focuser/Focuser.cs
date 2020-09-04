@@ -32,11 +32,6 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Focuser : MeadeTelescopeBase, IFocuserV3
     {
-        static Focuser()
-        {
-            ClassName = nameof(Focuser);
-        }
-
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -59,16 +54,16 @@ namespace ASCOM.Meade.net
             var util = new Util(); //Initialise util object
             _utilities = util;
 
-            Initialise();
+            Initialise(nameof(Focuser));
         }
 
         public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper) : base(sharedResourcesWrapper)
         {
             _utilities = util;
 
-            Initialise();
+            Initialise(nameof(Focuser));
         }
-        
+
         //
         // PUBLIC COM INTERFACE IFocuserV3 IMPLEMENTATION
         //
@@ -427,7 +422,7 @@ namespace ASCOM.Meade.net
         {
             using (IProfileWrapper p = ProfileFactory.Create())
             {
-                p.DeviceType = ClassName;
+                p.DeviceType = nameof(Focuser);
                 if (bRegister)
                 {
                     p.Register(DriverId, DriverDescription);

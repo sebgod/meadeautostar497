@@ -40,11 +40,6 @@ namespace ASCOM.Meade.net
     [ComVisible(true)]
     public class Telescope : MeadeTelescopeBase, ITelescopeV3
     {
-        static Telescope()
-        {
-            ClassName = nameof(Telescope);
-        }
-
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -80,7 +75,7 @@ namespace ASCOM.Meade.net
                 _astroUtilities = new AstroUtils(); // Initialise astro utilities object
                 _astroMaths = new AstroMaths.AstroMaths();
 
-                Initialise();
+                Initialise(nameof(Telescope));
             }
             catch (Exception e)
             {
@@ -118,7 +113,7 @@ namespace ASCOM.Meade.net
             _astroUtilities = astroUtilities; // Initialise astro utilities object
             _astroMaths = astroMaths;
 
-            Initialise();
+            Initialise(nameof(Telescope));
         }
 
         private bool _isGuiding;
