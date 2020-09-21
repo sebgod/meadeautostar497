@@ -947,7 +947,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var result = _telescope.CanUnpark;
 
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -1581,11 +1581,9 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void Unpark_ThenThrowsException()
+        public void Unpark_ThenDoesNotThrowException()
         {
-            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.Unpark(); });
-
-            Assert.That(excpetion.Method, Is.EqualTo("Unpark"));
+            Assert.DoesNotThrow(() => { _telescope.Unpark(); });
         }
 
         [Test]

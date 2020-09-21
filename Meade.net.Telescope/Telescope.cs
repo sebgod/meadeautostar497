@@ -1073,8 +1073,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanUnpark", "Get - " + false);
-                return false;
+                LogMessage("CanUnpark", "Get - " + true);
+                return true;
             }
         }
 
@@ -1877,7 +1877,7 @@ namespace ASCOM.Meade.net
 
             bool isSlewing = result.Trim() != string.Empty;
 
-            LogMessage("Slewing Get", $"Result = {isSlewing}");
+            LogMessage("Slewing Get", $"Result = {isSlewing} ({result.Trim()}");
             return isSlewing;
         }
 
@@ -2212,9 +2212,33 @@ namespace ASCOM.Meade.net
 
         public void Unpark()
         {
-            //todo heard a rumour that it's possible to unpark an LX200GPS.
-            LogMessage("Unpark", "Not implemented");
-            throw new MethodNotImplementedException("Unpark");
+            LogMessage("Unpark", "Parking telescope");
+
+            if (!AtPark)
+                return;
+
+            SharedResourcesWrapper.SendChar(":I#");
+            //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
+            //Returns: X once the handset restart has completed
+
+            //todo implement the 
+            //todo make sure that the telescope has the correct date and time.
+            //UTCDate = DateTime.UtcNow;
+
+
+
+            var utcCorrection = GetUtcCorrection();
+            var localDateTime = DateTime.UtcNow - utcCorrection;
+
+            //localDateTime: HH: mm: ss
+            SharedResourcesWrapper.SendBlind($":hI{localDateTime:yyMMddhhmmss}#");
+            //:hIYYMMDDHHMMSS#
+            //Bypass handbox entry of daylight savings, date and time.Use the values supplied in this command.This feature is
+            //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
+            //metal domes. This command must be issued while the telescope is waiting at the initial daylight savings prompt.
+            //Returns: 1 – if command was accepted.
+
+            AtPark = false;
         }
 
         #endregion

@@ -83,7 +83,7 @@ namespace ASCOM.Meade.net
         /// <param name="args"></param>
         public static void LogMessage(string identifier, string message, params object[] args)
         {
-            var msg = String.Format(message, args);
+            var msg = string.Format(message, args);
             Tl.LogMessage(identifier, msg);
         }
 
