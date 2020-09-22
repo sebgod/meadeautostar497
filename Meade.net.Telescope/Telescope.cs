@@ -1847,19 +1847,26 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                if (!Connected) return false;
-
-
-                if (MovingAxis())
-                    return true;
-
-                return IsSlewingToTarget();
+                var isSlewing = GetSlewing();
+                LogMessage("Slewing", $"Result = {isSlewing}");
+                return isSlewing;
             }
+        }
+
+        private bool GetSlewing()
+        {
+            if (!Connected) return false;
+
+
+            if (MovingAxis())
+                return true;
+
+            return IsSlewingToTarget();
         }
 
         private bool IsSlewingToTarget()
         {
-            CheckConnected("Slewing Get");
+            CheckConnected("IsSlewingToTarget");
 
             if (_isGuiding)
                 return false;
@@ -1875,9 +1882,20 @@ namespace ASCOM.Meade.net
                 return false;
             }
 
-            bool isSlewing = result.Trim() != string.Empty;
+            var trimmedResult = result.Trim();
+            var isResultEmpty = trimmedResult != string.Empty;
 
-            LogMessage("Slewing Get", $"Result = {isSlewing} ({result.Trim()}");
+            var isSlewing = isResultEmpty;
+
+            if (!isResultEmpty) //the LX-200 can return crap from the buffer when it's not slewing so let's try to filter that out.
+            {
+                if (!trimmedResult.Contains("|"))
+                {
+                    isSlewing = false; 
+                }
+            }
+
+            LogMessage("IsSlewingToTarget", $"Result = {isSlewing} ({trimmedResult})");
             return isSlewing;
         }
 
