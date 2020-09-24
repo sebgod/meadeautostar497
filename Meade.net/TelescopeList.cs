@@ -4,30 +4,30 @@
     {
         #region Autostar 497/Audiostar
 
-        public static readonly string Autostar497 = "Autostar";
+        public const string Autostar497 = "Autostar";
 
         //Autostar/Audiostar firmware revisions
         // ReSharper disable once InconsistentNaming
-        public static readonly string Autostar497_30Ee = "30Ee";
+        public const string Autostar497_30Ee = "30Ee";
         // ReSharper disable once InconsistentNaming
-        public static readonly string Autostar497_31Ee = "31Ee";
+        public const string Autostar497_31Ee = "31Ee";
         // ReSharper disable once InconsistentNaming
-        public static readonly string Autostar497_43Eg = "43Eg";
+        public const string Autostar497_43Eg = "43Eg";
 
         #endregion
 
         #region LX200GPS
 
         // ReSharper disable once InconsistentNaming
-        public static readonly string LX200GPS = "LX2001";
+        public const string LX200GPS = "LX2001";
 
         // ReSharper disable once InconsistentNaming
-        public static readonly string LX200GPS_42G = "4.2G";
+        public const string LX200GPS_42G = "4.2G";
         #endregion
 
         #region LX200EMC
         // ReSharper disable once InconsistentNaming
-        public static readonly string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!
+        public const string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!
         #endregion
     }
 }

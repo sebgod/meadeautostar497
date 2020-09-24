@@ -1883,9 +1883,9 @@ namespace ASCOM.Meade.net
             }
 
             var trimmedResult = result.Trim();
-            var isResultEmpty = trimmedResult != string.Empty;
+            var isResultEmpty = trimmedResult == string.Empty;
 
-            var isSlewing = isResultEmpty;
+            var isSlewing = !isResultEmpty;
 
             if (!isResultEmpty) //the LX-200 can return crap from the buffer when it's not slewing so let's try to filter that out.
             {

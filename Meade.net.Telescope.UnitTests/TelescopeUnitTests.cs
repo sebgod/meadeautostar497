@@ -67,10 +67,10 @@ namespace Meade.net.Telescope.UnitTests
                 _sharedResourcesWrapperMock.Object, _astroMathsMock.Object);
         }
 
-        private void ConnectTelescope()
+        private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
             _telescope.Connected = true;
         }
 
@@ -2182,6 +2182,25 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.True);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"),Times.Once);
+        }
+
+        [TestCase(TelescopeList.LX200CLASSIC,"","|", true)]
+        [TestCase(TelescopeList.LX200CLASSIC, "", "||||||||", true)]
+        [TestCase(TelescopeList.LX200CLASSIC, "", "", false)]
+        [TestCase(TelescopeList.LX200CLASSIC, "", "[FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF]  [FF][FF][FF][FF][FF][FF]", false)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "|", true)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "", false)]
+        public void Slewing_WhenTelescopeNotSlewing_ThenReturnsFalse(string productName, string firmwareVersion, string response, bool isSlewing)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(response);
+
+            ConnectTelescope(productName, firmwareVersion);
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.EqualTo(isSlewing));
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Once);
         }
 
         [TestCase(1, TelescopeAxes.axisPrimary)]
