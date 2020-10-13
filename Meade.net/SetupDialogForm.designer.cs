@@ -31,6 +31,7 @@ namespace ASCOM.Meade.net
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SetupDialogForm));
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
@@ -55,6 +56,8 @@ namespace ASCOM.Meade.net
             this.label11 = new System.Windows.Forms.Label();
             this.cbxReverseDirection = new System.Windows.Forms.CheckBox();
             this.cbxDynamicBreaking = new System.Windows.Forms.CheckBox();
+            this.cbxRtsDtr = new System.Windows.Forms.CheckBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -201,10 +204,18 @@ namespace ASCOM.Meade.net
             this.cbxDynamicBreaking.Name = "cbxDynamicBreaking";
             this.cbxDynamicBreaking.UseVisualStyleBackColor = true;
             // 
+            // cbxRtsDtr
+            // 
+            resources.ApplyResources(this.cbxRtsDtr, "cbxRtsDtr");
+            this.cbxRtsDtr.Name = "cbxRtsDtr";
+            this.toolTip1.SetToolTip(this.cbxRtsDtr, resources.GetString("cbxRtsDtr.ToolTip"));
+            this.cbxRtsDtr.UseVisualStyleBackColor = true;
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.cbxRtsDtr);
             this.Controls.Add(this.cbxDynamicBreaking);
             this.Controls.Add(this.cbxReverseDirection);
             this.Controls.Add(this.label11);
@@ -266,5 +277,7 @@ namespace ASCOM.Meade.net
         private Label label11;
         private CheckBox cbxReverseDirection;
         private CheckBox cbxDynamicBreaking;
+        private CheckBox cbxRtsDtr;
+        private ToolTip toolTip1;
     }
 }

@@ -11,5 +11,6 @@ namespace ASCOM.Meade.net
         public int BacklashCompensation { get; set; }
         public bool ReverseFocusDirection { get; set; }
         public bool DynamicBreaking { get; set; }
+        public bool RtsDtrEnabled { get; set; }
     }
 }

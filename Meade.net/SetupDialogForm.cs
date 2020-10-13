@@ -62,6 +62,8 @@ namespace ASCOM.Meade.net
                 comboBoxComPort.SelectedItem = profileProperties.ComPort;
             }
 
+            cbxRtsDtr.Checked = profileProperties.RtsDtrEnabled;
+
             txtGuideRate.Text = profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture);
             try
             {
@@ -93,13 +95,14 @@ namespace ASCOM.Meade.net
             {
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
+                RtsDtrEnabled = cbxRtsDtr.Checked,
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
                 Precision = cboPrecision.SelectedItem.ToString(),
                 GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),
                 BacklashCompensation = int.Parse(txtBacklashSteps.Text),
                 ReverseFocusDirection = cbxReverseDirection.Checked,
                 DynamicBreaking = cbxDynamicBreaking.Checked
-        };
+            };
 
             return profileProperties;
         }

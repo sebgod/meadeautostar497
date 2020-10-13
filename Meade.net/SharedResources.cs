@@ -137,6 +137,7 @@ namespace ASCOM.Meade.net
 
         // Constants used for Profile persistence
         private const string ComPortProfileName = "COM Port";
+        private const string RtsDtrProfileName = "Rts / Dtr";
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
@@ -154,6 +155,7 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
+                    driverProfile.WriteValue(DriverId, RtsDtrProfileName, profileProperties.RtsDtrEnabled.ToString());
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
@@ -165,6 +167,7 @@ namespace ASCOM.Meade.net
         }
 
         private const string ComPortDefault = "COM1";
+        private const string RtsDtrDefault = "false";
         private const string TraceStateDefault = "false";
         private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
         private const string PrecisionDefault = "Unchanged";
@@ -182,6 +185,7 @@ namespace ASCOM.Meade.net
                 {
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
+                    profileProperties.RtsDtrEnabled = Convert.ToBoolean(driverProfile.GetValue(DriverId, RtsDtrProfileName, string.Empty, RtsDtrDefault));
                     profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
                     profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
@@ -272,8 +276,8 @@ namespace ASCOM.Meade.net
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
-                        SharedSerial.DTREnable = false;
-                        SharedSerial.RTSEnable = false;
+                        SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
+                        SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.DataBits = 8;
                         SharedSerial.StopBits = SerialStopBits.One;
                         SharedSerial.Parity = SerialParity.None;
