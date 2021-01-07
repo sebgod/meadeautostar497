@@ -1606,13 +1606,11 @@ namespace ASCOM.Meade.net
                 //:Gg# Get Current Site Longitude
                 //Returns: sDDD*MM#
                 //The current site Longitude. East Longitudes are expressed as negative
-                double siteLongitude = _utilities.DMSToDegrees(longitude);
+                double siteLongitude = -_utilities.DMSToDegrees(longitude);
 
-                if (siteLongitude > 180)
-                    siteLongitude = siteLongitude - 360;
-
-                siteLongitude = -siteLongitude;
-
+                if (siteLongitude < -180)
+                    siteLongitude = siteLongitude + 360;
+                
                 LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
                 return siteLongitude;
             }
