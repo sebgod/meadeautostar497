@@ -422,6 +422,12 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_SettingFalseWhenTrue_ThenDisconnects()
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             ConnectTelescope();
             _sharedResourcesWrapperMock.Verify(x => x.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
 
@@ -978,18 +984,22 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Declination_Get_WhenConnected_ThenReturnsExpectedResult()
         {
-            var telescopeRaResult = "s12*34’56";
+            var telescopeDecResult = "s12*34’56";
             var dmsResult = 1.2;
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.3;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeRaResult);
-            _utilMock.Setup(x => x.DMSToDegrees(telescopeRaResult)).Returns(dmsResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(dmsResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
 
             ConnectTelescope();
 
             var result = _telescope.Declination;
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":GD#"), Times.Exactly(2));
-            _utilMock.Verify(x => x.DMSToDegrees(telescopeRaResult), Times.Exactly(2));
+            _utilMock.Verify(x => x.DMSToDegrees(telescopeDecResult), Times.Exactly(2));
 
             Assert.That(result, Is.EqualTo(dmsResult));
         }
@@ -1304,6 +1314,12 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailable_ThenSendsNewCommandsAndWaits(GuideDirections direction)
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             var duration = 0;
             ConnectTelescope();
 
@@ -1370,6 +1386,16 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenIsSlewingRespondsFalse(GuideDirections direction)
         {
+            var telescopeDecResult = "s12*34’56";
+            var dmsResult = 1.2;
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.3;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(dmsResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             var duration = 0;
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
@@ -1393,6 +1419,16 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
+            var telescopeDecResult = "s12*34’56";
+            var dmsResult = 1.2;
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.3;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(dmsResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             var duration = 0;
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
@@ -1429,6 +1465,12 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailableButDurationTooLong_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             var duration = 10000;
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);

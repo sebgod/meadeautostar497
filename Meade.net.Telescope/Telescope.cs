@@ -1550,7 +1550,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// convert a HH:MM.T (classic LX200 RA Notation) string to a double hours. T is the decimal part of minutes which is converted into seconds
         /// </summary>
-        public double HMToHours(String hm)
+        public double HMToHours(string hm)
         {
             String[] token = hm.Split('.');
             if (token.Length == 2)
