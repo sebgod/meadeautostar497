@@ -2562,14 +2562,26 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
         {
-            var rightAscension = 10;
+            var rightAscension = 10.0;
             var declination = 20;
             var azimuth = 30;
             var altitude = 40;
 
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 10.0;
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeRaResult)).Returns(declination);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
+
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(":Sd+HH:MM:SS#")).Returns("1");
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
