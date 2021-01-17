@@ -1820,6 +1820,12 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenSyncToTargetWorks_ThennoExceptionThrown()
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":CM#")).Returns(" M31 EX GAL MAG 3.5 SZ178.0'#");
 
             ConnectTelescope();
@@ -2169,6 +2175,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToCoordinates_WhenNotConnected_ThenThrowsException()
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
             double rightAscension = 5.5;
             string hms = "05:30:00";
 
@@ -2234,6 +2243,11 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "", false)]
         public void Slewing_WhenTelescopeNotSlewing_ThenReturnsFalse(string productName, string firmwareVersion, string response, bool isSlewing)
         {
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns(response);
 
             ConnectTelescope(productName, firmwareVersion);
