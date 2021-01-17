@@ -421,7 +421,7 @@ namespace ASCOM.Meade.net
                             var raAndDec = GetTelescopeRaAndDec();
                             LogMessage("Connected Set", $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             SharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
