@@ -515,6 +515,9 @@ namespace ASCOM.Meade.net
         /// </summary>
         private bool IsTargetCoordinateInitRequired()
         {
+            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
+                return false;
+
             if (!_isTargetCoordinateInitRequired)
                 return _isTargetCoordinateInitRequired;
 
