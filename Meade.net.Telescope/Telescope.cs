@@ -59,7 +59,17 @@ namespace ASCOM.Meade.net
         private readonly IAstroUtils _astroUtilities;
 
         private readonly IAstroMaths _astroMaths;
-        
+
+        /// <summary>
+        /// Private variable to hold number of decimals for RA
+        /// </summary>
+        private int _digitsRa = 2;
+
+        /// <summary>
+        /// Private variable to hold number of decimals for DE
+        /// </summary>
+        private int _digitsDe = 2;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -117,6 +127,8 @@ namespace ASCOM.Meade.net
         }
 
         private bool _isGuiding;
+
+        private bool _isTargetCoordinateInitRequired = true;
         //
         // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
         //
@@ -498,6 +510,81 @@ namespace ASCOM.Meade.net
 
         private bool IsLongFormat { get; set; }
 
+        /// <summary>
+        /// classic LX200 needs initial set of target coordinates, if it is slewing and the target RA DE coordinates are 0 and differ from the current coordinates
+        /// </summary>
+        private bool IsTargetCoordinateInitRequired()
+        {
+            const double eps = 0.00001d;
+            if (!_isTargetCoordinateInitRequired)
+                return _isTargetCoordinateInitRequired;
+
+            if (!IsConnected)
+                return true;
+
+            if(SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
+            {
+                _isTargetCoordinateInitRequired = false;
+                return _isTargetCoordinateInitRequired;
+            }
+
+            var result = SharedResourcesWrapper.SendString(":Gr#");
+
+            double rightTargetAscension = HMToHours(result);
+
+            //target RA == 0
+            if(Math.Abs(rightTargetAscension) > eps)
+            {
+                _isTargetCoordinateInitRequired = false;
+                return _isTargetCoordinateInitRequired;
+            }
+            result = SharedResourcesWrapper.SendString(":Gd#");
+
+            double targetDeclination = _utilities.DMSToDegrees(result);
+
+            //target DE == 0
+            if(Math.Abs(targetDeclination) > eps)
+            {
+                _isTargetCoordinateInitRequired = false;
+                return _isTargetCoordinateInitRequired;
+            }
+
+
+            //target coordinates are equal current coordinates
+            if((Math.Abs(RightAscension - rightTargetAscension ) <= eps) &&
+                (Math.Abs(Declination - targetDeclination) <= eps))
+            {
+                LogMessage("IsTargetCoordinateInitRequired", $"0 diff -> false");
+                _isTargetCoordinateInitRequired = false;
+                return _isTargetCoordinateInitRequired;
+            }
+
+            LogMessage("IsTargetCoordinateInitRequired", $"{_isTargetCoordinateInitRequired}");
+            return _isTargetCoordinateInitRequired;
+        }
+
+        private void InitTargetCoordinates()
+        {
+
+            try
+            {
+                var raAndDec = GetTelescopeRaAndDec();
+                //when connection the first time the telescop target coordinates should be the current ones.
+                //for the classic LX200 at least this is not the case, target ra and dec are 0, when switched on.
+                LogMessage("InitTargetCoordinates", "sync telescope target");
+                SyncToCoordinates(raAndDec.RightAscension, raAndDec.Declination);
+
+                //doit only once
+                _isTargetCoordinateInitRequired = false;
+
+
+            }
+            catch (Exception ex)
+            {
+                LogMessage("InitTargetCoordinates", $"Error sync telescope position", ex.Message);
+            }
+
+        }
         public void SetLongFormat(bool setLongFormat)
         {
             IsLongFormat = false;
@@ -505,14 +592,17 @@ namespace ASCOM.Meade.net
             if (!IsLongFormatSupported())
             {
                 LogMessage("SetLongFormat", "Long coordinate format not supported for this mount");
+                _digitsRa = 1;
+                _digitsDe = 0;
                 return;
             }
 
             SharedResourcesWrapper.Lock(() =>
             {
                 var result = SharedResourcesWrapper.SendString(":GZ#");
+                LogMessage("SetLongFormat", $"Get - Azimuth {result}");
                 //:GZ# Get telescope azimuth
-                //Returns: DDD*MM# or DDD*MM’SS#
+                //Returns: DDD*MM.T or DDD*MM’SS#
                 //The current telescope Azimuth depending on the selected precision.
 
                 IsLongFormat = result.Length > 6;
@@ -525,6 +615,15 @@ namespace ASCOM.Meade.net
                     //Low - RA displays and messages HH:MM.T sDD*MM
                     //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
                     //    Returns Nothing
+                    result = SharedResourcesWrapper.SendString(":GZ#");
+                    IsLongFormat = result.Length > 6;
+                    LogMessage("SetLongFormat", $"Get - Azimuth {result}");
+                    if (IsLongFormat == setLongFormat)
+                        LogMessage("SetLongFormat", $"Long coordinate format: {setLongFormat} ");
+                } 
+                else
+                {
+                    LogMessage("SetLongFormat", $"Long coordinate format: {setLongFormat} ");
                 }
             });
 
@@ -1091,7 +1190,7 @@ namespace ASCOM.Meade.net
 
                 double declination = _utilities.DMSToDegrees(result);
 
-                LogMessage("Declination", "Get - " + _utilitiesExtra.DegreesToDMS(declination, ":", ":"));
+                LogMessage("Declination", $"Get - {result} convert to {declination} {_utilitiesExtra.DegreesToDMS(declination, ":", ":")}");
                 return declination;
             }
         }
@@ -1456,6 +1555,21 @@ namespace ASCOM.Meade.net
             }
         }
 
+        /// <summary>
+        /// convert a HH:MM.T (classic LX200 RA Notation) string to a double hours. T is the decimal part of minutes which is converted into seconds
+        /// </summary>
+        public double HMToHours(String hm)
+        {
+            String[] token = hm.Split('.');
+            if (token.Length == 2)
+            {
+                int seconds = Int16.Parse(token[1]) * 6;
+                string hms = $"{token[0]}:{seconds}";
+                return _utilities.HMSToHours(hms);
+            }
+            return _utilities.HMSToHours(hm);
+        }
+
         public double RightAscension
         {
             get
@@ -1466,9 +1580,9 @@ namespace ASCOM.Meade.net
                 //Returns: HH:MM.T# or HH:MM:SS#
                 //Depending which precision is set for the telescope
 
-                double rightAscension = _utilities.HMSToHours(result);
+                double rightAscension = HMToHours(result);
 
-                LogMessage("RightAscension", "Get - " + _utilitiesExtra.HoursToHMS(rightAscension));
+                LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
                 return rightAscension;
             }
         }
@@ -1875,25 +1989,29 @@ namespace ASCOM.Meade.net
             //LX200's – a string of bar characters indicating the distance.
             //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
 
-            if (result == null)
-            {
+            bool isSlewing = result != null && result != string.Empty;
+
+            if (!isSlewing)
                 return false;
-            }
 
-            var trimmedResult = result.Trim();
-            var isResultEmpty = trimmedResult == string.Empty;
+            //classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
+            byte[] ba = Encoding.Default.GetBytes(result);
+            //replace fill chars not belonging to a slew bar.  Are there others? The bar character is a FF in hex.
+            var hexString = BitConverter.ToString(ba).Replace("-", "").Replace("20", "");
+            LogMessage("IsSlewingToTarget", $"Resulthex  = {hexString}");
+            isSlewing = (hexString.Length > 0);
+        
+            if (!isSlewing)
+                return isSlewing;
 
-            var isSlewing = !isResultEmpty;
+            LogMessage("IsSlewingToTarget", $"Result = {isSlewing}");
 
-            if (!isResultEmpty) //the LX-200 can return crap from the buffer when it's not slewing so let's try to filter that out.
-            {
-                if (!trimmedResult.Contains("|"))
-                {
-                    isSlewing = false; 
-                }
-            }
+            //classic LX200 got RA 0 DE 0 as Target Coordinates. If the RA DE is not 0 at switch on, the telescope will indicate slewing until
+            //the target coordinates are set and the telescope is slewed to that position.
+            //a 0 movement will solved that lock if the target coordinates are set to the current coordinates.
+            if (IsTargetCoordinateInitRequired())
+                InitTargetCoordinates();
 
-            LogMessage("IsSlewingToTarget", $"Result = {isSlewing} ({trimmedResult})");
             return isSlewing;
         }
 
@@ -1906,6 +2024,7 @@ namespace ASCOM.Meade.net
         public void SyncToCoordinates(double rightAscension, double declination)
         {
             LogMessage("SyncToCoordinates", $"RA={rightAscension} Dec={declination}");
+            LogMessage("SyncToCoordinates", $"RA={_utilitiesExtra.HoursToHMS(rightAscension)} Dec={_utilitiesExtra.HoursToHMS(declination)}");
             CheckConnected("SyncToCoordinates");
 
             SharedResourcesWrapper.Lock(() =>
@@ -1930,6 +2049,23 @@ namespace ASCOM.Meade.net
 
             if (result == string.Empty)
                 throw new InvalidOperationException("Unable to perform sync");
+
+            // At least the classic LX200 low precision might not slew to the exact target position
+            // This Requires to retrieve the aimed target ra de from the telescope
+            double ra = RightAscension;
+            if (_targetRightAscension != InvalidParameter &&
+                _utilities.HoursToHMS(ra, ":", ":", ":", _digitsRa) != _utilities.HoursToHMS(_targetRightAscension, ":", ":", ":", _digitsRa))
+            {
+                LogMessage("SyncToTarget", $"differ RA real {ra} targeted {_targetRightAscension}");
+                _targetRightAscension = ra;
+            }
+            double de = Declination;
+            if (_targetDeclination != InvalidParameter &&
+                _utilities.DegreesToDMS(de, "*", ":", ":", _digitsDe) != _utilities.DegreesToDMS(_targetDeclination, "*", ":", ":", _digitsDe))
+            {
+                LogMessage("SyncToTarget", $"differ DE real {de} targeted {_targetDeclination}");
+                _targetDeclination = de;
+            }
         }
 
         private double _targetDeclination = InvalidParameter;
@@ -1964,8 +2100,13 @@ namespace ASCOM.Meade.net
 
                 if (value < -90)
                     throw new InvalidValueException("Declination cannot be less than -90.");
-                
-                var dms = _utilities.DegreesToDMS(value, "*", ":", ":", 2);
+
+                var dms = "";
+                if (IsLongFormat)
+                    dms = _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe);
+                else
+                    dms = _utilities.DegreesToDM(value, "*", "", _digitsDe);
+
                 var s = value < 0 ? string.Empty : "+";
 
                 var command = $":Sd{s}{dms}#";
@@ -1983,7 +2124,7 @@ namespace ASCOM.Meade.net
                     throw new InvalidOperationException("Target declination invalid");
                 }
 
-                _targetDeclination = value;
+                _targetDeclination = _utilities.DMSToDegrees(dms);
             }
         }
 
@@ -2018,8 +2159,16 @@ namespace ASCOM.Meade.net
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
                 //todo implement the low precision version
 
-                var hms = _utilities.HoursToHMS(value, ":", ":", ":", 2);
-                var response = SharedResourcesWrapper.SendChar($":Sr{hms}#");
+                var hms = "";
+                if(IsLongFormat)
+                    hms = _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa);
+                else
+                    //meade protocoll defines H:MM.T format
+                    hms = _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
+
+                var command = $":Sr{hms}#";
+                LogMessage("TargetRightAscension Set", $"{command}");
+                var response = SharedResourcesWrapper.SendChar(command);
                 //:SrHH:MM.T#
                 //:SrHH:MM:SS#
                 //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
@@ -2030,7 +2179,7 @@ namespace ASCOM.Meade.net
                 if (response == "0")
                     throw new InvalidOperationException("Failed to set TargetRightAscension.");
 
-                _targetRightAscension = value;
+                _targetRightAscension = _utilities.HMSToHours(hms);
             }
         }
 
