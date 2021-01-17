@@ -515,7 +515,6 @@ namespace ASCOM.Meade.net
         /// </summary>
         private bool IsTargetCoordinateInitRequired()
         {
-            const double eps = 0.00001d;
             if (!_isTargetCoordinateInitRequired)
                 return _isTargetCoordinateInitRequired;
 
@@ -528,28 +527,24 @@ namespace ASCOM.Meade.net
                 return _isTargetCoordinateInitRequired;
             }
 
-            var result = SharedResourcesWrapper.SendString(":Gr#");
+            const double eps = 0.00001d;
 
-            double rightTargetAscension = HMToHours(result);
-
+            double rightTargetAscension = RightAscension;
             //target RA == 0
-            if(Math.Abs(rightTargetAscension) > eps)
+            if (Math.Abs(rightTargetAscension) > eps)
             {
                 _isTargetCoordinateInitRequired = false;
                 return _isTargetCoordinateInitRequired;
             }
-            result = SharedResourcesWrapper.SendString(":Gd#");
 
-            double targetDeclination = _utilities.DMSToDegrees(result);
-
+            double targetDeclination = Declination;
             //target DE == 0
-            if(Math.Abs(targetDeclination) > eps)
+            if (Math.Abs(targetDeclination) > eps)
             {
                 _isTargetCoordinateInitRequired = false;
                 return _isTargetCoordinateInitRequired;
             }
-
-
+            
             //target coordinates are equal current coordinates
             if((Math.Abs(RightAscension - rightTargetAscension ) <= eps) &&
                 (Math.Abs(Declination - targetDeclination) <= eps))
@@ -565,26 +560,23 @@ namespace ASCOM.Meade.net
 
         private void InitTargetCoordinates()
         {
-
             try
             {
                 var raAndDec = GetTelescopeRaAndDec();
-                //when connection the first time the telescop target coordinates should be the current ones.
+                //when connection the first time the telescope target coordinates should be the current ones.
                 //for the classic LX200 at least this is not the case, target ra and dec are 0, when switched on.
                 LogMessage("InitTargetCoordinates", "sync telescope target");
                 SyncToCoordinates(raAndDec.RightAscension, raAndDec.Declination);
 
-                //doit only once
+                //do it only once
                 _isTargetCoordinateInitRequired = false;
-
-
             }
             catch (Exception ex)
             {
                 LogMessage("InitTargetCoordinates", $"Error sync telescope position", ex.Message);
             }
-
         }
+
         public void SetLongFormat(bool setLongFormat)
         {
             IsLongFormat = false;
@@ -1989,7 +1981,7 @@ namespace ASCOM.Meade.net
             //LX200's – a string of bar characters indicating the distance.
             //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
 
-            bool isSlewing = result != null && result != string.Empty;
+            bool isSlewing = !string.IsNullOrEmpty(result);
 
             if (!isSlewing)
                 return false;
