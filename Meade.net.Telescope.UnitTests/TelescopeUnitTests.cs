@@ -1988,7 +1988,12 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(15, "15:00:00", ":Sr15:00:00#")]
         public void TargetRightAscension_Get_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
-            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
+            var digitsRA = 2;
+            var telescopeRaResult = "HH:MM:SS";
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", digitsRA)).Returns(hms);
+            _utilMock.Setup(x => x.HMSToHours(hms)).Returns(rightAscension);
+
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
 
             ConnectTelescope();
