@@ -1555,14 +1555,13 @@ namespace ASCOM.Meade.net
         /// </summary>
         public double HMToHours(string hm)
         {
-            String[] token = hm.Split('.');
-            if (token.Length == 2)
-            {
-                int seconds = Int16.Parse(token[1]) * 6;
-                string hms = $"{token[0]}:{seconds}";
-                return _utilities.HMSToHours(hms);
-            }
-            return _utilities.HMSToHours(hm);
+            var token = hm.Split('.');
+            if (token.Length != 2)
+                return _utilities.HMSToHours(hm);
+
+            var seconds = short.Parse(token[1]) * 6;
+            var hms = $"{token[0]}:{seconds}";
+            return _utilities.HMSToHours(hms);
         }
 
         public double RightAscension
@@ -2093,7 +2092,6 @@ namespace ASCOM.Meade.net
 
                 CheckConnected("TargetDeclination Set");
 
-                //todo implement low precision version of this.
                 if (value > 90)
                     throw new InvalidValueException("Declination cannot be greater than 90.");
 
@@ -2156,13 +2154,12 @@ namespace ASCOM.Meade.net
 
                 if (value >= 24)
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
-                //todo implement the low precision version
 
                 var hms = "";
                 if(IsLongFormat)
                     hms = _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa);
                 else
-                    //meade protocoll defines H:MM.T format
+                    //meade protocol defines H:MM.T format
                     hms = _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
 
                 var command = $":Sr{hms}#";

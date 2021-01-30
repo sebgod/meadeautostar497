@@ -2175,6 +2175,21 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToCoordinates_WhenNotConnected_ThenThrowsException()
         {
+            double rightAscension = 5.5;
+            double declination = -30.5;
+            
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                _telescope.SyncToCoordinates(rightAscension, declination);
+            });
+            
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SyncToCoordinates"));
+        }
+
+        [Test]
+        public void SyncToCoordinates_WhenConnected_ThenReturnsExpectedResult()
+        {
+            var telescopeDecResult = "s12*34’56";
             var telescopeRaResult = "HH:MM:SS";
             var hmsResult = 1.2;
 
@@ -2183,6 +2198,12 @@ namespace Meade.net.Telescope.UnitTests
 
             double declination = -30.5;
             string dec = "-30*30:00";
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+            _utilMock.Setup(x => x.DMSToDegrees(dec)).Returns(declination);
 
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", 2)).Returns(hms);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{hms}#")).Returns("1");
@@ -2460,6 +2481,23 @@ namespace Meade.net.Telescope.UnitTests
             var rightAscension = 1;
             var declination = 2;
 
+            var telescopeDecResult = "s12*34’56";
+            var dmsResult = 1.2;
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.3;
+            var digitsRA = 2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{telescopeRaResult}#")).Returns("1");
+
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(dmsResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", digitsRA)).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(rightAscension);
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
+
+
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
 
             var slewCounter = 0;
@@ -2476,7 +2514,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.SlewToCoordinates(rightAscension, declination);
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(rightAscension));
-            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(dmsResult));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":MS#"), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
@@ -2576,8 +2614,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
             _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
-
-
+            
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GC#")).Returns("10/15/20");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GL#")).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#")).Returns("-1.0");
