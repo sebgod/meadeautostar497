@@ -1904,7 +1904,13 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(50, "50*00:00", ":Sd+50*00:00#")]
         public void TargetDeclination_Get_WhenValueOK_ThenSetsNewTargetDeclination(double declination, string decstring, string commandString)
         {
+            var digitsRA = 2;
+            var telescopeDecResult = "s12*34’56";
+
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
             _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(decstring);
+            _utilMock.Setup(x => x.DMSToDegrees(decstring)).Returns(declination);
+
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(commandString)).Returns("1");
 
             ConnectTelescope();
