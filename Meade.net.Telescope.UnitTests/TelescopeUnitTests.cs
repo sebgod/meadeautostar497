@@ -2464,10 +2464,24 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinatesAsync_WhenCalled_ThenSetsTargetAndSlews()
         {
+            var digitsRA = 2;
+
             var rightAscension = 1;
             var declination = 2;
 
+            var telescopeRaResult = "HH:MM:SS";
+            var telescopeDecResult = "s12*34’56";
+
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{telescopeRaResult}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(rightAscension);
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", digitsRA)).Returns(telescopeRaResult);
+
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(declination);
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
 
             //var slewCounter = 0;
             //var iterations = 10;
