@@ -1989,7 +1989,6 @@ namespace Meade.net.Telescope.UnitTests
         public void TargetRightAscension_Get_WhenValueOK_ThenSetsNewTargetDeclination(double rightAscension, string hms, string commandString)
         {
             var digitsRA = 2;
-            var telescopeRaResult = "HH:MM:SS";
 
             _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", digitsRA)).Returns(hms);
             _utilMock.Setup(x => x.HMSToHours(hms)).Returns(rightAscension);
@@ -2591,6 +2590,17 @@ namespace Meade.net.Telescope.UnitTests
                     It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = rightAscension });
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(":MS#")).Returns("0");
+
+            var telescopeRaResult = "HH:MM:SS";
+            var telescopeDecResult = "s12*34’56";
+            var digitsRA = 2;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":Sr{telescopeRaResult}#")).Returns("1");
+
+            _utilMock.Setup(x => x.HoursToHMS(rightAscension, ":", ":", ":", digitsRA)).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(rightAscension);
+            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(declination);
 
             ConnectTelescope();
 
