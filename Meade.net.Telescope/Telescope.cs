@@ -2045,7 +2045,7 @@ namespace ASCOM.Meade.net
             //LX200's - a "#" terminated string with the name of the object that was synced.
             //    Autostars & Autostar II - A static string: " M31 EX GAL MAG 3.5 SZ178.0'#"
 
-            if (result == string.Empty)
+            if (string.IsNullOrWhiteSpace(result))
                 throw new InvalidOperationException("Unable to perform sync");
 
             // At least the classic LX200 low precision might not slew to the exact target position
