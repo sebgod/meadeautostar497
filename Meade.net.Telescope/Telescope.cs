@@ -1986,8 +1986,17 @@ namespace ASCOM.Meade.net
             bool isSlewing = !string.IsNullOrEmpty(result);
             try
             {
-                if (!isSlewing)
-                    return false;
+                if (string.IsNullOrEmpty(result))
+                {
+                    isSlewing = false;
+                    return isSlewing;
+                }
+
+                if (result.Contains("|"))
+                {
+                    isSlewing = true;
+                    return isSlewing;
+                }
 
                 //classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
                 byte[] ba = Encoding.Default.GetBytes(result);
