@@ -145,6 +145,7 @@ namespace ASCOM.Meade.net
         private const string BacklashCompensationName = "Backlash Compensation";
         private const string ReverseFocusDirectionName = "Reverse Focuser Direction";
         private const string DynamicBreakingName = "Dynamic Breaking";
+        private const string SiteElevationName = "Site Elevation";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -162,6 +163,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
                     driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
                     driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
+                    driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString());
                 }
             }
         }
@@ -175,6 +177,7 @@ namespace ASCOM.Meade.net
         private const string BacklashCompensationDefault = "3000";
         private const string ReverseFocuserDiectionDefault = "true";
         private const string DynamicBreakingDefault = "true";
+        private const string SiteElevationDefault = "0";
 
         public static ProfileProperties ReadProfile()
         {
@@ -193,6 +196,7 @@ namespace ASCOM.Meade.net
                     profileProperties.BacklashCompensation = Convert.ToInt32(driverProfile.GetValue(DriverId, BacklashCompensationName, string.Empty, BacklashCompensationDefault));
                     profileProperties.ReverseFocusDirection = Convert.ToBoolean(driverProfile.GetValue(DriverId, ReverseFocusDirectionName, string.Empty, ReverseFocuserDiectionDefault));
                     profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
+                    profileProperties.SiteElevation = Convert.ToInt32(driverProfile.GetValue(DriverId, SiteElevationName, string.Empty, SiteElevationDefault));
                 }
 
                 return profileProperties;

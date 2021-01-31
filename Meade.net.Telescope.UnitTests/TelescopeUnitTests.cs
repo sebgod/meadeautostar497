@@ -1537,25 +1537,57 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void SiteElevation_Get_ThenThrowsException()
+        public void SiteElevation_Get_WhenNotConnectedThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
+            var exception = Assert.Throws<NotConnectedException>(() =>
             {
-                var result = _telescope.SiteElevation;
-                Assert.Fail($"{result} should not have returned");
+                var elevation = _telescope.SiteElevation;
             });
-
-            Assert.That(excpetion.Property, Is.EqualTo("SiteElevation"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteElevation Get"));
         }
 
         [Test]
-        public void SiteElevation_Set_ThenThrowsException()
+        public void SiteElevation_Get_WhenConnectedReturnsExpectedValue()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SiteElevation = 0; });
+            double expectedValue = 2000;
 
-            Assert.That(excpetion.Property, Is.EqualTo("SiteElevation"));
-            Assert.That(excpetion.AccessorSet, Is.True);
+            _profileProperties.SiteElevation = expectedValue;
+
+            ConnectTelescope();
+
+            var result = _telescope.SiteElevation;
+            Assert.That(result, Is.EqualTo(expectedValue));
+        }
+
+        [Test]
+        public void SiteElevation_Set_WhenNotConnectedThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                _telescope.SiteElevation = 1000;
+            });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteElevation Set"));
+        }
+
+        [Test]
+        public void SiteElevation_Set_WhenConnectedCanPersistNewValue()
+        {
+            double newElevation = 1000;
+
+            double writtenSiteElevation = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.WriteProfile(It.IsAny<ProfileProperties>())).Callback<ProfileProperties>(
+                profile =>
+                {
+                    writtenSiteElevation = profile.SiteElevation;
+                });
+
+            ConnectTelescope();
+
+            _telescope.SiteElevation = newElevation;
+
+            Assert.That(_telescope.SiteElevation, Is.EqualTo(newElevation));
+            _sharedResourcesWrapperMock.Verify( x => x.WriteProfile(It.IsAny<ProfileProperties>()), Times.Once);
+            Assert.That(writtenSiteElevation, Is.EqualTo(newElevation));
         }
 
         [Test]
