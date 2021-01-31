@@ -12,5 +12,6 @@ namespace ASCOM.Meade.net
         public bool ReverseFocusDirection { get; set; }
         public bool DynamicBreaking { get; set; }
         public bool RtsDtrEnabled { get; set; }
+        public double SiteElevation { get; set; }
     }
 }

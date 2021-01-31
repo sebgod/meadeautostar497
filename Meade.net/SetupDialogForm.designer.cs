@@ -58,6 +58,9 @@ namespace ASCOM.Meade.net
             this.cbxDynamicBreaking = new System.Windows.Forms.CheckBox();
             this.cbxRtsDtr = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.label12 = new System.Windows.Forms.Label();
+            this.txtElevation = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -176,6 +179,7 @@ namespace ASCOM.Meade.net
             // 
             resources.ApplyResources(this.txtBacklashSteps, "txtBacklashSteps");
             this.txtBacklashSteps.Name = "txtBacklashSteps";
+            this.txtBacklashSteps.TextChanged += new System.EventHandler(this.txtBacklashSteps_TextChanged);
             // 
             // label9
             // 
@@ -211,10 +215,29 @@ namespace ASCOM.Meade.net
             this.toolTip1.SetToolTip(this.cbxRtsDtr, resources.GetString("cbxRtsDtr.ToolTip"));
             this.cbxRtsDtr.UseVisualStyleBackColor = true;
             // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.Name = "label12";
+            // 
+            // txtElevation
+            // 
+            resources.ApplyResources(this.txtElevation, "txtElevation");
+            this.txtElevation.Name = "txtElevation";
+            this.txtElevation.TextChanged += new System.EventHandler(this.txtElevation_TextChanged_1);
+            // 
+            // label13
+            // 
+            resources.ApplyResources(this.label13, "label13");
+            this.label13.Name = "label13";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label13);
+            this.Controls.Add(this.txtElevation);
+            this.Controls.Add(this.label12);
             this.Controls.Add(this.cbxRtsDtr);
             this.Controls.Add(this.cbxDynamicBreaking);
             this.Controls.Add(this.cbxReverseDirection);
@@ -279,5 +302,8 @@ namespace ASCOM.Meade.net
         private CheckBox cbxDynamicBreaking;
         private CheckBox cbxRtsDtr;
         private ToolTip toolTip1;
+        private Label label12;
+        private TextBox txtElevation;
+        private Label label13;
     }
 }

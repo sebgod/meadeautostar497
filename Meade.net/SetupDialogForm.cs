@@ -84,6 +84,7 @@ namespace ASCOM.Meade.net
             }
 
             txtBacklashSteps.Text = profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture);
+            txtElevation.Text = profileProperties.SiteElevation.ToString(CultureInfo.CurrentCulture);
 
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
             cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
@@ -101,7 +102,8 @@ namespace ASCOM.Meade.net
                 GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),
                 BacklashCompensation = int.Parse(txtBacklashSteps.Text),
                 ReverseFocusDirection = cbxReverseDirection.Checked,
-                DynamicBreaking = cbxDynamicBreaking.Checked
+                DynamicBreaking = cbxDynamicBreaking.Checked,
+                SiteElevation = double.Parse(txtElevation.Text)
             };
 
             return profileProperties;
@@ -159,6 +161,24 @@ namespace ASCOM.Meade.net
             //chkTrace.Enabled = false;
             //txtGuideRate.Enabled = false;
             //cboPrecision.Enabled = false;
+        }
+
+        private void txtElevation_TextChanged_1(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtElevation.Text, "[^0-9]"))
+            {
+                MessageBox.Show("Please enter only numbers.");
+                txtElevation.Text = txtElevation.Text.Remove(txtElevation.Text.Length - 1);
+            }
+        }
+
+        private void txtBacklashSteps_TextChanged(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtBacklashSteps.Text, "[^0-9]"))
+            {
+                MessageBox.Show("Please enter only numbers.");
+                txtBacklashSteps.Text = txtElevation.Text.Remove(txtBacklashSteps.Text.Length - 1);
+            }
         }
     }
 }

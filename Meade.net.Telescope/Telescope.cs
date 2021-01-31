@@ -1648,14 +1648,26 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("SiteElevation Get", "Not implemented");
-                throw new PropertyNotImplementedException("SiteElevation", false);
+                CheckConnected("SiteElevation Get");
+
+                LogMessage("SiteElevation",  $"Get {base.SiteElevation}");
+                return base.SiteElevation;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
             {
-                LogMessage("SiteElevation Set", "Not implemented");
-                throw new PropertyNotImplementedException("SiteElevation", true);
+                CheckConnected("SiteElevation Set");
+
+                LogMessage("SiteElevation", $"Set: {value}");
+                if (value == base.SiteElevation)
+                {
+                    LogMessage("SiteElevation", $"Set: no change detected");
+                    return;
+                }
+                
+                LogMessage("SiteElevation", $"Set: {value} was {base.SiteElevation}");
+                base.SiteElevation = value;
+                base.UpdateSiteElevation();
             }
         }
 

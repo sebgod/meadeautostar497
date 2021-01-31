@@ -26,6 +26,7 @@ namespace ASCOM.Meade.net
         protected double GuideRate;
         protected string Precision;
         protected string GuidingStyle;
+        protected double SiteElevation;
 
         protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
@@ -65,6 +66,7 @@ namespace ASCOM.Meade.net
             GuideRate = profileProperties.GuideRateArcSecondsPerSecond;
             Precision = profileProperties.Precision;
             GuidingStyle = profileProperties.GuidingStyle.ToLower();
+            SiteElevation = profileProperties.SiteElevation;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
@@ -73,6 +75,7 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Guide Rate: {GuideRate}");
             LogMessage("ReadProfile", $"Precision: {Precision}");
             LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
+            LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
         }
 
         /// <summary>
@@ -133,5 +136,12 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
+
+        protected void UpdateSiteElevation()
+        {
+            var profileProperties = SharedResourcesWrapper.ReadProfile();
+            profileProperties.SiteElevation = SiteElevation;
+            SharedResourcesWrapper.WriteProfile(profileProperties);
+        }
     }
 }
