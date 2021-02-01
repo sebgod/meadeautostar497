@@ -421,7 +421,7 @@ namespace ASCOM.Meade.net
                             var raAndDec = GetTelescopeRaAndDec();
                             LogMessage("Connected Set", $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             SharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
@@ -1644,7 +1644,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public double SiteElevation
+        public new double SiteElevation
         {
             get
             {
@@ -1998,33 +1998,33 @@ namespace ASCOM.Meade.net
             bool isSlewing = !string.IsNullOrEmpty(result);
             try
             {
-                if (string.IsNullOrEmpty(result))
-                {
-                    isSlewing = false;
-                    return isSlewing;
-                }
+                //if (string.IsNullOrEmpty(result))
+                //{
+                //    isSlewing = false;
+                //    return isSlewing;
+                //}
 
-                if (result.Contains("|"))
-                {
-                    isSlewing = true;
-                    return isSlewing;
-                }
+                //if (result.Contains("|"))
+                //{
+                //    isSlewing = true;
+                //    return isSlewing;
+                //}
 
-                //classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
-                byte[] ba = Encoding.Default.GetBytes(result);
-                //replace fill chars not belonging to a slew bar.  Are there others? The bar character is a FF in hex.
-                var hexString = BitConverter.ToString(ba).Replace("-", "").Replace("20", "");
-                LogMessage("IsSlewingToTarget", $"Resulthex  = {hexString}");
-                isSlewing = (hexString.Length > 0);
+                ////classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
+                //byte[] ba = Encoding.Default.GetBytes(result);
+                ////replace fill chars not belonging to a slew bar.  Are there others? The bar character is a FF in hex.
+                //var hexString = BitConverter.ToString(ba).Replace("-", "").Replace("20", "");
+                //LogMessage("IsSlewingToTarget", $"Resulthex  = {hexString}");
+                //isSlewing = (hexString.Length > 0);
 
-                if (!isSlewing)
-                    return isSlewing;
+                //if (!isSlewing)
+                //    return isSlewing;
 
-                //classic LX200 got RA 0 DE 0 as Target Coordinates. If the RA DE is not 0 at switch on, the telescope will indicate slewing until
-                //the target coordinates are set and the telescope is slewed to that position.
-                //a 0 movement will solved that lock if the target coordinates are set to the current coordinates.
-                if (IsTargetCoordinateInitRequired())
-                    InitTargetCoordinates();
+                ////classic LX200 got RA 0 DE 0 as Target Coordinates. If the RA DE is not 0 at switch on, the telescope will indicate slewing until
+                ////the target coordinates are set and the telescope is slewed to that position.
+                ////a 0 movement will solved that lock if the target coordinates are set to the current coordinates.
+                //if (IsTargetCoordinateInitRequired())
+                //    InitTargetCoordinates();
 
                 return isSlewing;
             }
