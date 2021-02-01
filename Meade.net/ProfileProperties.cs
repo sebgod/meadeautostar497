@@ -8,5 +8,10 @@ namespace ASCOM.Meade.net
         public double GuideRateArcSecondsPerSecond { get; set; }
         public string Precision { get; set; }
         public string GuidingStyle { get; set; }
+        public int BacklashCompensation { get; set; }
+        public bool ReverseFocusDirection { get; set; }
+        public bool DynamicBreaking { get; set; }
+        public bool RtsDtrEnabled { get; set; }
+        public double SiteElevation { get; set; }
     }
 }

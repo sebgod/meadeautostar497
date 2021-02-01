@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-// TODO - Add your authorship information here
 [assembly: AssemblyTitle("ASCOM.Meade.net.Telescope")]
 [assembly: AssemblyDescription("ASCOM Telescope driver for Meade.net")]
 [assembly: AssemblyConfiguration("")]
@@ -33,6 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 //
-// TODO - Set your driver's version here
 [assembly: AssemblyVersion("0.0.0.0")]
 [assembly: AssemblyFileVersion("0.0.0.0")]

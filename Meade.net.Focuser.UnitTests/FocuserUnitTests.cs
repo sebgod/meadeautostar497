@@ -28,7 +28,8 @@ namespace Meade.net.Focuser.UnitTests
                 TraceLogger = false,
                 ComPort = "TestCom1",
                 GuideRateArcSecondsPerSecond = 1.23,
-                Precision = "Unchanged"
+                Precision = "Unchanged",
+                GuidingStyle = "Auto"
             };
 
             _utilMock = new Mock<IUtil>();
@@ -313,7 +314,6 @@ namespace Meade.net.Focuser.UnitTests
             _focuser.Halt();
 
             _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":FQ#"), Times.AtLeastOnce);
-            _utilMock.Verify( x => x.WaitForMilliseconds(250), Times.AtLeastOnce);
         }
 
         [Test]
@@ -395,27 +395,58 @@ namespace Meade.net.Focuser.UnitTests
         [TestCase(-200)]
         public void Move_WhenIncrementIsNot0_ThenMovesFocuserAndStopsFocuser( int position)
         {
+            _profileProperties.BacklashCompensation = 0;
+
             ConnectFocuser();
 
             _focuser.Move(position);
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify( x => x.SendBlind("#:F-#"), Times.AtLeastOnce);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F-#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("#:F+#"), Times.AtLeastOnce);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
             }
 
             _sharedResourcesWrapperMock.Verify( x => x.Lock(It.IsAny<Action>()), Times.Once);
 
-            _utilMock.Verify(x => x.WaitForMilliseconds(250), Times.AtLeastOnce);
-
+            _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
+            _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
             _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Once());
-            _utilMock.Verify(x => x.WaitForMilliseconds(1000), Times.Once());
+        }
+
+        [TestCase(200)]
+        [TestCase(-200)]
+        public void Move_WhenIncrementIsNot0_ThenMovesFocuserAndStopsFocuserWithBacklashCompensation(int position)
+        {
+            _profileProperties.BacklashCompensation = 3000;
+
+            ConnectFocuser();
+
+            _focuser.Move(position);
+
+            if (position < 0)
+            {
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
+                _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
+                _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
+                _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(1));
+            }
+            else
+            {
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
+                _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position) + _profileProperties.BacklashCompensation), Times.Once);
+                _utilMock.Verify(x => x.WaitForMilliseconds(_profileProperties.BacklashCompensation), Times.Once);
+                _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(2));
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.Lock(It.IsAny<Action>()), Times.Once);
         }
 
         [Test]

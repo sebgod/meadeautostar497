@@ -75,6 +75,7 @@ namespace ASCOM.Meade.net
             set => _profileFactory = value;
         }
 
+        //todo add code to ensure that there is a minimum gap between commands. 5ms as default.
         public static void SendBlind(string message)
         {
             lock (LockObject)
@@ -136,10 +137,15 @@ namespace ASCOM.Meade.net
 
         // Constants used for Profile persistence
         private const string ComPortProfileName = "COM Port";
+        private const string RtsDtrProfileName = "Rts / Dtr";
         private const string TraceStateProfileName = "Trace Level";
         private const string GuideRateProfileName = "Guide Rate Arc Seconds Per Second";
         private const string PrecisionProfileName = "Precision";
         private const string GuidingStyleProfileName = "Guiding Style";
+        private const string BacklashCompensationName = "Backlash Compensation";
+        private const string ReverseFocusDirectionName = "Reverse Focuser Direction";
+        private const string DynamicBreakingName = "Dynamic Breaking";
+        private const string SiteElevationName = "Site Elevation";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -150,19 +156,28 @@ namespace ASCOM.Meade.net
                     driverProfile.DeviceType = "Telescope";
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
+                    driverProfile.WriteValue(DriverId, RtsDtrProfileName, profileProperties.RtsDtrEnabled.ToString());
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
+                    driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
+                    driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
+                    driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
+                    driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString());
                 }
             }
         }
 
         private const string ComPortDefault = "COM1";
+        private const string RtsDtrDefault = "false";
         private const string TraceStateDefault = "false";
         private const string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
         private const string PrecisionDefault = "Unchanged";
         private const string GuidingStyleDefault = "Auto";
-        
+        private const string BacklashCompensationDefault = "3000";
+        private const string ReverseFocuserDiectionDefault = "true";
+        private const string DynamicBreakingDefault = "true";
+        private const string SiteElevationDefault = "0";
 
         public static ProfileProperties ReadProfile()
         {
@@ -173,10 +188,15 @@ namespace ASCOM.Meade.net
                 {
                     driverProfile.DeviceType = "Telescope";
                     profileProperties.ComPort = driverProfile.GetValue(DriverId, ComPortProfileName, string.Empty, ComPortDefault);
+                    profileProperties.RtsDtrEnabled = Convert.ToBoolean(driverProfile.GetValue(DriverId, RtsDtrProfileName, string.Empty, RtsDtrDefault));
                     profileProperties.TraceLogger = Convert.ToBoolean(driverProfile.GetValue(DriverId, TraceStateProfileName, string.Empty, TraceStateDefault));
                     profileProperties.GuideRateArcSecondsPerSecond = double.Parse(driverProfile.GetValue(DriverId, GuideRateProfileName, string.Empty, GuideRateProfileNameDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.Precision = driverProfile.GetValue(DriverId, PrecisionProfileName, string.Empty, PrecisionDefault);
                     profileProperties.GuidingStyle = driverProfile.GetValue(DriverId, GuidingStyleProfileName, string.Empty, GuidingStyleDefault);
+                    profileProperties.BacklashCompensation = Convert.ToInt32(driverProfile.GetValue(DriverId, BacklashCompensationName, string.Empty, BacklashCompensationDefault));
+                    profileProperties.ReverseFocusDirection = Convert.ToBoolean(driverProfile.GetValue(DriverId, ReverseFocusDirectionName, string.Empty, ReverseFocuserDiectionDefault));
+                    profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
+                    profileProperties.SiteElevation = Convert.ToInt32(driverProfile.GetValue(DriverId, SiteElevationName, string.Empty, SiteElevationDefault));
                 }
 
                 return profileProperties;
@@ -260,8 +280,8 @@ namespace ASCOM.Meade.net
                     {
                         var profileProperties = ReadProfile();
                         SharedSerial.PortName = profileProperties.ComPort;
-                        SharedSerial.DTREnable = false;
-                        SharedSerial.RTSEnable = false;
+                        SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
+                        SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.DataBits = 8;
                         SharedSerial.StopBits = SerialStopBits.One;
                         SharedSerial.Parity = SerialParity.None;
@@ -271,8 +291,8 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            ProductName = SendString(":GVP#");
-                            FirmwareVersion = SendString(":GVN#");
+                            ProductName = SendString("#:GVP#");
+                            FirmwareVersion = SendString("#:GVN#");
                         }
                         catch (Exception ex)
                         {
@@ -288,6 +308,28 @@ namespace ASCOM.Meade.net
                             SharedSerial.Connected = false;
 
                             throw new Exception("Serial port is looping back data, something is wrong with the hardware.");
+                        }
+
+                        try
+                        {
+                            string utcOffSet = SendString("#:GG#");
+                            //:GG# Get UTC offset time
+                            //Returns: sHH# or sHH.H#
+                            //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
+                            //sHH# form is returned, otherwise the longer form is returned.
+                            if (!double.TryParse(utcOffSet, out var utcOffsetHours))
+                            {
+                                var message = "Unable to decode response from the telescope, This is likely a hardware serial communications error.";
+                                traceLogger.LogIssue("Connect", message);
+                                throw new Exception(message);
+                            }
+
+                            traceLogger.LogMessage("Connect", $"Offset from UTC: {utcOffsetHours}", false);
+                        }
+                        catch (Exception)
+                        {
+                            SharedSerial.Connected = false;
+                            throw;
                         }
                     }
                 }

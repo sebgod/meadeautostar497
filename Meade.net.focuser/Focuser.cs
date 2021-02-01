@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using ASCOM.DeviceInterface;
@@ -19,7 +18,7 @@ namespace ASCOM.Meade.net
     // The ClassInterface/None addribute prevents an empty interface called
     // _Meade.net from being created and used as the [default] interface
     //
-    // TODO Replace the not implemented exceptions with code to implement the function or
+    // Replace the not implemented exceptions with code to implement the function or
     // throw the appropriate ASCOM exception.
     //
 
@@ -31,7 +30,7 @@ namespace ASCOM.Meade.net
     [ServedClassName("Meade Generic")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class Focuser : ReferenceCountedObjectBase, IFocuserV3
+    public class Focuser : MeadeTelescopeBase, IFocuserV3
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -39,26 +38,12 @@ namespace ASCOM.Meade.net
         /// </summary>
         //internal static string driverID = "ASCOM.Meade.net.Focuser";
         private static readonly string DriverId = Marshal.GenerateProgIdForType(MethodBase.GetCurrentMethod().DeclaringType ?? throw new System.InvalidOperationException());
-        // TODO Change the descriptive string for your driver then remove this line
-        /// <summary>
-        /// Driver description that displays in the ASCOM Chooser.
-        /// </summary>
-        private static readonly string DriverDescription = "Meade Generic";
-
-        private static string _comPort; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private readonly IUtil _utilities;
-
-        /// <summary>
-        /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        private static TraceLogger _tl;
-
-        private readonly ISharedResourcesWrapper _sharedResourcesWrapper;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -68,32 +53,16 @@ namespace ASCOM.Meade.net
             //todo move this out to IOC
             var util = new Util(); //Initialise util object
             _utilities = util;
-            _sharedResourcesWrapper = new SharedResourcesWrapper();
 
-            Initialise();
+            Initialise(nameof(Focuser));
         }
 
-        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper)
+        public Focuser(IUtil util, ISharedResourcesWrapper sharedResourcesWrapper) : base(sharedResourcesWrapper)
         {
             _utilities = util;
-            _sharedResourcesWrapper = sharedResourcesWrapper;
 
-            Initialise();
+            Initialise(nameof(Focuser));
         }
-
-        private void Initialise()
-        {
-            //todo move the TraceLogger out to a factory class.
-            _tl = new TraceLogger("", "Meade.Generic.focusser");
-
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            IsConnected = false; // Initialise connected to false
-
-            LogMessage("Focuser", "Completed initialisation");
-            LogMessage("Focuser", $"Driver version: {DriverVersion}");
-        }
-
 
         //
         // PUBLIC COM INTERFACE IFocuserV3 IMPLEMENTATION
@@ -109,17 +78,17 @@ namespace ASCOM.Meade.net
         /// </summary>
         public void SetupDialog()
         {
-            _tl.LogMessage("SetupDialog", "Opening setup dialog");
-            _sharedResourcesWrapper.SetupDialog();
+            Tl.LogMessage("SetupDialog", "Opening setup dialog");
+            SharedResourcesWrapper.SetupDialog();
             ReadProfile();
-            _tl.LogMessage("SetupDialog", "complete");
+            Tl.LogMessage("SetupDialog", "complete");
         }
 
         public ArrayList SupportedActions
         {
             get
             {
-                _tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                Tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -135,7 +104,7 @@ namespace ASCOM.Meade.net
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
-            _sharedResourcesWrapper.SendBlind(command);
+            SharedResourcesWrapper.SendBlind(command);
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
@@ -145,7 +114,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("CommandBool");
             //string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
+            // decode the return string and return true or false
             // or
             throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
@@ -157,16 +126,16 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return _sharedResourcesWrapper.SendString(command);
+            return SharedResourcesWrapper.SendString(command);
             //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
         {
             // Clean up the tracelogger and util objects
-            _tl.Enabled = false;
-            _tl.Dispose();
-            _tl = null;
+            Tl.Enabled = false;
+            Tl.Dispose();
+            Tl = null;
         }
 
         public bool Connected
@@ -178,7 +147,7 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                _tl.LogMessage("Connected", "Set {0}", value);
+                Tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
 
@@ -187,60 +156,28 @@ namespace ASCOM.Meade.net
                     try
                     {
                         ReadProfile();
-                        _sharedResourcesWrapper.Connect("Serial", DriverId, _tl);
+                        SharedResourcesWrapper.Connect("Serial", DriverId, Tl);
                         try
                         {
                             IsConnected = true;
                         }
                         catch (Exception)
                         {
-                            _sharedResourcesWrapper.Disconnect("Serial", DriverId);
+                            SharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
                         }
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _comPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", _comPort);
-                    _sharedResourcesWrapper.Disconnect("Serial", DriverId);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
+                    SharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
-            }
-        }
-
-        public string Description
-        {
-            // TODO customise this device description
-            get
-            {
-                _tl.LogMessage("Description Get", DriverDescription);
-                return DriverDescription;
-            }
-        }
-
-        public string DriverInfo
-        {
-            get
-            {
-                // TODO customise this driver description
-                string driverInfo = $"{Description} .net driver. Version: {DriverVersion}";
-                LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
-            }
-        }
-
-        public string DriverVersion
-        {
-            get
-            {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-                LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
             }
         }
 
@@ -260,7 +197,7 @@ namespace ASCOM.Meade.net
             {
                 //string name = "Short driver name - please customise";
                 string name = DriverDescription;
-                _tl.LogMessage("Name Get", name);
+                Tl.LogMessage("Name Get", name);
                 return name;
             }
         }
@@ -275,35 +212,29 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("Absolute Get");
 
-                _tl.LogMessage("Absolute Get", false.ToString());
+                Tl.LogMessage("Absolute Get", false.ToString());
                 return false; // This is a relative focuser
             }
         }
 
         public void Halt()
         {
-            _tl.LogMessage("Halt", "Halting");
+            Tl.LogMessage("Halt", "Halting");
 
             CheckConnected("Halt");
 
-            //A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
-            //todo make this mockable
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            while (stopwatch.ElapsedMilliseconds < 1000)
-            {
-                _sharedResourcesWrapper.SendBlind(":FQ#");
-                //:FQ# Halt Focuser Motion
-                //Returns: Nothing
+            //todo fix this issue: A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
 
-                _utilities.WaitForMilliseconds(250);
-            }
+            SharedResourcesWrapper.SendBlind(":FQ#");
+            //:FQ# Halt Focuser Motion
+            //Returns: Nothing
         }
 
         public bool IsMoving
         {
             get
             {
-                _tl.LogMessage("IsMoving Get", false.ToString());
+                Tl.LogMessage("IsMoving Get", false.ToString());
                 return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
             }
         }
@@ -312,12 +243,12 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("Link Get", Connected.ToString());
+                Tl.LogMessage("Link Get", Connected.ToString());
                 return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
-                _tl.LogMessage("Link Set", value.ToString());
+                Tl.LogMessage("Link Set", value.ToString());
                 Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
         }
@@ -327,29 +258,26 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
+                Tl.LogMessage("MaxIncrement Get", _maxIncrement.ToString());
                 return _maxIncrement; // Maximum change in one move
             }
         }
 
         private readonly int _maxStep = 7000;
+
         public int MaxStep
         {
             get
             {
-                _tl.LogMessage("MaxStep Get", _maxStep.ToString());
+                Tl.LogMessage("MaxStep Get", _maxStep.ToString());
                 return _maxStep;
             }
         }
 
         public void Move(int position)
         {
-            _tl.LogMessage("Move", position.ToString());
+            Tl.LogMessage("Move", position.ToString());
             CheckConnected("Move");
-
-            //todo implement backlash compensation
-            //todo implement direction reverse
-            //todo implement dynamic braking
 
             if (position < -MaxIncrement || position > MaxIncrement)
             {
@@ -359,45 +287,75 @@ namespace ASCOM.Meade.net
             if (position == 0)
                 return;
 
-            MoveFocuser(position > 0, Math.Abs(position));
+            var direction = position > 0;
+            if (ReverseFocusDirection)
+                direction = !direction;
+
+            SharedResourcesWrapper.Lock(() =>
+            {
+                //backlash compensation.
+                var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
+
+                var steps = Math.Abs(position) + backlashCompensationSteps;
+                
+
+                MoveFocuser(direction, steps);
+
+
+                //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
+                //ApplyBacklashCompensation(direction);
+                if (direction & backlashCompensationSteps != 0)
+                {
+                    Tl.LogMessage("Move", "Applying backlash compensation");
+                    MoveFocuser(!direction, backlashCompensationSteps);
+                }
+
+                DynamicBreaking(direction);
+                //todo implement dynamic braking
+                //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
+            });
+        }
+
+        private void DynamicBreaking(bool directionOut)
+        {
+            if (!UseDynamicBreaking)
+                return;
+
+            Tl.LogMessage("Move", "Applying dynamic breaking");
+
+            PerformFocuserMove(directionOut);
+            Halt();
         }
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            _sharedResourcesWrapper.Lock(() =>
-            {
-                //_sharedResourcesWrapper.SendBlind("#:FF#");
-                //:FF# Set Focus speed to fastest setting
-                //Returns: Nothing
+            //_sharedResourcesWrapper.SendBlind(":FF#");
+            //:FF# Set Focus speed to fastest setting
+            //Returns: Nothing
 
-                //:FS# Set Focus speed to slowest setting
-                //Returns: Nothing
+            //:FS# Set Focus speed to slowest setting
+            //Returns: Nothing
 
-                //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
-                //Returns: Nothing
-                //All others – Not Supported
-                _utilities.WaitForMilliseconds(100);
+            //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+            //Returns: Nothing
+            //All others – Not Supported
+            _utilities.WaitForMilliseconds(100);
+            
+            PerformFocuserMove(directionOut);
 
-                //A Single focus command sometimes gets lost on the #909, so sending lots of them solves the issue.
-                //todo make this mockable
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                while (stopwatch.ElapsedMilliseconds < steps)
-                {
-                    _sharedResourcesWrapper.SendBlind(directionOut ? "#:F+#" : "#:F-#");
-                    //:F+# Start Focuser moving inward (toward objective)
-                    //Returns: None
+            _utilities.WaitForMilliseconds(steps);
 
-                    //:F-# Start Focuser moving outward (away from objective)
-                    //Returns: None
+            Halt();
+        }
 
-                    _utilities.WaitForMilliseconds(250);
-                }
+        private void PerformFocuserMove(bool directionOut)
+        {
+            SharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
+            //:F+# Start Focuser moving inward (toward objective)
+            //Returns: None
 
-                Halt();
-
-                //This gives the focuser time to physically stop.
-                _utilities.WaitForMilliseconds(1000);
-            });
+            //:F-# Start Focuser moving outward (away from objective)
+            //Returns: None
         }
 
         public int Position => throw new PropertyNotImplementedException("Position", false);
@@ -406,7 +364,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("StepSize Get", "Not implemented");
+                Tl.LogMessage("StepSize Get", "Not implemented");
                 throw new PropertyNotImplementedException("StepSize", false);
             }
         }
@@ -415,13 +373,13 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("TempComp Get", false.ToString());
+                Tl.LogMessage("TempComp Get", false.ToString());
                 return false;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
             {
-                _tl.LogMessage("TempComp Set", "Not implemented");
+                Tl.LogMessage("TempComp Set", "Not implemented");
                 throw new PropertyNotImplementedException("TempComp", false);
             }
         }
@@ -430,7 +388,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("TempCompAvailable Get", false.ToString());
+                Tl.LogMessage("TempCompAvailable Get", false.ToString());
                 return false; // Temperature compensation is not available in this driver
             }
         }
@@ -439,7 +397,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                _tl.LogMessage("Temperature Get", "Not implemented");
+                Tl.LogMessage("Temperature Get", "Not implemented");
                 throw new PropertyNotImplementedException("Temperature", false);
             }
         }
@@ -451,13 +409,6 @@ namespace ASCOM.Meade.net
         // to help with driver development
 
         #region ASCOM Registration
-
-        private static IProfileFactory _profileFactory;
-        public static IProfileFactory ProfileFactory
-        {
-            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
-            set => _profileFactory = value;
-        }
 
         // Register or unregister driver for ASCOM. This is harmless if already
         // registered or unregistered. 
@@ -471,7 +422,7 @@ namespace ASCOM.Meade.net
         {
             using (IProfileWrapper p = ProfileFactory.Create())
             {
-                p.DeviceType = "Focuser";
+                p.DeviceType = nameof(Focuser);
                 if (bRegister)
                 {
                     p.Register(DriverId, DriverDescription);
@@ -530,12 +481,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected { get; set; }
-
+        
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
@@ -546,31 +492,6 @@ namespace ASCOM.Meade.net
             {
                 throw new NotConnectedException($"Not connected to focuser when trying to execute: {message}");
             }
-        }
-
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        private void ReadProfile()
-        {
-            var profileProperties = _sharedResourcesWrapper.ReadProfile();
-            _tl.Enabled = profileProperties.TraceLogger;
-            _comPort = profileProperties.ComPort;
-
-            LogMessage("ReadProfile", $"Trace logger enabled: {_tl.Enabled}");
-            LogMessage("ReadProfile", $"Com Port: {_comPort}");
-        }
-
-        /// <summary>
-        /// Log helper function that takes formatted strings and arguments
-        /// </summary>
-        /// <param name="identifier"></param>
-        /// <param name="message"></param>
-        /// <param name="args"></param>
-        private static void LogMessage(string identifier, string message, params object[] args)
-        {
-            var msg = string.Format(message, args);
-            _tl.LogMessage(identifier, msg);
         }
         #endregion
     }
