@@ -1167,6 +1167,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                //todo make this return false for non LX-200 GPS telescopes
                 LogMessage("CanUnpark", "Get - " + true);
                 return true;
             }
@@ -1995,20 +1996,20 @@ namespace ASCOM.Meade.net
             //LX200's – a string of bar characters indicating the distance.
             //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
 
-            bool isSlewing = !string.IsNullOrEmpty(result);
+            bool isSlewing = false;
             try
             {
-                //if (string.IsNullOrEmpty(result))
-                //{
-                //    isSlewing = false;
-                //    return isSlewing;
-                //}
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    isSlewing = false;
+                    return isSlewing;
+                }
 
-                //if (result.Contains("|"))
-                //{
-                //    isSlewing = true;
-                //    return isSlewing;
-                //}
+                if (result.Contains("|"))
+                {
+                    isSlewing = true;
+                    return isSlewing;
+                }
 
                 ////classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
                 //byte[] ba = Encoding.Default.GetBytes(result);
@@ -2030,7 +2031,7 @@ namespace ASCOM.Meade.net
             }
             finally
             {
-                LogMessage("IsSlewingToTarget", $"Result = {isSlewing}");
+                LogMessage("IsSlewingToTarget", $"IsSlewing = {isSlewing} : result = {result ?? "<null>"}");
             }
         }
 
@@ -2394,20 +2395,15 @@ namespace ASCOM.Meade.net
 
         public void Unpark()
         {
-            LogMessage("Unpark", "Parking telescope");
+            LogMessage("Unpark", "Unparking telescope");
 
+            //todo make this return only work for LX-200 GPS telescopes
             if (!AtPark)
                 return;
 
             SharedResourcesWrapper.SendChar(":I#");
             //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
             //Returns: X once the handset restart has completed
-
-            //todo implement the 
-            //todo make sure that the telescope has the correct date and time.
-            //UTCDate = DateTime.UtcNow;
-
-
 
             var utcCorrection = GetUtcCorrection();
             var localDateTime = DateTime.UtcNow - utcCorrection;
