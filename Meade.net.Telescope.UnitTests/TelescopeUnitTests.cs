@@ -1633,25 +1633,55 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void SlewSettleTime_Get_ThenThrowsException()
+        public void SlewSettleTime_Get_WhenNotConnected_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
+            var exception = Assert.Throws<NotConnectedException>(() =>
             {
                 var result = _telescope.SlewSettleTime;
                 Assert.Fail($"{result} should not have returned");
             });
-
-            Assert.That(excpetion.Property, Is.EqualTo("SlewSettleTime"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewSettleTime Get"));
         }
 
         [Test]
-        public void SlewSettleTime_Set_ThenThrowsException()
+        public void SlewSettleTime_Set_WhenNotConnected_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SlewSettleTime = 0; });
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                _telescope.SlewSettleTime = 13;
+                Assert.Fail($"should not have returned");
+            });
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewSettleTime Set"));
+        }
 
-            Assert.That(excpetion.Property, Is.EqualTo("SlewSettleTime"));
-            Assert.That(excpetion.AccessorSet, Is.True);
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(2)]
+        public void SlewSettleTime_Get_ReturnsExpectedValue(short settleTime)
+        {
+            _profileProperties.SettleTime = settleTime;
+
+            ConnectTelescope();
+
+            var result = _telescope.SlewSettleTime;
+
+            Assert.That(result, Is.EqualTo(settleTime));
+        }
+
+        [TestCase(8)]
+        [TestCase(12)]
+        [TestCase(3)]
+        public void SlewSettleTime_Set_ThenReturnsNewSettleTime(short settleTime)
+        {
+            _profileProperties.SettleTime = 0;
+
+            ConnectTelescope();
+
+            _telescope.SlewSettleTime = settleTime;
+
+            var result = _telescope.SlewSettleTime;
+
+            Assert.That(result, Is.EqualTo(settleTime));
         }
 
         [Test]

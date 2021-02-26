@@ -146,6 +146,7 @@ namespace ASCOM.Meade.net
         private const string ReverseFocusDirectionName = "Reverse Focuser Direction";
         private const string DynamicBreakingName = "Dynamic Breaking";
         private const string SiteElevationName = "Site Elevation";
+        private const string SettleTimeName = "Settle Time";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -164,6 +165,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
                     driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
                     driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString());
+                    driverProfile.WriteValue(DriverId, SettleTimeName, profileProperties.SettleTime.ToString());
                 }
             }
         }
@@ -178,6 +180,7 @@ namespace ASCOM.Meade.net
         private const string ReverseFocuserDiectionDefault = "true";
         private const string DynamicBreakingDefault = "true";
         private const string SiteElevationDefault = "0";
+        private const string SettleTimeDefault = "2";
 
         public static ProfileProperties ReadProfile()
         {
@@ -197,6 +200,7 @@ namespace ASCOM.Meade.net
                     profileProperties.ReverseFocusDirection = Convert.ToBoolean(driverProfile.GetValue(DriverId, ReverseFocusDirectionName, string.Empty, ReverseFocuserDiectionDefault));
                     profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
                     profileProperties.SiteElevation = Convert.ToInt32(driverProfile.GetValue(DriverId, SiteElevationName, string.Empty, SiteElevationDefault));
+                    profileProperties.SettleTime = Convert.ToInt16(driverProfile.GetValue(DriverId, SettleTimeName, string.Empty, SettleTimeDefault));
                 }
 
                 return profileProperties;

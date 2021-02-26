@@ -1774,14 +1774,16 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("SlewSettleTime Get", "Not implemented");
-                throw new PropertyNotImplementedException("SlewSettleTime", false);
+                CheckConnected("SlewSettleTime Get");
+                LogMessage("SlewSettleTime Get", $"{SettleTime} Seconds");
+                return SettleTime;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
             {
-                LogMessage("SlewSettleTime Set", "Not implemented");
-                throw new PropertyNotImplementedException("SlewSettleTime", true);
+                CheckConnected("SlewSettleTime Set");
+                LogMessage("SlewSettleTime Set", $"Setting from {SettleTime} to {value}");
+                SettleTime = value;
             }
         }
 

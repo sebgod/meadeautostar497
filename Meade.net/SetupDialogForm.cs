@@ -88,6 +88,7 @@ namespace ASCOM.Meade.net
 
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
             cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
+            nudSettleTime.Value = profileProperties.SettleTime;
         }
 
     public ProfileProperties GetProfile()
@@ -103,8 +104,9 @@ namespace ASCOM.Meade.net
                 BacklashCompensation = int.Parse(txtBacklashSteps.Text),
                 ReverseFocusDirection = cbxReverseDirection.Checked,
                 DynamicBreaking = cbxDynamicBreaking.Checked,
-                SiteElevation = double.Parse(txtElevation.Text)
-            };
+                SiteElevation = double.Parse(txtElevation.Text),
+                SettleTime = Convert.ToInt16(nudSettleTime.Value)
+        };
 
             return profileProperties;
         }
