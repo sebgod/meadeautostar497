@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Reflection;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
@@ -22,6 +23,7 @@ namespace Meade.net.Telescope.UnitTests
         private Mock<IAstroUtils> _astroUtilsMock;
         private Mock<ISharedResourcesWrapper> _sharedResourcesWrapperMock;
         private Mock<IAstroMaths> _astroMathsMock;
+        private Mock<IClock> _clockMock;
 
         private ProfileProperties _profileProperties;
         private ConnectionInfo _connectionInfo;
@@ -63,8 +65,10 @@ namespace Meade.net.Telescope.UnitTests
 
             _astroMathsMock = new Mock<IAstroMaths>();
 
+            _clockMock = new Mock<IClock>();
+
             _telescope = new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
-                _sharedResourcesWrapperMock.Object, _astroMathsMock.Object);
+                _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object);
         }
 
         private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
@@ -1654,18 +1658,14 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewSettleTime Set"));
         }
 
-        [TestCase(5)]
-        [TestCase(10)]
-        [TestCase(2)]
-        public void SlewSettleTime_Get_ReturnsExpectedValue(short settleTime)
+        [Test]
+        public void SlewSettleTime_Get_ReturnsExpectedValue()
         {
-            _profileProperties.SettleTime = settleTime;
-
             ConnectTelescope();
 
             var result = _telescope.SlewSettleTime;
 
-            Assert.That(result, Is.EqualTo(settleTime));
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [TestCase(8)]
@@ -2338,6 +2338,64 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.True);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"),Times.Once);
+        }
+        
+        [TestCase(0, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:01", false)]
+        [TestCase(5, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:01", true)]
+        [TestCase(5, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:06", false)]
+        [TestCase(10, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:06", true)]
+        [TestCase(10, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:09", true)]
+        [TestCase(10, 0, "2021-10-03T20:36:00", "2021-10-03T20:36:10", false)]
+        [TestCase(0, 5, "2021-10-03T20:36:00", "2021-10-03T20:36:01", true)]
+        [TestCase(0, 5, "2021-10-03T20:36:00", "2021-10-03T20:36:05", false)]
+        [TestCase(0, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:05", true)]
+        [TestCase(0, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:10", false)]
+        [TestCase(15, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:10", true)]
+        [TestCase(15, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:24", true)]
+        [TestCase(15, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:25", false)]
+        public void Slewing_WhenTelescopeIsSlewing_ThenReturnsExpectedValueForSettleTime( short settleTime, short profileSettleTime, string startSlewing, string endSlewing, bool isSlewing)
+        {
+            _profileProperties.SettleTime = profileSettleTime;
+
+            var timescalled = 0;
+            DateTime startSlewingDateTime = DateTime.ParseExact(startSlewing, "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+            DateTime endSlewingDatetime = DateTime.ParseExact(endSlewing, "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() =>
+            {
+                if (timescalled == 0)
+                {
+                    timescalled++;
+                    return startSlewingDateTime;
+                }
+                
+                return endSlewingDatetime;
+            });
+
+            var slewingText = "|";
+            var notSlewingText = String.Empty;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":D#")).Returns( () =>
+            {
+                if (timescalled == 0)
+                {
+                    return slewingText;
+                }
+
+                return notSlewingText;
+            });
+
+            ConnectTelescope();
+
+            _telescope.SlewSettleTime = settleTime;
+
+            var result = _telescope.Slewing;
+
+            Assert.That(result, Is.EqualTo(true));
+
+            result = _telescope.Slewing;
+
+            Assert.That(result, Is.EqualTo(isSlewing));
         }
 
         [TestCase(TelescopeList.LX200CLASSIC,"","|", true)]

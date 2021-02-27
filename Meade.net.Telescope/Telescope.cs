@@ -60,15 +60,19 @@ namespace ASCOM.Meade.net
 
         private readonly IAstroMaths _astroMaths;
 
+        private readonly IClock _clock;
+
         /// <summary>
         /// Private variable to hold number of decimals for RA
         /// </summary>
         private int _digitsRa = 2;
 
         /// <summary>
-        /// Private variable to hold number of decimals for DE
+        /// Private variable to hold number of decimals for Dec
         /// </summary>
         private int _digitsDe = 2;
+
+        private short _settleTime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
@@ -84,6 +88,7 @@ namespace ASCOM.Meade.net
                 _utilitiesExtra = util; //Initialise util object
                 _astroUtilities = new AstroUtils(); // Initialise astro utilities object
                 _astroMaths = new AstroMaths.AstroMaths();
+                _clock = new Clock();
 
                 Initialise(nameof(Telescope));
             }
@@ -116,8 +121,9 @@ namespace ASCOM.Meade.net
             sb.AppendLine();
         }
 
-        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths) : base(sharedResourcesWrapper)
+        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock) : base(sharedResourcesWrapper)
         {
+            _clock = clock;
             _utilities = util; //Initialise util object
             _utilitiesExtra = utilExtra; //Initialise util object
             _astroUtilities = astroUtilities; // Initialise astro utilities object
@@ -1775,15 +1781,14 @@ namespace ASCOM.Meade.net
             get
             {
                 CheckConnected("SlewSettleTime Get");
-                LogMessage("SlewSettleTime Get", $"{SettleTime} Seconds");
-                return SettleTime;
+                LogMessage("SlewSettleTime Get", $"{_settleTime} Seconds");
+                return _settleTime;
             }
-            // ReSharper disable once ValueParameterNotUsed
             set
             {
                 CheckConnected("SlewSettleTime Set");
-                LogMessage("SlewSettleTime Set", $"Setting from {SettleTime} to {value}");
-                SettleTime = value;
+                LogMessage("SlewSettleTime Set", $"Setting from {_settleTime} to {value}");
+                _settleTime = value;
             }
         }
 
@@ -1964,14 +1969,27 @@ namespace ASCOM.Meade.net
             return _movingPrimary || _movingSecondary;
         }
 
+        private DateTime _earliestNonSlewingTime = DateTime.MinValue;
+
         public bool Slewing
         {
             get
             {
                 var isSlewing = GetSlewing();
+
+                if (isSlewing)
+                    _earliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
+                else if (_clock.UtcNow < _earliestNonSlewingTime)
+                    isSlewing = true;
+
                 LogMessage("Slewing", $"Result = {isSlewing}");
                 return isSlewing;
             }
+        }
+
+        private TimeSpan GetTotalSlewingSettleTime()
+        {
+            return TimeSpan.FromSeconds( SlewSettleTime + ProfileSettleTime );
         }
 
         private bool GetSlewing()
@@ -2001,7 +2019,7 @@ namespace ASCOM.Meade.net
             bool isSlewing = false;
             try
             {
-                if (string.IsNullOrWhiteSpace(result))
+                if (string.IsNullOrEmpty(result))
                 {
                     isSlewing = false;
                     return isSlewing;
