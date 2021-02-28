@@ -1866,6 +1866,7 @@ namespace ASCOM.Meade.net
                             case "0":
                                 //We're slewing everything should be working just fine.
                                 LogMessage("DoSlewAsync", "Slewing to target");
+                                SetSlewingMinEndTime();
                                 break;
                             case "1":
                                 //Below Horizon 
@@ -1901,7 +1902,7 @@ namespace ASCOM.Meade.net
                         {
                             throw new InvalidOperationException("fault");
                         }
-
+                        SetSlewingMinEndTime();
                         break;
                 }
             });
@@ -1978,13 +1979,18 @@ namespace ASCOM.Meade.net
                 var isSlewing = GetSlewing();
 
                 if (isSlewing)
-                    _earliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
+                    SetSlewingMinEndTime();
                 else if (_clock.UtcNow < _earliestNonSlewingTime)
                     isSlewing = true;
 
                 LogMessage("Slewing", $"Result = {isSlewing}");
                 return isSlewing;
             }
+        }
+
+        private void SetSlewingMinEndTime()
+        {
+            _earliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
         }
 
         private TimeSpan GetTotalSlewingSettleTime()
