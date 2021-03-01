@@ -819,6 +819,7 @@ namespace ASCOM.Meade.net
 
             _movingPrimary = false;
             _movingSecondary = false;
+            SetSlewingMinEndTime();
         }
 
         public AlignmentModes AlignmentMode
@@ -1341,6 +1342,9 @@ namespace ASCOM.Meade.net
         private bool _movingPrimary;
         private bool _movingSecondary;
 
+        private double _primaryRate;
+        private double _secondaryRate;
+
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
             LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
@@ -1383,6 +1387,11 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
+                            if (_primaryRate > 1)
+                            {
+                                //We're going faster than Guide speed, so need to wait for the scope to settle.
+                                SetSlewingMinEndTime();
+                            }
                             _movingPrimary = false;
                             SharedResourcesWrapper.SendBlind(":Qe#");
                             //:Qe# Halt eastward Slews
@@ -1390,19 +1399,21 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind(":Qw#");
                             //:Qw# Halt westward Slews
                             //Returns: Nothing
+                            _primaryRate = 0;
                             break;
                         case ComparisonResult.Greater:
-
                             SharedResourcesWrapper.SendBlind(":Me#");
                             //:Me# Move Telescope East at current slew rate
                             //Returns: Nothing
                             _movingPrimary = true;
+                            _primaryRate = absRate;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind(":Mw#");
                             //:Mw# Move Telescope West at current slew rate
                             //Returns: Nothing
                             _movingPrimary = true;
+                            _primaryRate = absRate;
                             break;
                     }
                     break;
@@ -1410,6 +1421,11 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
+                            if (_secondaryRate > 1)
+                            {
+                                //We're going faster than Guide speed, so need to wait for the scope to settle.
+                                SetSlewingMinEndTime();
+                            }
                             _movingSecondary = false;
                             SharedResourcesWrapper.SendBlind(":Qn#");
                             //:Qn# Halt northward Slews
@@ -1417,18 +1433,22 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind(":Qs#");
                             //:Qs# Halt southward Slews
                             //Returns: Nothing
+
+                            _secondaryRate = 0;
                             break;
                         case ComparisonResult.Greater:
                             SharedResourcesWrapper.SendBlind(":Mn#");
                             //:Mn# Move Telescope North at current slew rate
                             //Returns: Nothing
                             _movingSecondary = true;
+                            _secondaryRate = absRate;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind(":Ms#");
                             //:Ms# Move Telescope South at current slew rate
                             //Returns: Nothing
                             _movingSecondary = true;
+                            _secondaryRate = absRate;
                             break;
 
                     }
