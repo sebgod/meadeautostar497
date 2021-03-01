@@ -1392,6 +1392,7 @@ namespace ASCOM.Meade.net
                                 //We're going faster than Guide speed, so need to wait for the scope to settle.
                                 SetSlewingMinEndTime();
                             }
+
                             _movingPrimary = false;
                             SharedResourcesWrapper.SendBlind(":Qe#");
                             //:Qe# Halt eastward Slews
@@ -1580,7 +1581,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// convert a HH:MM.T (classic LX200 RA Notation) string to a double hours. T is the decimal part of minutes which is converted into seconds
         /// </summary>
-        public double HMToHours(string hm)
+        public double HmToHours(string hm)
         {
             var token = hm.Split('.');
             if (token.Length != 2)
@@ -1601,7 +1602,7 @@ namespace ASCOM.Meade.net
                 //Returns: HH:MM.T# or HH:MM:SS#
                 //Depending which precision is set for the telescope
 
-                double rightAscension = HMToHours(result);
+                double rightAscension = HmToHours(result);
 
                 LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
                 return rightAscension;
@@ -1686,7 +1687,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("SiteElevation Set");
 
                 LogMessage("SiteElevation", $"Set: {value}");
-                if (value == base.SiteElevation)
+                if (Math.Abs(value - base.SiteElevation) < 0.1)
                 {
                     LogMessage("SiteElevation", $"Set: no change detected");
                     return;
@@ -2119,14 +2120,14 @@ namespace ASCOM.Meade.net
             // At least the classic LX200 low precision might not slew to the exact target position
             // This Requires to retrieve the aimed target ra de from the telescope
             double ra = RightAscension;
-            if (_targetRightAscension != InvalidParameter &&
+            if (Math.Abs(_targetRightAscension - InvalidParameter) > 0.1 &&
                 _utilities.HoursToHMS(ra, ":", ":", ":", _digitsRa) != _utilities.HoursToHMS(_targetRightAscension, ":", ":", ":", _digitsRa))
             {
                 LogMessage("SyncToTarget", $"differ RA real {ra} targeted {_targetRightAscension}");
                 _targetRightAscension = ra;
             }
             double de = Declination;
-            if (_targetDeclination != InvalidParameter &&
+            if (Math.Abs(_targetDeclination - InvalidParameter) > 0.1 &&
                 _utilities.DegreesToDMS(de, "*", ":", ":", _digitsDe) != _utilities.DegreesToDMS(_targetDeclination, "*", ":", ":", _digitsDe))
             {
                 LogMessage("SyncToTarget", $"differ DE real {de} targeted {_targetDeclination}");
@@ -2167,10 +2168,9 @@ namespace ASCOM.Meade.net
                     throw new InvalidValueException("Declination cannot be less than -90.");
 
                 var dms = "";
-                if (IsLongFormat)
-                    dms = _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe);
-                else
-                    dms = _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                dms = IsLongFormat ?
+                    _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe) :
+                    _utilities.DegreesToDM(value, "*", "", _digitsDe);
 
                 var s = value < 0 ? string.Empty : "+";
 

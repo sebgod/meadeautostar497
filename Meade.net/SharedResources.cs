@@ -164,7 +164,7 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, BacklashCompensationName, profileProperties.BacklashCompensation.ToString());
                     driverProfile.WriteValue(DriverId, ReverseFocusDirectionName, profileProperties.ReverseFocusDirection.ToString());
                     driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
-                    driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString());
+                    driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, SettleTimeName, profileProperties.SettleTime.ToString());
                 }
             }

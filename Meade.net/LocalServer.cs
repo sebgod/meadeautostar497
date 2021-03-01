@@ -337,18 +337,23 @@ namespace ASCOM.Meade.net
                     {
                         key?.SetValue(null, progid);						// Could be assyTitle/Desc??, but .NET components show ProgId here
                         key?.SetValue("AppId", _sAppId);
-                        using (RegistryKey key2 = key.CreateSubKey("Implemented Categories"))
+                        if (key != null)
                         {
-                            key2?.CreateSubKey("{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}");
-                        }
-                        using (RegistryKey key2 = key.CreateSubKey("ProgId"))
-                        {
-                            key2?.SetValue(null, progid);
-                        }
-                        key.CreateSubKey("Programmable");
-                        using (RegistryKey key2 = key.CreateSubKey("LocalServer32"))
-                        {
-                            key2?.SetValue(null, Application.ExecutablePath);
+                            using (RegistryKey key2 = key.CreateSubKey("Implemented Categories"))
+                            {
+                                key2?.CreateSubKey("{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}");
+                            }
+
+                            using (RegistryKey key2 = key.CreateSubKey("ProgId"))
+                            {
+                                key2?.SetValue(null, progid);
+                            }
+
+                            key.CreateSubKey("Programmable");
+                            using (RegistryKey key2 = key.CreateSubKey("LocalServer32"))
+                            {
+                                key2?.SetValue(null, Application.ExecutablePath);
+                            }
                         }
                     }
                     //
