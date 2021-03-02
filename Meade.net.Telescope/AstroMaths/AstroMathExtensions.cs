@@ -58,7 +58,7 @@ namespace ASCOM.Meade.net.AstroMaths
                 t0 -= 24;
             }
 
-            var ut = DateTimeToDecimalHours(utcDateTime);
+            var ut = utcDateTime.DateTimeToDecimalHours();
             var a = ut * 1.002737909;
 
             var t1 = t0 + a;
