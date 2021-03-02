@@ -1467,6 +1467,53 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideWest)]
         [TestCase(GuideDirections.guideNorth)]
         [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingNotAvailable_ThenSendsOldCommandsAndDoesNotWaitForExtraSettleTime(GuideDirections direction)
+        {
+            short slewSettleTime = 10;
+            _profileProperties.SettleTime = slewSettleTime;
+
+            var telescopeDecResult = "s12*34’56";
+            var dmsResult = 1.2;
+            var telescopeRaResult = "HH:MM:SS";
+            var hmsResult = 1.3;
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GD#")).Returns(telescopeDecResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#")).Returns(telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(dmsResult);
+            _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(hmsResult);
+
+            var duration = 0;
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
+            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_30Ee);
+
+            _telescope.Connected = true;
+
+            _telescope.PulseGuide(direction, duration);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _clockMock.Verify(x => x.UtcNow, Times.Never);
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
         public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailableButDurationTooLong_ThenSendsOldCommandsAndWaits(GuideDirections direction)
         {
             var telescopeRaResult = "HH:MM:SS";
@@ -2437,6 +2484,60 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(result, Is.True);
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":D#"), Times.Never);
+        }
+
+        [TestCase(1, TelescopeAxes.axisPrimary, 0, 0, false, false)]
+        [TestCase(-1, TelescopeAxes.axisPrimary, 0, 0, false, false)]
+        [TestCase(1, TelescopeAxes.axisSecondary, 0, 0, false, false)]
+        [TestCase(-1, TelescopeAxes.axisSecondary, 0, 0, false, false)]
+
+        [TestCase(1, TelescopeAxes.axisPrimary, 10, 0, true, false)]
+        [TestCase(-1, TelescopeAxes.axisPrimary, 10, 0, true, false)]
+        [TestCase(1, TelescopeAxes.axisSecondary, 10, 0, true, false)]
+        [TestCase(-1, TelescopeAxes.axisSecondary, 10, 0, true, false)]
+
+        [TestCase(1, TelescopeAxes.axisPrimary, 10, 20, true, true)]
+        [TestCase(-1, TelescopeAxes.axisPrimary, 10, 20, true, true)]
+        [TestCase(1, TelescopeAxes.axisSecondary, 10, 20, true, true)]
+        [TestCase(-1, TelescopeAxes.axisSecondary, 10, 20, true, true)]
+        public void Slewing_WhenTelescopeStops_ThenWaitsForSettleTime(int rate, TelescopeAxes axis, short profileSettleTime, short driverSettleTime, bool expectedResultInWaitingPeriod, bool afterProfileSettleTimeUp)
+        {
+            _profileProperties.SettleTime = profileSettleTime;
+
+            DateTime currentTime = MakeTime("2021-01-23T22:02:10");
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() => currentTime );
+
+            ConnectTelescope();
+
+            _telescope.SlewSettleTime = driverSettleTime;
+
+            _telescope.MoveAxis(axis, rate);
+
+            var result = _telescope.Slewing;
+            Assert.That(result, Is.True);
+
+            _telescope.MoveAxis(axis, 0);
+
+            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+
+            result = _telescope.Slewing;
+            Assert.That(result, Is.EqualTo(expectedResultInWaitingPeriod));
+
+            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+
+            result = _telescope.Slewing;
+            Assert.That(result, Is.EqualTo(afterProfileSettleTimeUp));
+
+            currentTime = currentTime + TimeSpan.FromSeconds(driverSettleTime);
+
+            result = _telescope.Slewing;
+            Assert.That(result, Is.False);
+        }
+
+        private DateTime MakeTime( string dateTimeString )
+        {
+            return DateTime.ParseExact(dateTimeString, "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
         }
 
 
