@@ -27,6 +27,7 @@ namespace ASCOM.Meade.net
         protected string Precision;
         protected string GuidingStyle;
         protected double SiteElevation;
+        protected short ProfileSettleTime;
 
         protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
@@ -67,6 +68,7 @@ namespace ASCOM.Meade.net
             Precision = profileProperties.Precision;
             GuidingStyle = profileProperties.GuidingStyle.ToLower();
             SiteElevation = profileProperties.SiteElevation;
+            ProfileSettleTime = profileProperties.SettleTime;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
@@ -76,6 +78,7 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Precision: {Precision}");
             LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
             LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
+            LogMessage("ReadProfile", $"Settle Time after slew: {ProfileSettleTime}");
         }
 
         /// <summary>

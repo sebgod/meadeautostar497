@@ -88,6 +88,7 @@ namespace ASCOM.Meade.net
 
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
             cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
+            nudSettleTime.Value = profileProperties.SettleTime;
         }
 
     public ProfileProperties GetProfile()
@@ -103,8 +104,9 @@ namespace ASCOM.Meade.net
                 BacklashCompensation = int.Parse(txtBacklashSteps.Text),
                 ReverseFocusDirection = cbxReverseDirection.Checked,
                 DynamicBreaking = cbxDynamicBreaking.Checked,
-                SiteElevation = double.Parse(txtElevation.Text)
-            };
+                SiteElevation = double.Parse(txtElevation.Text),
+                SettleTime = Convert.ToInt16(nudSettleTime.Value)
+        };
 
             return profileProperties;
         }
@@ -167,7 +169,7 @@ namespace ASCOM.Meade.net
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(txtElevation.Text, "[^0-9]"))
             {
-                MessageBox.Show("Please enter only numbers.");
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtElevation.Text = txtElevation.Text.Remove(txtElevation.Text.Length - 1);
             }
         }
@@ -176,7 +178,7 @@ namespace ASCOM.Meade.net
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(txtBacklashSteps.Text, "[^0-9]"))
             {
-                MessageBox.Show("Please enter only numbers.");
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtBacklashSteps.Text = txtElevation.Text.Remove(txtBacklashSteps.Text.Length - 1);
             }
         }

@@ -60,15 +60,19 @@ namespace ASCOM.Meade.net
 
         private readonly IAstroMaths _astroMaths;
 
+        private readonly IClock _clock;
+
         /// <summary>
         /// Private variable to hold number of decimals for RA
         /// </summary>
         private int _digitsRa = 2;
 
         /// <summary>
-        /// Private variable to hold number of decimals for DE
+        /// Private variable to hold number of decimals for Dec
         /// </summary>
         private int _digitsDe = 2;
+
+        private short _settleTime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
@@ -84,6 +88,7 @@ namespace ASCOM.Meade.net
                 _utilitiesExtra = util; //Initialise util object
                 _astroUtilities = new AstroUtils(); // Initialise astro utilities object
                 _astroMaths = new AstroMaths.AstroMaths();
+                _clock = new Clock();
 
                 Initialise(nameof(Telescope));
             }
@@ -116,8 +121,9 @@ namespace ASCOM.Meade.net
             sb.AppendLine();
         }
 
-        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths) : base(sharedResourcesWrapper)
+        public Telescope( IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities, ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock) : base(sharedResourcesWrapper)
         {
+            _clock = clock;
             _utilities = util; //Initialise util object
             _utilitiesExtra = utilExtra; //Initialise util object
             _astroUtilities = astroUtilities; // Initialise astro utilities object
@@ -813,6 +819,7 @@ namespace ASCOM.Meade.net
 
             _movingPrimary = false;
             _movingSecondary = false;
+            SetSlewingMinEndTime();
         }
 
         public AlignmentModes AlignmentMode
@@ -1334,7 +1341,7 @@ namespace ASCOM.Meade.net
 
         private bool _movingPrimary;
         private bool _movingSecondary;
-
+        
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
             LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
@@ -1377,6 +1384,11 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
+                            if (!_isGuiding)
+                            {
+                                SetSlewingMinEndTime();
+                            }
+
                             _movingPrimary = false;
                             SharedResourcesWrapper.SendBlind(":Qe#");
                             //:Qe# Halt eastward Slews
@@ -1386,7 +1398,6 @@ namespace ASCOM.Meade.net
                             //Returns: Nothing
                             break;
                         case ComparisonResult.Greater:
-
                             SharedResourcesWrapper.SendBlind(":Me#");
                             //:Me# Move Telescope East at current slew rate
                             //Returns: Nothing
@@ -1404,6 +1415,10 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
+                            if (!_isGuiding)
+                            {
+                                SetSlewingMinEndTime();
+                            }
                             _movingSecondary = false;
                             SharedResourcesWrapper.SendBlind(":Qn#");
                             //:Qn# Halt northward Slews
@@ -1424,9 +1439,7 @@ namespace ASCOM.Meade.net
                             //Returns: Nothing
                             _movingSecondary = true;
                             break;
-
                     }
-
                     break;
                 default:
                     throw new InvalidValueException("Can not move this axis.");
@@ -1554,7 +1567,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// convert a HH:MM.T (classic LX200 RA Notation) string to a double hours. T is the decimal part of minutes which is converted into seconds
         /// </summary>
-        public double HMToHours(string hm)
+        public double HmToHours(string hm)
         {
             var token = hm.Split('.');
             if (token.Length != 2)
@@ -1575,7 +1588,7 @@ namespace ASCOM.Meade.net
                 //Returns: HH:MM.T# or HH:MM:SS#
                 //Depending which precision is set for the telescope
 
-                double rightAscension = HMToHours(result);
+                double rightAscension = HmToHours(result);
 
                 LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
                 return rightAscension;
@@ -1660,7 +1673,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("SiteElevation Set");
 
                 LogMessage("SiteElevation", $"Set: {value}");
-                if (value == base.SiteElevation)
+                if (Math.Abs(value - base.SiteElevation) < 0.1)
                 {
                     LogMessage("SiteElevation", $"Set: no change detected");
                     return;
@@ -1774,14 +1787,15 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("SlewSettleTime Get", "Not implemented");
-                throw new PropertyNotImplementedException("SlewSettleTime", false);
+                CheckConnected("SlewSettleTime Get");
+                LogMessage("SlewSettleTime Get", $"{_settleTime} Seconds");
+                return _settleTime;
             }
-            // ReSharper disable once ValueParameterNotUsed
             set
             {
-                LogMessage("SlewSettleTime Set", "Not implemented");
-                throw new PropertyNotImplementedException("SlewSettleTime", true);
+                CheckConnected("SlewSettleTime Set");
+                LogMessage("SlewSettleTime Set", $"Setting from {_settleTime} to {value}");
+                _settleTime = value;
             }
         }
 
@@ -1859,6 +1873,7 @@ namespace ASCOM.Meade.net
                             case "0":
                                 //We're slewing everything should be working just fine.
                                 LogMessage("DoSlewAsync", "Slewing to target");
+                                SetSlewingMinEndTime();
                                 break;
                             case "1":
                                 //Below Horizon 
@@ -1894,7 +1909,7 @@ namespace ASCOM.Meade.net
                         {
                             throw new InvalidOperationException("fault");
                         }
-
+                        SetSlewingMinEndTime();
                         break;
                 }
             });
@@ -1962,14 +1977,32 @@ namespace ASCOM.Meade.net
             return _movingPrimary || _movingSecondary;
         }
 
+        private DateTime _earliestNonSlewingTime = DateTime.MinValue;
+
         public bool Slewing
         {
             get
             {
                 var isSlewing = GetSlewing();
+
+                if (isSlewing)
+                    SetSlewingMinEndTime();
+                else if (_clock.UtcNow < _earliestNonSlewingTime)
+                    isSlewing = true;
+
                 LogMessage("Slewing", $"Result = {isSlewing}");
                 return isSlewing;
             }
+        }
+
+        private void SetSlewingMinEndTime()
+        {
+            _earliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
+        }
+
+        private TimeSpan GetTotalSlewingSettleTime()
+        {
+            return TimeSpan.FromSeconds( SlewSettleTime + ProfileSettleTime );
         }
 
         private bool GetSlewing()
@@ -1999,8 +2032,9 @@ namespace ASCOM.Meade.net
             bool isSlewing = false;
             try
             {
-                if (string.IsNullOrWhiteSpace(result))
+                if (string.IsNullOrEmpty(result))
                 {
+                    // ReSharper disable once RedundantAssignment
                     isSlewing = false;
                     return isSlewing;
                 }
@@ -2073,14 +2107,14 @@ namespace ASCOM.Meade.net
             // At least the classic LX200 low precision might not slew to the exact target position
             // This Requires to retrieve the aimed target ra de from the telescope
             double ra = RightAscension;
-            if (_targetRightAscension != InvalidParameter &&
+            if (Math.Abs(_targetRightAscension - InvalidParameter) > 0.1 &&
                 _utilities.HoursToHMS(ra, ":", ":", ":", _digitsRa) != _utilities.HoursToHMS(_targetRightAscension, ":", ":", ":", _digitsRa))
             {
                 LogMessage("SyncToTarget", $"differ RA real {ra} targeted {_targetRightAscension}");
                 _targetRightAscension = ra;
             }
             double de = Declination;
-            if (_targetDeclination != InvalidParameter &&
+            if (Math.Abs(_targetDeclination - InvalidParameter) > 0.1 &&
                 _utilities.DegreesToDMS(de, "*", ":", ":", _digitsDe) != _utilities.DegreesToDMS(_targetDeclination, "*", ":", ":", _digitsDe))
             {
                 LogMessage("SyncToTarget", $"differ DE real {de} targeted {_targetDeclination}");
@@ -2120,11 +2154,9 @@ namespace ASCOM.Meade.net
                 if (value < -90)
                     throw new InvalidValueException("Declination cannot be less than -90.");
 
-                var dms = "";
-                if (IsLongFormat)
-                    dms = _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe);
-                else
-                    dms = _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                var dms = IsLongFormat ?
+                    _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe) :
+                    _utilities.DegreesToDM(value, "*", "", _digitsDe);
 
                 var s = value < 0 ? string.Empty : "+";
 
@@ -2177,12 +2209,9 @@ namespace ASCOM.Meade.net
                 if (value >= 24)
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
-                var hms = "";
-                if(IsLongFormat)
-                    hms = _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa);
-                else
-                    //meade protocol defines H:MM.T format
-                    hms = _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
+                var hms = IsLongFormat ?
+                    _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa) : 
+                    _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
 
                 var command = $":Sr{hms}#";
                 LogMessage("TargetRightAscension Set", $"{command}");

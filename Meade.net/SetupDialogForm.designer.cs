@@ -61,7 +61,11 @@ namespace ASCOM.Meade.net
             this.label12 = new System.Windows.Forms.Label();
             this.txtElevation = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.nudSettleTime = new System.Windows.Forms.NumericUpDown();
+            this.label15 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -231,10 +235,33 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label13, "label13");
             this.label13.Name = "label13";
             // 
+            // label14
+            // 
+            resources.ApplyResources(this.label14, "label14");
+            this.label14.Name = "label14";
+            // 
+            // nudSettleTime
+            // 
+            resources.ApplyResources(this.nudSettleTime, "nudSettleTime");
+            this.nudSettleTime.Maximum = new decimal(new int[] {
+            32767,
+            0,
+            0,
+            0});
+            this.nudSettleTime.Name = "nudSettleTime";
+            // 
+            // label15
+            // 
+            resources.ApplyResources(this.label15, "label15");
+            this.label15.Name = "label15";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label15);
+            this.Controls.Add(this.nudSettleTime);
+            this.Controls.Add(this.label14);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.txtElevation);
             this.Controls.Add(this.label12);
@@ -270,6 +297,7 @@ namespace ASCOM.Meade.net
             this.TopMost = true;
             this.Shown += new System.EventHandler(this.SetupDialogForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -305,5 +333,8 @@ namespace ASCOM.Meade.net
         private Label label12;
         private TextBox txtElevation;
         private Label label13;
+        private Label label14;
+        private NumericUpDown nudSettleTime;
+        private Label label15;
     }
 }

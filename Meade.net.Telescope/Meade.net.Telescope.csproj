@@ -124,8 +124,10 @@
     <Compile Include="AstroMaths\EquatorialCoordinates.cs" />
     <Compile Include="AstroMaths\HorizonCoordinates.cs" />
     <Compile Include="AstroMaths\IAstroMaths.cs" />
+    <Compile Include="Clock.cs" />
     <Compile Include="ComparisonResult.cs" />
     <Compile Include="DoubleExtensions.cs" />
+    <Compile Include="IClock.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Telescope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
