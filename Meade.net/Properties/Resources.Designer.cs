@@ -135,5 +135,14 @@ namespace ASCOM.Meade.net.Properties {
                 return ResourceManager.GetString("SetupDialogForm_TextBox1_TextChanged___0_00_0___of_sidereal_rate_", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter only numbers..
+        /// </summary>
+        internal static string SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_ {
+            get {
+                return ResourceManager.GetString("SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_", resourceCulture);
+            }
+        }
     }
 }

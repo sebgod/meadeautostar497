@@ -169,7 +169,7 @@ namespace ASCOM.Meade.net
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(txtElevation.Text, "[^0-9]"))
             {
-                MessageBox.Show("Please enter only numbers.");
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtElevation.Text = txtElevation.Text.Remove(txtElevation.Text.Length - 1);
             }
         }
@@ -178,7 +178,7 @@ namespace ASCOM.Meade.net
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(txtBacklashSteps.Text, "[^0-9]"))
             {
-                MessageBox.Show("Please enter only numbers.");
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtBacklashSteps.Text = txtElevation.Text.Remove(txtBacklashSteps.Text.Length - 1);
             }
         }
