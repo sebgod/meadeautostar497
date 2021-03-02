@@ -2048,6 +2048,7 @@ namespace ASCOM.Meade.net
             {
                 if (string.IsNullOrEmpty(result))
                 {
+                    // ReSharper disable once RedundantAssignment
                     isSlewing = false;
                     return isSlewing;
                 }
@@ -2167,8 +2168,7 @@ namespace ASCOM.Meade.net
                 if (value < -90)
                     throw new InvalidValueException("Declination cannot be less than -90.");
 
-                var dms = "";
-                dms = IsLongFormat ?
+                var dms = IsLongFormat ?
                     _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe) :
                     _utilities.DegreesToDM(value, "*", "", _digitsDe);
 
@@ -2223,12 +2223,9 @@ namespace ASCOM.Meade.net
                 if (value >= 24)
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
-                var hms = "";
-                if(IsLongFormat)
-                    hms = _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa);
-                else
-                    //meade protocol defines H:MM.T format
-                    hms = _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
+                var hms = IsLongFormat ?
+                    _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa) : 
+                    _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
 
                 var command = $":Sr{hms}#";
                 LogMessage("TargetRightAscension Set", $"{command}");
