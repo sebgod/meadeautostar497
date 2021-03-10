@@ -118,6 +118,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alignment.cs" />
+    <Compile Include="AlignmentStatus.cs" />
     <Compile Include="AstroMaths\AltitudeData.cs" />
     <Compile Include="AstroMaths\AstroMathExtensions.cs" />
     <Compile Include="AstroMaths\AstroMaths.cs" />

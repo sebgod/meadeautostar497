@@ -510,7 +510,7 @@ namespace ASCOM.Meade.net
         private bool FirmwareIsGreaterThan(string minVersion)
         {
             var currentVersion = SharedResourcesWrapper.FirmwareVersion;
-            var comparison = String.Compare(currentVersion, minVersion, StringComparison.Ordinal);
+            var comparison = string.Compare(currentVersion, minVersion, StringComparison.Ordinal);
             return comparison >= 0;
         }
 
@@ -830,47 +830,41 @@ namespace ASCOM.Meade.net
 
                 CheckConnected("AlignmentMode Get");
 
-                const char ack = (char) 6;
-
-                var alignmentString = SharedResourcesWrapper.SendChar(ack.ToString());
-                //ACK <0x06> Query of alignment mounting mode.
-                //Returns:
-                //A If scope in AltAz Mode
-                //D If scope is currently in the Downloader[Autostar II & Autostar]
-                //L If scope in Land Mode
-                //P If scope in Polar Mode
-
-                //todo implement GW Command - Supported in Autostar 43Eg and above
-                //if FirmwareIsGreaterThan(TelescopeList.Autostar497_43EG)
-                //{
-                    //var alignmentString = SerialPort.CommandTerminated(":GW#", "#");
-                    //:GW# Get Scope Alignment Status
-                    //Returns: <mount><tracking><alignment>#
-                    //    where:
-                    //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
-                    //tracking: T - tracking, N - not tracking
-                    //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
-                //}
-
-                AlignmentModes alignmentMode;
-                switch (alignmentString)
+                if (FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
                 {
-                    case "A":
-                        alignmentMode = AlignmentModes.algAltAz;
-                        break;
-                    case "P":
-                        alignmentMode = AlignmentModes.algPolar;
-                        break;
-                    case "G":
-                        alignmentMode = AlignmentModes.algGermanPolar;
-                        break;
-                    default:
-                        throw new InvalidValueException(
-                            $"unknown alignment returned from telescope: {alignmentString}");
+                    var alignmentStatus = GetScopeAlignmentStatus();
+                    return alignmentStatus.AlignmentMode;
                 }
+                else
+                {
+                    const char ack = (char)6;
+                    //ACK <0x06> Query of alignment mounting mode.
+                    //Returns:
+                    //A If scope in AltAz Mode
+                    //D If scope is currently in the Downloader[Autostar II & Autostar]
+                    //L If scope in Land Mode
+                    //P If scope in Polar Mode
+                    var alignmentString = SharedResourcesWrapper.SendChar(ack.ToString());
+                    AlignmentModes alignmentMode;
+                    switch (alignmentString)
+                    {
+                        case "A":
+                            alignmentMode = AlignmentModes.algAltAz;
+                            break;
+                        case "P":
+                            alignmentMode = AlignmentModes.algPolar;
+                            break;
+                        //case "G":
+                        //    alignmentMode = AlignmentModes.algGermanPolar;
+                        //    break;
+                        default:
+                            throw new InvalidValueException(
+                                $"unknown alignment returned from telescope: {alignmentString}");
+                    }
 
-                LogMessage("AlignmentMode Get", $"alignmode = {alignmentMode}");
-                return alignmentMode;
+                    LogMessage("AlignmentMode Get", $"alignmode = {alignmentMode}");
+                    return alignmentMode;
+                }
             }
             set
             {
@@ -900,6 +894,50 @@ namespace ASCOM.Meade.net
                 //:AL# Sets telescope to Land alignment mode
                 //Returns: nothing
             }
+        }
+        
+        private AlignmentStatus GetScopeAlignmentStatus()
+        {
+            var alignmentString = SharedResourcesWrapper.SendString(":GW#");
+            //:GW# Get Scope Alignment Status
+            //Returns: <mount><tracking><alignment>#
+            //    where:
+            //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
+            //tracking: T - tracking, N - not tracking
+            //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
+
+            var alignmentStatus = new AlignmentStatus();
+            switch (alignmentString[0])
+            {
+                case 'A':
+                    alignmentStatus.AlignmentMode = AlignmentModes.algAltAz;
+                    break;
+                case 'P':
+                    alignmentStatus.AlignmentMode = AlignmentModes.algPolar;
+                    break;
+                case 'G':
+                    alignmentStatus.AlignmentMode = AlignmentModes.algGermanPolar;
+                    break;
+            }
+            alignmentStatus.Tracking = alignmentString[0] == 'T';
+            switch (alignmentString[1])
+            {
+                case '0':
+                    alignmentStatus.Status = Alignment.NeedsAlignment;
+                    break;
+                case '1':
+                    alignmentStatus.Status = Alignment.OneStarAligned;
+                    break;
+                case '2':
+                    alignmentStatus.Status = Alignment.TwoStarAligned;
+                    break;
+                case '3':
+                    alignmentStatus.Status = Alignment.ThreeStarAligned;
+                    break;
+            }
+            
+
+            return alignmentStatus;
         }
 
         public double Altitude
@@ -1111,8 +1149,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetTracking", "Get - " + true);
-                return true;
+                LogMessage("CanSetTracking", "Get - " + false);
+                return false;
             }
         }
 
@@ -2236,12 +2274,19 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("Tracking", $"Get - {_tracking}");
+                if (FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                {
+                    var alignmentStatus = GetScopeAlignmentStatus();
+                    _tracking = alignmentStatus.Tracking;
+                }
+
                 return _tracking;
             }
             set
             {
-                LogMessage("Tracking Set", $"{value}");
-                _tracking = value;
+                throw new ASCOM.NotImplementedException("Tracking Set");
+                //LogMessage("Tracking Set", $"{value}");
+                //_tracking = value;
             }
         }
 

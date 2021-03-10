@@ -621,15 +621,18 @@ namespace Meade.net.Telescope.UnitTests
         }
 
 
-        [TestCase("A", AlignmentModes.algAltAz)]
-        [TestCase("P", AlignmentModes.algPolar)]
-        [TestCase("G", AlignmentModes.algGermanPolar)]
-        public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode)
+        [TestCase("A", AlignmentModes.algAltAz, TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee)]
+        [TestCase("P", AlignmentModes.algPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee)]
+        [TestCase("A", AlignmentModes.algAltAz, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        [TestCase("P", AlignmentModes.algPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        [TestCase("G", AlignmentModes.algGermanPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode, string productName, string firmware)
         {
             const char ack = (char)6;
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString())).Returns(telescopeMode);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GW#")).Returns($"{telescopeMode}N0");
 
-            ConnectTelescope();
+            ConnectTelescope(productName, firmware);
             
             var actualResult = _telescope.AlignmentMode;
             
@@ -897,11 +900,11 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void CanSetTracking_Get_ReturnsTrue()
+        public void CanSetTracking_Get_ReturnsFalse()
         {
             var result = _telescope.CanSetTracking;
 
-            Assert.That(result, Is.True);
+            Assert.That(result, Is.False);
         }
 
         [Test]
@@ -2121,11 +2124,9 @@ namespace Meade.net.Telescope.UnitTests
 
         [TestCase(true)]
         [TestCase(false)]
-        public void Tracking_SetAndGet_WhenValueSet_ThenCanGetNewValue(bool tracking)
+        public void Tracking_Set_ThenThrowsNotImplementedException(bool tracking)
         {
-            _telescope.Tracking = tracking;
-
-            Assert.That(_telescope.Tracking, Is.EqualTo( tracking));
+            Assert.Throws<ASCOM.NotImplementedException>( () => { _telescope.Tracking = tracking; } );
         }
 
         [Test]
