@@ -27,6 +27,12 @@ namespace Meade.net.Focuser.UnitTests
             {
                 TraceLogger = false,
                 ComPort = "TestCom1",
+                Speed = 9600,
+                Parity = "None",
+                Handshake = "None",
+                StopBits = "One",
+                DataBits = 8,
+                
                 GuideRateArcSecondsPerSecond = 1.23,
                 Precision = "Unchanged",
                 GuidingStyle = "Auto"
