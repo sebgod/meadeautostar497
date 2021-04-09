@@ -274,6 +274,7 @@ namespace ASCOM.Meade.net
             // 
             // cboStopBits
             // 
+            this.cboStopBits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboStopBits.FormattingEnabled = true;
             resources.ApplyResources(this.cboStopBits, "cboStopBits");
             this.cboStopBits.Name = "cboStopBits";
@@ -290,18 +291,21 @@ namespace ASCOM.Meade.net
             // 
             // cboParity
             // 
+            this.cboParity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboParity.FormattingEnabled = true;
             resources.ApplyResources(this.cboParity, "cboParity");
             this.cboParity.Name = "cboParity";
             // 
             // cboSpeed
             // 
+            this.cboSpeed.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboSpeed.FormattingEnabled = true;
             resources.ApplyResources(this.cboSpeed, "cboSpeed");
             this.cboSpeed.Name = "cboSpeed";
             // 
             // cboHandShake
             // 
+            this.cboHandShake.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboHandShake.FormattingEnabled = true;
             resources.ApplyResources(this.cboHandShake, "cboHandShake");
             this.cboHandShake.Name = "cboHandShake";
