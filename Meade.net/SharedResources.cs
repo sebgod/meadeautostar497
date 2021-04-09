@@ -149,7 +149,7 @@ namespace ASCOM.Meade.net
         private const string SettleTimeName = "Settle Time";
 
         private const string SpeedName = "Speed";
-        private const string DataBitsName = "8";
+        private const string DataBitsName = "Data Bits";
         private const string StopBitsName = "Stop Bits";
         private const string HandShakeName = "Hand Shake";
         private const string ParityName = "Parity";
