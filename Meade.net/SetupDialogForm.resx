@@ -756,9 +756,6 @@
   <data name="&gt;&gt;cbxDynamicBreaking.ZOrder" xml:space="preserve">
     <value>18</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="cbxRtsDtr.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -777,6 +774,9 @@
   <data name="cbxRtsDtr.Text" xml:space="preserve">
     <value>Enable RTS/DTR</value>
   </data>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="cbxRtsDtr.ToolTip" xml:space="preserve">
     <value>Useful for Meade LS scopes</value>
   </data>
@@ -792,9 +792,6 @@
   <data name="&gt;&gt;cbxRtsDtr.ZOrder" xml:space="preserve">
     <value>17</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -993,25 +990,25 @@
   <data name="&gt;&gt;cboStopBits.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="numericUpDown1.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="numDatabits.Location" type="System.Drawing.Point, System.Drawing">
     <value>97, 137</value>
   </data>
-  <data name="numericUpDown1.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="numDatabits.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 20</value>
   </data>
-  <data name="numericUpDown1.TabIndex" type="System.Int32, mscorlib">
+  <data name="numDatabits.TabIndex" type="System.Int32, mscorlib">
     <value>31</value>
   </data>
-  <data name="&gt;&gt;numericUpDown1.Name" xml:space="preserve">
-    <value>numericUpDown1</value>
+  <data name="&gt;&gt;numDatabits.Name" xml:space="preserve">
+    <value>numDatabits</value>
   </data>
-  <data name="&gt;&gt;numericUpDown1.Type" xml:space="preserve">
+  <data name="&gt;&gt;numDatabits.Type" xml:space="preserve">
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;numericUpDown1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;numDatabits.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;numericUpDown1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;numDatabits.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
   <data name="cboParity.Location" type="System.Drawing.Point, System.Drawing">
@@ -1229,9 +1226,6 @@
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>626, 454</value>
-  </data>
-  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>

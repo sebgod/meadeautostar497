@@ -110,6 +110,46 @@ namespace ASCOM.Meade.net
                 cboGuidingStyle.SelectedItem = "Auto";
             }
 
+            numDatabits.Value = profileProperties.DataBits;
+
+            try
+            {
+                cboStopBits.SelectedItem = profileProperties.StopBits;
+            }
+            catch (Exception)
+            {
+                cboStopBits.SelectedItem = "One";
+            }
+
+
+            try
+            {
+                cboParity.SelectedItem = profileProperties.Parity;
+            }
+            catch (Exception)
+            {
+                cboParity.SelectedItem = "None";
+            }
+
+            try
+            {
+                cboSpeed.SelectedItem = profileProperties.Speed;
+            }
+            catch (Exception)
+            {
+                cboParity.SelectedItem = "9600";
+            }
+
+
+            try
+            {
+                cboHandShake.SelectedItem = profileProperties.Handshake;
+            }
+            catch (Exception)
+            {
+                cboHandShake.SelectedItem = "None";
+            }
+
             txtBacklashSteps.Text = profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture);
             txtElevation.Text = profileProperties.SiteElevation.ToString(CultureInfo.CurrentCulture);
 
@@ -125,6 +165,11 @@ namespace ASCOM.Meade.net
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
                 RtsDtrEnabled = cbxRtsDtr.Checked,
+                DataBits = Convert.ToInt32(numDatabits.Value),
+                StopBits = cboStopBits.SelectedItem.ToString(),
+                Parity = cboParity.SelectedItem.ToString(),
+                Speed = Convert.ToInt32(cboSpeed.SelectedItem),
+                Handshake = cboHandShake.SelectedItem.ToString(),
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
                 Precision = cboPrecision.SelectedItem.ToString(),
                 GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),

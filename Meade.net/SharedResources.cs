@@ -148,6 +148,12 @@ namespace ASCOM.Meade.net
         private const string SiteElevationName = "Site Elevation";
         private const string SettleTimeName = "Settle Time";
 
+        private const string SpeedName = "Speed";
+        private const string DataBitsName = "8";
+        private const string StopBitsName = "Stop Bits";
+        private const string HandShakeName = "Hand Shake";
+        private const string ParityName = "Parity";
+
         public static void WriteProfile(ProfileProperties profileProperties)
         {
             lock (LockObject)
@@ -158,6 +164,11 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
                     driverProfile.WriteValue(DriverId, RtsDtrProfileName, profileProperties.RtsDtrEnabled.ToString());
+                    driverProfile.WriteValue(DriverId, SpeedName, profileProperties.Speed.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, DataBitsName, profileProperties.DataBits.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, StopBitsName, profileProperties.StopBits);
+                    driverProfile.WriteValue(DriverId, HandShakeName, profileProperties.Handshake);
+                    driverProfile.WriteValue(DriverId, ParityName, profileProperties.Parity);
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
@@ -181,6 +192,11 @@ namespace ASCOM.Meade.net
         private const string DynamicBreakingDefault = "true";
         private const string SiteElevationDefault = "0";
         private const string SettleTimeDefault = "2";
+        private const string SpeedDefault = "9600";
+        private const string DataBitsDefault = "8";
+        private const string StopBitsDefault = "One";
+        private const string HandShakeDefault = "None";
+        private const string ParityDefault = "None";
 
         public static ProfileProperties ReadProfile()
         {
@@ -201,6 +217,12 @@ namespace ASCOM.Meade.net
                     profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
                     profileProperties.SiteElevation = Convert.ToInt32(driverProfile.GetValue(DriverId, SiteElevationName, string.Empty, SiteElevationDefault));
                     profileProperties.SettleTime = Convert.ToInt16(driverProfile.GetValue(DriverId, SettleTimeName, string.Empty, SettleTimeDefault));
+                    profileProperties.StopBits = driverProfile.GetValue(DriverId, StopBitsName, string.Empty, StopBitsDefault);
+                    profileProperties.DataBits = Convert.ToInt32(driverProfile.GetValue(DriverId, DataBitsName, string.Empty, DataBitsDefault));
+                    profileProperties.Handshake = driverProfile.GetValue(DriverId, HandShakeName, string.Empty, HandShakeDefault);
+                    profileProperties.Speed = Convert.ToInt32(driverProfile.GetValue(DriverId, SpeedName, string.Empty, SpeedDefault));
+                    profileProperties.Parity = driverProfile.GetValue(DriverId, ParityName, string.Empty, ParityDefault);
+
                 }
 
                 return profileProperties;
@@ -286,11 +308,11 @@ namespace ASCOM.Meade.net
                         SharedSerial.PortName = profileProperties.ComPort;
                         SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
-                        SharedSerial.DataBits = 8;
-                        SharedSerial.StopBits = SerialStopBits.One;
-                        SharedSerial.Parity = SerialParity.None;
-                        SharedSerial.Speed = SerialSpeed.ps9600;
-                        SharedSerial.Handshake = SerialHandshake.None;
+                        SharedSerial.DataBits = profileProperties.DataBits;
+                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits );
+                        SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
+                        SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
+                        SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
                         SharedSerial.Connected = true;
 
                         try
