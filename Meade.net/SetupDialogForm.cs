@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Properties;
+using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
 {
@@ -20,6 +22,31 @@ namespace ASCOM.Meade.net
             var assemblyInfo = new AssemblyInfo();
 
             Text = string.Format(Resources.SetupDialogForm_SetupDialogForm__0__Settings___1__, assemblyInfo.Product, assemblyInfo.AssemblyVersion);
+
+            SetItemsFromEnum(cboStopBits.Items, typeof(SerialStopBits));
+            SetItemsFromEnum(cboParity.Items, typeof(SerialParity));
+            SetItemsFromEnumValues(cboSpeed.Items, typeof(SerialSpeed));
+            SetItemsFromEnum(cboHandShake.Items, typeof(SerialHandshake));
+        }
+
+        private void SetItemsFromEnum(IList items, Type enumItems)
+        {
+            items.Clear();
+
+            foreach (var item in Enum.GetNames(enumItems))
+            {
+                items.Add(item);
+            }
+        }
+
+        private void SetItemsFromEnumValues(IList items, Type enumItems)
+        {
+            items.Clear();
+
+            foreach (int item in Enum.GetValues(enumItems))
+            {
+                items.Add(item);
+            }
         }
 
         public sealed override string Text
