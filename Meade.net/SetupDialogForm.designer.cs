@@ -64,8 +64,20 @@ namespace ASCOM.Meade.net
             this.label14 = new System.Windows.Forms.Label();
             this.nudSettleTime = new System.Windows.Forms.NumericUpDown();
             this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.cboStopBits = new System.Windows.Forms.ComboBox();
+            this.numDatabits = new System.Windows.Forms.NumericUpDown();
+            this.cboParity = new System.Windows.Forms.ComboBox();
+            this.cboSpeed = new System.Windows.Forms.ComboBox();
+            this.cboHandShake = new System.Windows.Forms.ComboBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -255,10 +267,89 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label15, "label15");
             this.label15.Name = "label15";
             // 
+            // label16
+            // 
+            resources.ApplyResources(this.label16, "label16");
+            this.label16.Name = "label16";
+            // 
+            // cboStopBits
+            // 
+            this.cboStopBits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboStopBits.FormattingEnabled = true;
+            resources.ApplyResources(this.cboStopBits, "cboStopBits");
+            this.cboStopBits.Name = "cboStopBits";
+            // 
+            // numDatabits
+            // 
+            resources.ApplyResources(this.numDatabits, "numDatabits");
+            this.numDatabits.Maximum = new decimal(new int[] {
+            32767,
+            0,
+            0,
+            0});
+            this.numDatabits.Name = "numDatabits";
+            // 
+            // cboParity
+            // 
+            this.cboParity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboParity.FormattingEnabled = true;
+            resources.ApplyResources(this.cboParity, "cboParity");
+            this.cboParity.Name = "cboParity";
+            // 
+            // cboSpeed
+            // 
+            this.cboSpeed.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboSpeed.FormattingEnabled = true;
+            resources.ApplyResources(this.cboSpeed, "cboSpeed");
+            this.cboSpeed.Name = "cboSpeed";
+            // 
+            // cboHandShake
+            // 
+            this.cboHandShake.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboHandShake.FormattingEnabled = true;
+            resources.ApplyResources(this.cboHandShake, "cboHandShake");
+            this.cboHandShake.Name = "cboHandShake";
+            // 
+            // label17
+            // 
+            resources.ApplyResources(this.label17, "label17");
+            this.label17.Name = "label17";
+            // 
+            // label18
+            // 
+            resources.ApplyResources(this.label18, "label18");
+            this.label18.Name = "label18";
+            // 
+            // label19
+            // 
+            resources.ApplyResources(this.label19, "label19");
+            this.label19.Name = "label19";
+            // 
+            // label20
+            // 
+            resources.ApplyResources(this.label20, "label20");
+            this.label20.Name = "label20";
+            // 
+            // label21
+            // 
+            resources.ApplyResources(this.label21, "label21");
+            this.label21.Name = "label21";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label21);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label18);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.cboHandShake);
+            this.Controls.Add(this.cboSpeed);
+            this.Controls.Add(this.cboParity);
+            this.Controls.Add(this.numDatabits);
+            this.Controls.Add(this.cboStopBits);
+            this.Controls.Add(this.label16);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.nudSettleTime);
             this.Controls.Add(this.label14);
@@ -298,6 +389,7 @@ namespace ASCOM.Meade.net
             this.Shown += new System.EventHandler(this.SetupDialogForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -336,5 +428,16 @@ namespace ASCOM.Meade.net
         private Label label14;
         private NumericUpDown nudSettleTime;
         private Label label15;
+        private Label label16;
+        private ComboBox cboStopBits;
+        private NumericUpDown numDatabits;
+        private ComboBox cboParity;
+        private ComboBox cboSpeed;
+        private ComboBox cboHandShake;
+        private Label label17;
+        private Label label18;
+        private Label label19;
+        private Label label20;
+        private Label label21;
     }
 }

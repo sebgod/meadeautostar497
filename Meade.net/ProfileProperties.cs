@@ -14,5 +14,10 @@ namespace ASCOM.Meade.net
         public bool RtsDtrEnabled { get; set; }
         public double SiteElevation { get; set; }
         public short SettleTime { get; set; }
+        public int DataBits { get; set; }
+        public string StopBits { get; set; }
+        public string Parity { get; set; }
+        public int Speed { get; set; }
+        public string Handshake { get; set; }
     }
 }
