@@ -1660,7 +1660,16 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("SideOfPier Get", "Not implemented");
-                throw new PropertyNotImplementedException("SideOfPier", false);
+                if (!FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                    throw new PropertyNotImplementedException("SideOfPier", false);
+                else
+                {
+                    var alignmentStatus = GetScopeAlignmentStatus();
+                    if (alignmentStatus.AlignmentMode != AlignmentModes.algPolar)
+                        throw new PropertyNotImplementedException("SideOfPier", false);
+
+                    //return 
+                }
             }
             // ReSharper disable once ValueParameterNotUsed
             set
