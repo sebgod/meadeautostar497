@@ -418,6 +418,9 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
+
+                                ApplySkipAutoStarPrompts("Connect");
+                                SendCurrentDateTime("Connect");
                             }
                             else
                             {
@@ -443,6 +446,30 @@ namespace ASCOM.Meade.net
                     LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
                     SharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
+                }
+            }
+        }
+
+        private void SendCurrentDateTime(string connect)
+        {
+            if (SendDateTime)
+            {
+                UTCDate = DateTime.UtcNow;
+            }
+        }
+
+        private void ApplySkipAutoStarPrompts(string connect)
+        {
+            if (SkipAutoStarPrompts)
+            {
+                var displayText = Action("Handbox", "readdisplay");
+                if (displayText.Contains("Daylight"))
+                {
+                    for(var i = 0; i < 3; i++)
+                    {
+                        Action("Handbox", "enter");
+                        _utilities.WaitForMilliseconds(2000);
+                    }
                 }
             }
         }

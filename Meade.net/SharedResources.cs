@@ -153,6 +153,8 @@ namespace ASCOM.Meade.net
         private const string StopBitsName = "Stop Bits";
         private const string HandShakeName = "Hand Shake";
         private const string ParityName = "Parity";
+        private const string SkipPromptsName = "Skip date prompts on connect";
+        private const string SendDateTimeName = "Send Date and time on connect";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -177,6 +179,8 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
                     driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, SettleTimeName, profileProperties.SettleTime.ToString());
+                    driverProfile.WriteValue(DriverId, SkipPromptsName, profileProperties.SkipPrompts.ToString());
+                    driverProfile.WriteValue(DriverId, SendDateTimeName, profileProperties.SendDateTime.ToString());
                 }
             }
         }
@@ -197,6 +201,8 @@ namespace ASCOM.Meade.net
         private const string StopBitsDefault = "One";
         private const string HandShakeDefault = "None";
         private const string ParityDefault = "None";
+        private const string SendDateTimeDefault = "false";
+        private const string SkipPromptsDefault = "false";
 
         public static ProfileProperties ReadProfile()
         {
@@ -222,7 +228,8 @@ namespace ASCOM.Meade.net
                     profileProperties.Handshake = driverProfile.GetValue(DriverId, HandShakeName, string.Empty, HandShakeDefault);
                     profileProperties.Speed = Convert.ToInt32(driverProfile.GetValue(DriverId, SpeedName, string.Empty, SpeedDefault));
                     profileProperties.Parity = driverProfile.GetValue(DriverId, ParityName, string.Empty, ParityDefault);
-
+                    profileProperties.SendDateTime = Convert.ToBoolean(driverProfile.GetValue(DriverId, SendDateTimeName, string.Empty, SendDateTimeDefault));
+                    profileProperties.SkipPrompts = Convert.ToBoolean(driverProfile.GetValue(DriverId, SkipPromptsName, string.Empty, SkipPromptsDefault));
                 }
 
                 return profileProperties;

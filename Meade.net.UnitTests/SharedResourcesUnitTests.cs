@@ -153,14 +153,17 @@ namespace Meade.net.UnitTests
             string StopBitsDefault = "One";
             string HandshakeDefault = "None";
             string ParityDefault = "None";
-            string RtsDtrEnabledDefault = "false";
+            string RtsDtrEnabledDefault = "true";
 
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
             
             string BacklashCompensationDefault = "3000";
-            string ReverseFocuserDiectionDefault = "true";         
+            string ReverseFocuserDiectionDefault = "true";
+
+            string SendDateTimeDefault = "true";
+            string SkipPromptsDefault = "true";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -181,7 +184,7 @@ namespace Meade.net.UnitTests
                     x.GetValue(DriverId, "Backlash Compensation", string.Empty, BacklashCompensationDefault))
                 .Returns(BacklashCompensationDefault);
             profileWrapperMock.Setup(x =>
-                    x.GetValue(DriverId, "Reverse Focuser Direction", string.Empty, ReverseFocuserDiectionDefault))
+                    x.GetValue(DriverId, "Reverse Focuser Direction", string.Empty, "true"))
                 .Returns(() => ReverseFocuserDiectionDefault);
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
@@ -199,8 +202,18 @@ namespace Meade.net.UnitTests
                     x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
                 .Returns(() => ParityDefault);
             profileWrapperMock.Setup(x =>
-                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, "false"))
                 .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Send Date and time on connect", string.Empty, "false"))
+                .Returns(() => SendDateTimeDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Skip date prompts on connect", string.Empty, "false"))
+                .Returns(() => SkipPromptsDefault);
+
+
 
             IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
@@ -231,6 +244,9 @@ namespace Meade.net.UnitTests
             Assert.That(profileProperties.Handshake, Is.EqualTo(HandshakeDefault));
             Assert.That(profileProperties.Parity, Is.EqualTo(ParityDefault));
             Assert.That(profileProperties.RtsDtrEnabled, Is.EqualTo(bool.Parse(RtsDtrEnabledDefault)));
+
+            Assert.That(profileProperties.SendDateTime, Is.EqualTo(bool.Parse(SendDateTimeDefault)));
+            Assert.That(profileProperties.SkipPrompts, Is.EqualTo(bool.Parse(SkipPromptsDefault)));
         }
 
         [TestCase("TCP")]
