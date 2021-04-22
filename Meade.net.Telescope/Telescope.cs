@@ -462,13 +462,28 @@ namespace ASCOM.Meade.net
         {
             if (SkipAutoStarPrompts)
             {
-                var displayText = Action("Handbox", "readdisplay");
-                if (displayText.Contains("Daylight"))
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                 {
-                    for(var i = 0; i < 3; i++)
+                    var displayText = Action("Handbox", "readdisplay");
+                    if (displayText.Contains("Daylight"))
                     {
-                        Action("Handbox", "enter");
-                        _utilities.WaitForMilliseconds(2000);
+                        for (var i = 0; i < 3; i++)
+                        {
+                            Action("Handbox", "enter");
+                            _utilities.WaitForMilliseconds(2000);
+                        }
+                    }
+                }
+                else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+                {
+                    var displayText = Action("Handbox", "readdisplay");
+                    if (displayText.Contains("€Press 0 to Alignor MODE for Menu"))
+                    {
+                        for (var i = 0; i < 4; i++)
+                        {
+                            Action("Handbox", "mode");
+                            _utilities.WaitForMilliseconds(500);
+                        }
                     }
                 }
             }
