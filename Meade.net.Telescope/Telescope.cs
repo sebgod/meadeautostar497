@@ -418,9 +418,9 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
-
-                                ApplySkipAutoStarPrompts("Connect");
+                                
                                 SendCurrentDateTime("Connect");
+                                ApplySkipAutoStarPrompts("Connect");
                             }
                             else
                             {
