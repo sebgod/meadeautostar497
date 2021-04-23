@@ -59,15 +59,16 @@ namespace Meade.net.UnitTests
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
-        [Test]
-        public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound()
+        [TestCase(false, "Test")]
+        [TestCase(true, "#Test")]
+        public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound(bool includePrefix, string expectedMessage)
         {
-            var expectedMessage = "Test";
+            var transmitMessage = "Test";
             var expectedResult = "TestMessage#";
 
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(expectedResult);
 
-            var result = SharedResources.SendString(expectedMessage);
+            var result = SharedResources.SendString(transmitMessage, includePrefix);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x => x.Transmit(expectedMessage), Times.Once);

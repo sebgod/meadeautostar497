@@ -93,12 +93,17 @@ namespace ASCOM.Meade.net
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static string SendString(string message)
+        public static string SendString(string message, bool includePrefix = true)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
-                SharedSerial.Transmit(message);
+
+                if (includePrefix)
+                    SharedSerial.Transmit( $"#{message}");
+                else
+                    SharedSerial.Transmit(message);
+
                 return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
             }
         }
@@ -324,8 +329,8 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            ProductName = SendString("#:GVP#");
-                            FirmwareVersion = SendString("#:GVN#");
+                            ProductName = SendString(":GVP#");
+                            FirmwareVersion = SendString(":GVN#");
                         }
                         catch (Exception ex)
                         {
@@ -345,7 +350,7 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            string utcOffSet = SendString("#:GG#");
+                            string utcOffSet = SendString(":GG#");
                             //:GG# Get UTC offset time
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the

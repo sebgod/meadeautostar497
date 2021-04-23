@@ -357,7 +357,7 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResourcesWrapper.SendString(command);
+            return SharedResourcesWrapper.SendString(command, raw);
             //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -2107,18 +2107,6 @@ namespace ASCOM.Meade.net
                     return isSlewing;
                 }
 
-                if (result.Equals("[7F]"))
-                {
-                    isSlewing = true;
-                    return isSlewing;
-                }
-
-                if (result.Equals("\x00ff"))
-                {
-                    isSlewing = true;
-                    return isSlewing;
-                }
-
                 ////classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
                 //byte[] ba = Encoding.Default.GetBytes(result);
                 ////replace fill chars not belonging to a slew bar.  Are there others? The bar character is a FF in hex.
@@ -2134,13 +2122,13 @@ namespace ASCOM.Meade.net
                 ////a 0 movement will solved that lock if the target coordinates are set to the current coordinates.
                 //if (IsTargetCoordinateInitRequired())
                 //    InitTargetCoordinates();
-
-                return isSlewing;
             }
             finally
             {
                 LogMessage("IsSlewingToTarget", $"IsSlewing = {isSlewing} : result = {result ?? "<null>"}");
             }
+
+            return isSlewing;
         }
 
         public void SyncToAltAz(double azimuth, double altitude)
