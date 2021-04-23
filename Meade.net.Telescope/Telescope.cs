@@ -483,7 +483,7 @@ namespace ASCOM.Meade.net
                 else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
                 {
                     var displayText = Action("Handbox", "readdisplay");
-                    if (displayText.Contains("€Press 0 to Alignor MODE for Menu"))
+                    if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
                     {
                         for (var i = 0; i < 4; i++)
                         {
@@ -2102,6 +2102,12 @@ namespace ASCOM.Meade.net
                 }
 
                 if (result.Contains("|"))
+                {
+                    isSlewing = true;
+                    return isSlewing;
+                }
+
+                if (result.Contains("\u007f"))
                 {
                     isSlewing = true;
                     return isSlewing;
