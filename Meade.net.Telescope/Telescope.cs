@@ -2107,6 +2107,12 @@ namespace ASCOM.Meade.net
                     return isSlewing;
                 }
 
+                if (result.Contains("[7F]"))
+                {
+                    isSlewing = true;
+                    return isSlewing;
+                }
+                
                 ////classic LX200 return bar with 32 chars. FF is contained  from left to right when slewing
                 //byte[] ba = Encoding.Default.GetBytes(result);
                 ////replace fill chars not belonging to a slew bar.  Are there others? The bar character is a FF in hex.
