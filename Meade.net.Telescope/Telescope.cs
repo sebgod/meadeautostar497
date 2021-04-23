@@ -421,12 +421,16 @@ namespace ASCOM.Meade.net
 
                                 bool setTimeBeforeDisplayBypass = SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
                                 if (setTimeBeforeDisplayBypass)
-                                    SendCurrentDateTime("Connect");
-                                
-                                ApplySkipAutoStarPrompts("Connect");
-                                if (!setTimeBeforeDisplayBypass)
-                                    SendCurrentDateTime("Connect");
-                                
+                                {
+                                    BypassHandboxEntryForAutostarII();
+                                    //SendCurrentDateTime("Connect");
+                                }
+                                else
+                                {
+                                    ApplySkipAutoStarPrompts("Connect");
+                                    if (!setTimeBeforeDisplayBypass)
+                                        SendCurrentDateTime("Connect");
+                                }
                             }
                             else
                             {
@@ -2502,6 +2506,13 @@ namespace ASCOM.Meade.net
             //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
             //Returns: X once the handset restart has completed
 
+            BypassHandboxEntryForAutostarII();
+
+            AtPark = false;
+        }
+
+        private void BypassHandboxEntryForAutostarII()
+        {
             var utcCorrection = GetUtcCorrection();
             var localDateTime = DateTime.UtcNow - utcCorrection;
 
@@ -2512,8 +2523,6 @@ namespace ASCOM.Meade.net
             //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
             //metal domes. This command must be issued while the telescope is waiting at the initial daylight savings prompt.
             //Returns: 1 – if command was accepted.
-
-            AtPark = false;
         }
 
         #endregion
