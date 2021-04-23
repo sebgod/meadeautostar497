@@ -2055,13 +2055,23 @@ namespace ASCOM.Meade.net
 
         private bool GetSlewing()
         {
-            if (!Connected) return false;
+            var result = false;
+            try
+            {
+                if (Connected)
+                {
+                    if (!MovingAxis())
+                        result = IsSlewingToTarget();
 
+                    result = true;
+                }
+            }
+            finally
+            {
+                LogMessage("GetSlewing", $"Result = {result}");
+            }
 
-            if (MovingAxis())
-                return true;
-
-            return IsSlewingToTarget();
+            return result;
         }
 
         private bool IsSlewingToTarget()
