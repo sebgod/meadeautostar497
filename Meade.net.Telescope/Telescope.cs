@@ -418,9 +418,15 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
+
+                                bool setTimeBeforeDisplayBypass = SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
+                                if (setTimeBeforeDisplayBypass)
+                                    SendCurrentDateTime("Connect");
                                 
-                                SendCurrentDateTime("Connect");
                                 ApplySkipAutoStarPrompts("Connect");
+                                if (!setTimeBeforeDisplayBypass)
+                                    SendCurrentDateTime("Connect");
+                                
                             }
                             else
                             {
