@@ -2061,9 +2061,13 @@ namespace ASCOM.Meade.net
                 if (Connected)
                 {
                     if (!MovingAxis())
+                    {
                         result = IsSlewingToTarget();
-
-                    result = true;
+                    }
+                    else
+                    {
+                        result = true;
+                    }
                 }
             }
             finally
