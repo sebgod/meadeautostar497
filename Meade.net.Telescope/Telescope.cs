@@ -426,6 +426,7 @@ namespace ASCOM.Meade.net
                                     {
                                         LogMessage("Connected Set", $"LX200GPS Detecting if daylight savings message on screen: {SendDateTime}");
                                         var displayText = Action("Handbox", "readdisplay");
+                                        LogMessage("Connected Set", $"Current Handset display: {displayText}");
                                         if (displayText.Contains("Daylight"))
                                         {
                                             LogMessage("Connected Set", $"LX200GPS Setting Date time and bypassing settings screens: {SendDateTime}");
@@ -489,6 +490,7 @@ namespace ASCOM.Meade.net
             if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
             {
                 var displayText = Action("Handbox", "readdisplay");
+
                 if (displayText.Contains("Daylight"))
                 {
                     for (var i = 0; i < 3; i++)
