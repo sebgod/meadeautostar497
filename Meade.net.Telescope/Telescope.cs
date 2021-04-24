@@ -878,6 +878,7 @@ namespace ASCOM.Meade.net
         public void AbortSlew()
         {
             CheckConnected("AbortSlew");
+            CheckParked();
 
             LogMessage("AbortSlew", "Aborting slew");
             SharedResourcesWrapper.SendBlind(":Q#");
@@ -887,6 +888,12 @@ namespace ASCOM.Meade.net
             _movingPrimary = false;
             _movingSecondary = false;
             SetSlewingMinEndTime();
+        }
+
+        private void CheckParked()
+        {
+            if (AtPark)
+                throw new ParkedException("Telescope is parked");
         }
 
         public AlignmentModes AlignmentMode
@@ -974,7 +981,7 @@ namespace ASCOM.Meade.net
             get
             {
                 CheckConnected("Altitude Get");
-
+                
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Altitude", $"{altAz.Altitude}");
                 return altAz.Altitude;
@@ -1247,21 +1254,41 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private double _lastGoodDeclination;
+
         public double Declination
         {
             get
             {
                 CheckConnected("Declination Get");
+                try
+                {
+                    CheckParked();
 
-                var result = SharedResourcesWrapper.SendString(":GD#");
-                //:GD# Get Telescope Declination.
-                //Returns: sDD*MM# or sDD*MM’SS#
-                //Depending upon the current precision setting for the telescope.
+                    var result = SharedResourcesWrapper.SendString(":GD#");
+                    //:GD# Get Telescope Declination.
+                    //Returns: sDD*MM# or sDD*MM’SS#
+                    //Depending upon the current precision setting for the telescope.
 
-                double declination = _utilities.DMSToDegrees(result);
+                    double declination = _utilities.DMSToDegrees(result);
 
-                LogMessage("Declination", $"Get - {result} convert to {declination} {_utilitiesExtra.DegreesToDMS(declination, ":", ":")}");
-                return declination;
+                    LogMessage("Declination", $"Get - {result} convert to {declination} {_utilitiesExtra.DegreesToDMS(declination, ":", ":")}");
+                    _lastGoodDeclination = declination;
+                    return declination;
+                }
+                catch (ParkedException)
+                {
+                    switch (ParkedBehaviour)
+                    {
+                        case ParkedBehaviour.LastGoodPosition:
+                            return _lastGoodDeclination;
+                        case ParkedBehaviour.ReportCoordinates:
+                            var raDec = _astroMaths.ConvertHozToEq(UTCDate, SiteLatitude, SiteLongitude, ParkedAltAz);
+                            return raDec.Declination;
+                        default:
+                            throw;
+                    }
+                }
             }
         }
 
@@ -1413,6 +1440,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
             CheckConnected("MoveAxis");
+            CheckParked();
 
             var absRate = Math.Abs(rate);
 
@@ -1535,6 +1563,7 @@ namespace ASCOM.Meade.net
             try
             {
                 CheckConnected("PulseGuide");
+                CheckParked();
                 if (IsSlewingToTarget())
                     throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
 
@@ -1644,21 +1673,43 @@ namespace ASCOM.Meade.net
             var hms = $"{token[0]}:{seconds}";
             return _utilities.HMSToHours(hms);
         }
+        
+        double _lastGoodRightAsension;
 
         public double RightAscension
         {
             get
             {
                 CheckConnected("RightAscension Get");
-                var result = SharedResourcesWrapper.SendString(":GR#");
-                //:GR# Get Telescope RA
-                //Returns: HH:MM.T# or HH:MM:SS#
-                //Depending which precision is set for the telescope
+                try
+                {
+                    CheckParked();
 
-                double rightAscension = HmToHours(result);
+                    var result = SharedResourcesWrapper.SendString(":GR#");
+                    //:GR# Get Telescope RA
+                    //Returns: HH:MM.T# or HH:MM:SS#
+                    //Depending which precision is set for the telescope
 
-                LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
-                return rightAscension;
+                    double rightAscension = HmToHours(result);
+
+                    LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
+                    _lastGoodRightAsension = rightAscension;
+                    return rightAscension;
+                }
+                catch (ParkedException)
+                {
+                    switch (ParkedBehaviour)
+                    {
+                        case ParkedBehaviour.LastGoodPosition:
+                            return _lastGoodRightAsension;
+                        case ParkedBehaviour.ReportCoordinates:
+                            var raDec = _astroMaths.ConvertHozToEq(UTCDate, SiteLatitude, SiteLongitude, ParkedAltAz);
+                            return raDec.RightAscension;
+                        default:
+                            throw;
+                    }
+                }
+                
             }
         }
 
@@ -1870,6 +1921,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude}");
             CheckConnected("SlewToAltAz");
+            CheckParked();
 
             SlewToAltAzAsync(azimuth, altitude);
 
@@ -1882,6 +1934,7 @@ namespace ASCOM.Meade.net
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
             CheckConnected("SlewToAltAzAsync");
+            CheckParked();
 
             if (altitude > 90)
                 throw new InvalidValueException("Altitude cannot be greater than 90.");
@@ -1922,6 +1975,7 @@ namespace ASCOM.Meade.net
         private void DoSlewAsync(bool polar)
         {
             CheckConnected("DoSlewAsync");
+            CheckParked();
 
             SharedResourcesWrapper.Lock(() =>
             {
@@ -1986,6 +2040,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("SlewToCoordinates", $"Ra={rightAscension}, Dec={declination}");
             CheckConnected("SlewToCoordinates");
+            CheckParked();
 
             SlewToCoordinatesAsync(rightAscension, declination);
 
@@ -2001,6 +2056,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("SlewToCoordinatesAsync", $"Ra={rightAscension}, Dec={declination}");
             CheckConnected("SlewToCoordinatesAsync");
+            CheckParked();
 
             SharedResourcesWrapper.Lock(() =>
                 {
@@ -2016,6 +2072,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("SlewToTarget", "Executing");
             CheckConnected("SlewToTarget");
+            CheckParked();
             SlewToTargetAsync();
 
             while (Slewing)
@@ -2029,6 +2086,7 @@ namespace ASCOM.Meade.net
         public void SlewToTargetAsync()
         {
             CheckConnected("SlewToTargetAsync");
+            CheckParked();
 
             if (TargetDeclination.Equals(InvalidParameter) || TargetRightAscension.Equals(InvalidParameter))
                 throw new InvalidOperationException("No target selected to slew to.");
@@ -2167,6 +2225,7 @@ namespace ASCOM.Meade.net
             LogMessage("SyncToCoordinates", $"RA={rightAscension} Dec={declination}");
             LogMessage("SyncToCoordinates", $"RA={_utilitiesExtra.HoursToHMS(rightAscension)} Dec={_utilitiesExtra.HoursToHMS(declination)}");
             CheckConnected("SyncToCoordinates");
+            CheckParked();
 
             SharedResourcesWrapper.Lock(() =>
             {
@@ -2181,7 +2240,8 @@ namespace ASCOM.Meade.net
         {
             LogMessage("SyncToTarget", "Executing");
             CheckConnected("SyncToTarget");
-
+            CheckParked();
+                
             var result = SharedResourcesWrapper.SendString(":CM#");
             //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
             //Returns:
@@ -2234,6 +2294,7 @@ namespace ASCOM.Meade.net
                 LogMessage("TargetDeclination Set", $"{value}");
 
                 CheckConnected("TargetDeclination Set");
+                CheckParked();
 
                 if (value > 90)
                     throw new InvalidValueException("Declination cannot be greater than 90.");
@@ -2289,6 +2350,7 @@ namespace ASCOM.Meade.net
             {
                 LogMessage("TargetRightAscension Set", $"{value}");
                 CheckConnected("TargetRightAscension Set");
+                CheckParked();
 
                 if (value < 0)
                     throw new InvalidValueException("Right ascension value cannot be below 0");
@@ -2357,6 +2419,7 @@ namespace ASCOM.Meade.net
             {
                 LogMessage("TrackingRate Set", $"{value}");
                 CheckConnected("TrackingRate Set");
+                CheckParked();
 
                 switch (value)
                 {
