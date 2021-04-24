@@ -966,11 +966,52 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void CanUnpark_Get_ReturnsFalse()
+        public void CanUnpark_NotConnected_ThrowsException()
         {
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                var result = _telescope.CanUnpark;
+            });
+
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CanUnpark"));
+        }
+
+        [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G, true)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, false)]
+        public void CanUnpark_Get_ReturnsExpectedValue(string productVersion, string firmware, bool expectedResult)
+        {
+            ConnectTelescope(productVersion, firmware);
+
             var result = _telescope.CanUnpark;
 
-            Assert.That(result, Is.True);
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void Unpark_NotConnect_ThrowsException()
+        {
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                _telescope.Unpark();
+            });
+
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Unpark"));
+        }
+
+        [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G, true)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, false)]
+        public void Unpark_ThenDoesNotThrowException(string productVersion, string firmware, bool canUnPark)
+        {
+            ConnectTelescope(productVersion, firmware);
+
+            if (canUnPark)
+                Assert.DoesNotThrow(() => { _telescope.Unpark(); });
+            else
+            {
+                var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescope.Unpark(); });
+
+                Assert.That(exception.Message, Is.EqualTo("Unable to unpark this telescope type"));
+            }
         }
 
         [Test]
@@ -1703,12 +1744,6 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void Unpark_ThenDoesNotThrowException()
-        {
-            Assert.DoesNotThrow(() => { _telescope.Unpark(); });
-        }
-
-        [Test]
         public void SiteLatitude_Get_WhenNotConnected_ThenThrowsException()
         {
             var exception = Assert.Throws<NotConnectedException>(() =>
@@ -1732,7 +1767,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var result = _telescope.SiteLatitude;
             
-            _sharedResourcesWrapperMock.Verify( x => x.SendString(":Gt#", true), Times.Once);
+            _sharedResourcesWrapperMock.Verify( x => x.SendString(":Gt#", true), Times.AtLeastOnce);
 
             Assert.That(result,Is.EqualTo(siteLatitudeValue));
         }

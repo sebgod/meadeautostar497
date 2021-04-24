@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
@@ -104,7 +105,17 @@ namespace ASCOM.Meade.net
                 else
                     SharedSerial.Transmit(message);
 
-                return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+                try
+                {
+                    return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+                }
+                catch (COMException ex)
+                {
+                    if (ex.Message.Contains("Timed out waiting for received data"))
+                        throw new TimeoutException(ex.Message, ex);
+
+                    throw;
+                }
             }
         }
 
@@ -114,7 +125,18 @@ namespace ASCOM.Meade.net
             {
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
-                return SharedSerial.ReceiveCounted(1);
+
+                try
+                {
+                    return SharedSerial.ReceiveCounted(1);
+                }
+                catch (COMException ex)
+                {
+                    if (ex.Message.Contains("Timed out waiting for received data"))
+                        throw new TimeoutException(ex.Message, ex);
+
+                    throw;
+                }
             }
         }
 

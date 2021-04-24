@@ -409,6 +409,9 @@ namespace ASCOM.Meade.net
                             {
                                 LogMessage("Connected Set", "Making first connection telescope adjustments");
 
+                                LogMessage("Connected Set", $"Site Longitude: {SiteLongitude}");
+                                LogMessage("Connected Set", $"Site Latitude: {SiteLatitude}");
+
                                 //These settings are applied only when the first device connects to the telescope.
                                 SetLongFormat(true);
 
@@ -1248,9 +1251,11 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                CheckConnected("CanUnpark");
+
                 //todo make this return false for non LX-200 GPS telescopes
                 LogMessage("CanUnpark", "Get - " + true);
-                return true;
+                return SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
             }
         }
 
@@ -1549,10 +1554,11 @@ namespace ASCOM.Meade.net
             if (AtPark)
                 return;
 
+            //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
+            AtPark = true;
             SharedResourcesWrapper.SendBlind(":hP#");
             //:hP# Autostar, Autostar II and LX 16”Slew to Park Position
             //Returns: Nothing
-            AtPark = true;
         }
 
         private bool _userNewerPulseGuiding = true;
@@ -1803,20 +1809,31 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private double _lastGoodSiteLatitude;
         public double SiteLatitude
         {
             get
             {
                 CheckConnected("SiteLatitude Get");
+                try
+                {
+                    CheckParked();
 
-                var latitude = SharedResourcesWrapper.SendString(":Gt#");
-                //:Gt# Get Current Site Latitude
-                //Returns: sDD* MM#
-                //The latitude of the current site. Positive inplies North latitude.
+                    var latitude = SharedResourcesWrapper.SendString(":Gt#");
+                    //:Gt# Get Current Site Latitude
+                    //Returns: sDD* MM#
+                    //The latitude of the current site. Positive inplies North latitude.
 
-                var siteLatitude = _utilities.DMSToDegrees(latitude);
-                LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
-                return siteLatitude;
+                    var siteLatitude = _utilities.DMSToDegrees(latitude);
+                    LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
+
+                    _lastGoodSiteLatitude = siteLatitude;
+                    return siteLatitude;
+                }
+                catch (ParkedException)
+                {
+                    return _lastGoodSiteLatitude;
+                }
             }
             set
             {
@@ -1845,26 +1862,39 @@ namespace ASCOM.Meade.net
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site latitude.");
+
+                _lastGoodSiteLatitude = value;
             }
         }
+
+        private double _lastGoodSiteLongitude;
 
         public double SiteLongitude
         {
             get
             {
                 CheckConnected("SiteLongitude Get");
+                try
+                {
+                    CheckParked();
 
-                var longitude = SharedResourcesWrapper.SendString(":Gg#");
-                //:Gg# Get Current Site Longitude
-                //Returns: sDDD*MM#
-                //The current site Longitude. East Longitudes are expressed as negative
-                double siteLongitude = -_utilities.DMSToDegrees(longitude);
+                    var longitude = SharedResourcesWrapper.SendString(":Gg#");
+                    //:Gg# Get Current Site Longitude
+                    //Returns: sDDD*MM#
+                    //The current site Longitude. East Longitudes are expressed as negative
+                    double siteLongitude = -_utilities.DMSToDegrees(longitude);
 
-                if (siteLongitude < -180)
-                    siteLongitude = siteLongitude + 360;
-                
-                LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
-                return siteLongitude;
+                    if (siteLongitude < -180)
+                        siteLongitude = siteLongitude + 360;
+
+                    LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
+                    _lastGoodSiteLongitude = siteLongitude;
+                    return siteLongitude;
+                }
+                catch (ParkedException)
+                {
+                    return _lastGoodSiteLongitude;
+                }
             }
             set
             {
@@ -1898,6 +1928,8 @@ namespace ASCOM.Meade.net
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site longitude.");
+
+                _lastGoodSiteLongitude = value;
             }
         }
 
@@ -2162,7 +2194,15 @@ namespace ASCOM.Meade.net
             if (_isGuiding)
                 return false;
 
-            var result = SharedResourcesWrapper.SendString(":D#");
+            var result = string.Empty;
+            try
+            {
+                result = SharedResourcesWrapper.SendString(":D#");
+            }
+            catch (TimeoutException)
+            {
+                result = string.Empty;
+            }
             //:D# Requests a string of bars indicating the distance to the current target location.
             //Returns:
             //LX200's – a string of bar characters indicating the distance.
@@ -2488,46 +2528,53 @@ namespace ASCOM.Meade.net
             get
             {
                 CheckConnected("UTCDate Get");
-
                 LogMessage("UTCDate", "Get started");
-
-                var telescopeDateDetails = SharedResourcesWrapper.Lock(() =>
+                try
                 {
-                    var tdd = new TelescopeDateDetails
+                    CheckParked();
+
+                    var telescopeDateDetails = SharedResourcesWrapper.Lock(() =>
                     {
-                        TelescopeDate = SharedResourcesWrapper.SendString(":GC#"),
-                        //:GC# Get current date.
-                        //Returns: MM/DD/YY#
-                        //The current local calendar date for the telescope.
-                        TelescopeTime = SharedResourcesWrapper.SendString(":GL#"),
-                        //:GL# Get Local Time in 24 hour format
-                        //Returns: HH:MM:SS#
-                        //The Local Time in 24 - hour Format
-                        UtcCorrection = GetUtcCorrection()
-                    };
+                        var tdd = new TelescopeDateDetails
+                        {
+                            TelescopeDate = SharedResourcesWrapper.SendString(":GC#"),
+                            //:GC# Get current date.
+                            //Returns: MM/DD/YY#
+                            //The current local calendar date for the telescope.
+                            TelescopeTime = SharedResourcesWrapper.SendString(":GL#"),
+                            //:GL# Get Local Time in 24 hour format
+                            //Returns: HH:MM:SS#
+                            //The Local Time in 24 - hour Format
+                            UtcCorrection = GetUtcCorrection()
+                        };
 
-                    return tdd;
-                });
+                        return tdd;
+                    });
 
-                int month = telescopeDateDetails.TelescopeDate.Substring(0, 2).ToInteger();
-                int day = telescopeDateDetails.TelescopeDate.Substring(3, 2).ToInteger();
-                int year = telescopeDateDetails.TelescopeDate.Substring(6, 2).ToInteger();
+                    int month = telescopeDateDetails.TelescopeDate.Substring(0, 2).ToInteger();
+                    int day = telescopeDateDetails.TelescopeDate.Substring(3, 2).ToInteger();
+                    int year = telescopeDateDetails.TelescopeDate.Substring(6, 2).ToInteger();
 
-                if (year < 2000) //todo fix this hack that will create a Y2K100 bug
-                {
-                    year = year + 2000;
+                    if (year < 2000) //todo fix this hack that will create a Y2K100 bug
+                    {
+                        year = year + 2000;
+                    }
+
+                    int hour = telescopeDateDetails.TelescopeTime.Substring(0, 2).ToInteger();
+                    int minute = telescopeDateDetails.TelescopeTime.Substring(3, 2).ToInteger();
+                    int second = telescopeDateDetails.TelescopeTime.Substring(6, 2).ToInteger();
+
+                    var utcDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) +
+                                  telescopeDateDetails.UtcCorrection;
+
+                    LogMessage("UTCDate", "Get - " + utcDate.ToString("MM/dd/yy HH:mm:ss"));
+
+                    return utcDate;
                 }
-
-                int hour = telescopeDateDetails.TelescopeTime.Substring(0, 2).ToInteger();
-                int minute = telescopeDateDetails.TelescopeTime.Substring(3, 2).ToInteger();
-                int second = telescopeDateDetails.TelescopeTime.Substring(6, 2).ToInteger();
-
-                var utcDate = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc) +
-                              telescopeDateDetails.UtcCorrection;
-
-                LogMessage("UTCDate", "Get - " + utcDate.ToString("MM/dd/yy HH:mm:ss"));
-
-                return utcDate;
+                catch (ParkedException e)
+                {
+                    return DateTime.UtcNow;
+                }
             }
             set
             {
@@ -2575,8 +2622,11 @@ namespace ASCOM.Meade.net
         public void Unpark()
         {
             LogMessage("Unpark", "Unparking telescope");
+            CheckConnected("Unpark");
 
-            //todo make this return only work for LX-200 GPS telescopes
+            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200GPS)
+                throw new InvalidOperationException("Unable to unpark this telescope type");
+
             if (!AtPark)
                 return;
 

@@ -76,7 +76,7 @@ namespace ASCOM.Meade.net
             SendDateTime = profileProperties.SendDateTime;
             ParkedBehaviour = profileProperties.ParkedBehaviour;
 
-            var ParkedAltAz = new HorizonCoordinates
+            ParkedAltAz = new HorizonCoordinates
             {
                 Altitude = profileProperties.ParkedAlt,
                 Azimuth = profileProperties.ParkedAz
