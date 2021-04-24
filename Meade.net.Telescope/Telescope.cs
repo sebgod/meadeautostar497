@@ -2595,7 +2595,7 @@ namespace ASCOM.Meade.net
             var localDateTime = DateTime.UtcNow - utcCorrection;
 
             //localDateTime: HH: mm: ss
-            SharedResourcesWrapper.SendBlind($":hI{localDateTime:yyMMddhhmmss}#");
+            SharedResourcesWrapper.SendBlind($":hI{localDateTime:yyMMddHHmmss}#");
             //:hIYYMMDDHHMMSS#
             //Bypass handbox entry of daylight savings, date and time.Use the values supplied in this command.This feature is
             //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
