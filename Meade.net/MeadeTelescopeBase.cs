@@ -28,7 +28,6 @@ namespace ASCOM.Meade.net
         protected string GuidingStyle;
         protected double SiteElevation;
         protected short ProfileSettleTime;
-        protected bool SkipAutoStarPrompts;
         protected bool SendDateTime;
 
         protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
@@ -71,7 +70,6 @@ namespace ASCOM.Meade.net
             GuidingStyle = profileProperties.GuidingStyle.ToLower();
             SiteElevation = profileProperties.SiteElevation;
             ProfileSettleTime = profileProperties.SettleTime;
-            SkipAutoStarPrompts = profileProperties.SkipPrompts;
             SendDateTime = profileProperties.SendDateTime;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
@@ -83,7 +81,6 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
             LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
             LogMessage("ReadProfile", $"Settle Time after slew: {ProfileSettleTime}");
-            LogMessage("ReadProfile", $"Skip Autostar startup prompts: {SkipAutoStarPrompts}");
             LogMessage("ReadProfile", $"Send date and time on connect: {SendDateTime}");
         }
 

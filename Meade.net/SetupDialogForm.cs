@@ -158,7 +158,6 @@ namespace ASCOM.Meade.net
             nudSettleTime.Value = profileProperties.SettleTime;
 
             cbxSendDateTime.Checked = profileProperties.SendDateTime;
-            cbxSkipPrompts.Checked = profileProperties.SkipPrompts;
         }
 
     public ProfileProperties GetProfile()
@@ -181,8 +180,7 @@ namespace ASCOM.Meade.net
                 DynamicBreaking = cbxDynamicBreaking.Checked,
                 SiteElevation = double.Parse(txtElevation.Text),
                 SettleTime = Convert.ToInt16(nudSettleTime.Value),
-                SendDateTime = cbxSendDateTime.Checked,
-                SkipPrompts = cbxSkipPrompts.Checked
+                SendDateTime = cbxSendDateTime.Checked
             };
 
             return profileProperties;

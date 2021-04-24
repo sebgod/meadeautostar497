@@ -58,6 +58,7 @@ namespace ASCOM.Meade.net
             this.cbxDynamicBreaking = new System.Windows.Forms.CheckBox();
             this.cbxRtsDtr = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.cbxSendDateTime = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.txtElevation = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -75,8 +76,6 @@ namespace ASCOM.Meade.net
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
-            this.cbxSkipPrompts = new System.Windows.Forms.CheckBox();
-            this.cbxSendDateTime = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
@@ -234,6 +233,13 @@ namespace ASCOM.Meade.net
             this.toolTip1.SetToolTip(this.cbxRtsDtr, resources.GetString("cbxRtsDtr.ToolTip"));
             this.cbxRtsDtr.UseVisualStyleBackColor = true;
             // 
+            // cbxSendDateTime
+            // 
+            resources.ApplyResources(this.cbxSendDateTime, "cbxSendDateTime");
+            this.cbxSendDateTime.Name = "cbxSendDateTime";
+            this.toolTip1.SetToolTip(this.cbxSendDateTime, resources.GetString("cbxSendDateTime.ToolTip"));
+            this.cbxSendDateTime.UseVisualStyleBackColor = true;
+            // 
             // label12
             // 
             resources.ApplyResources(this.label12, "label12");
@@ -338,26 +344,11 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label21, "label21");
             this.label21.Name = "label21";
             // 
-            // cbxSkipPrompts
-            // 
-            resources.ApplyResources(this.cbxSkipPrompts, "cbxSkipPrompts");
-            this.cbxSkipPrompts.Name = "cbxSkipPrompts";
-            this.toolTip1.SetToolTip(this.cbxSkipPrompts, resources.GetString("cbxSkipPrompts.ToolTip"));
-            this.cbxSkipPrompts.UseVisualStyleBackColor = true;
-            // 
-            // cbxSendDateTime
-            // 
-            resources.ApplyResources(this.cbxSendDateTime, "cbxSendDateTime");
-            this.cbxSendDateTime.Name = "cbxSendDateTime";
-            this.toolTip1.SetToolTip(this.cbxSendDateTime, resources.GetString("cbxSendDateTime.ToolTip"));
-            this.cbxSendDateTime.UseVisualStyleBackColor = true;
-            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.cbxSendDateTime);
-            this.Controls.Add(this.cbxSkipPrompts);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.label20);
             this.Controls.Add(this.label19);
@@ -458,7 +449,6 @@ namespace ASCOM.Meade.net
         private Label label19;
         private Label label20;
         private Label label21;
-        private CheckBox cbxSkipPrompts;
         private CheckBox cbxSendDateTime;
     }
 }

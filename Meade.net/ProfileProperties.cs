@@ -20,6 +20,5 @@ namespace ASCOM.Meade.net
         public int Speed { get; set; }
         public string Handshake { get; set; }
         public bool SendDateTime { get; set; }
-        public bool SkipPrompts { get; set; }
     }
 }

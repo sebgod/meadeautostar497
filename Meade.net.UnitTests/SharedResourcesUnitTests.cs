@@ -247,7 +247,6 @@ namespace Meade.net.UnitTests
             Assert.That(profileProperties.RtsDtrEnabled, Is.EqualTo(bool.Parse(RtsDtrEnabledDefault)));
 
             Assert.That(profileProperties.SendDateTime, Is.EqualTo(bool.Parse(SendDateTimeDefault)));
-            Assert.That(profileProperties.SkipPrompts, Is.EqualTo(bool.Parse(SkipPromptsDefault)));
         }
 
         [TestCase("TCP")]

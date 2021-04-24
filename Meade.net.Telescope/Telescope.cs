@@ -419,17 +419,17 @@ namespace ASCOM.Meade.net
 
                                 SetTelescopePrecision("Connect");
 
-                                bool setTimeBeforeDisplayBypass = SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
-                                if (setTimeBeforeDisplayBypass)
+                                if (SendDateTime)
                                 {
-                                    BypassHandboxEntryForAutostarII();
-                                    //SendCurrentDateTime("Connect");
-                                }
-                                else
-                                {
-                                    ApplySkipAutoStarPrompts("Connect");
-                                    if (!setTimeBeforeDisplayBypass)
+                                    if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                                    {
+                                        BypassHandboxEntryForAutostarII();
+                                    }
+                                    else
+                                    {
+                                        ApplySkipAutoStarPrompts("Connect");
                                         SendCurrentDateTime("Connect");
+                                    }
                                 }
                             }
                             else
@@ -470,33 +470,30 @@ namespace ASCOM.Meade.net
 
         private void ApplySkipAutoStarPrompts(string connect)
         {
-            if (SkipAutoStarPrompts)
+            //if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            //{
+            //    var displayText = Action("Handbox", "readdisplay");
+            //    if (displayText.Contains("Daylight"))
+            //    {
+            //        for (var i = 0; i < 3; i++)
+            //        {
+            //            Action("Handbox", "enter");
+            //            _utilities.WaitForMilliseconds(2000);
+            //        }
+            //    }
+            //}
+            //else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+            //{
+            var displayText = Action("Handbox", "readdisplay");
+            if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
             {
-                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                for (var i = 0; i < 4; i++)
                 {
-                    var displayText = Action("Handbox", "readdisplay");
-                    if (displayText.Contains("Daylight"))
-                    {
-                        for (var i = 0; i < 3; i++)
-                        {
-                            Action("Handbox", "enter");
-                            _utilities.WaitForMilliseconds(2000);
-                        }
-                    }
-                }
-                else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
-                {
-                    var displayText = Action("Handbox", "readdisplay");
-                    if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
-                    {
-                        for (var i = 0; i < 4; i++)
-                        {
-                            Action("Handbox", "mode");
-                            _utilities.WaitForMilliseconds(500);
-                        }
-                    }
+                    Action("Handbox", "mode");
+                    _utilities.WaitForMilliseconds(500);
                 }
             }
+            //}
         }
 
         private void SetTelescopePrecision(string propertyName)
