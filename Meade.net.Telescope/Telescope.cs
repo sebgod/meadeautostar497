@@ -419,23 +419,30 @@ namespace ASCOM.Meade.net
 
                                 SetTelescopePrecision("Connect");
 
+                                LogMessage("Connected Set", $"SendDateTime: {SendDateTime}");
                                 if (SendDateTime)
                                 {
                                     if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                                     {
+                                        LogMessage("Connected Set", $"LX200GPS Detecting if daylight savings message on screen: {SendDateTime}");
                                         var displayText = Action("Handbox", "readdisplay");
                                         if (displayText.Contains("Daylight"))
                                         {
+                                            LogMessage("Connected Set", $"LX200GPS Setting Date time and bypassing settings screens: {SendDateTime}");
                                             BypassHandboxEntryForAutostarII();
                                         }
                                         else
                                         {
+                                            LogMessage("Connected Set", $"LX200GPS Sending current date and time: {SendDateTime}");
                                             SendCurrentDateTime("Connect");
+                                            LogMessage("Connected Set", $"LX200GPS Attempting manual bypass of prompts: {SendDateTime}");
+                                            ApplySkipAutoStarPrompts("Connect");
                                         }
 
                                     }
                                     else
                                     {
+                                        LogMessage("Connected Set", $"Autostar Attempting manual bypass of prompts");
                                         ApplySkipAutoStarPrompts("Connect");
                                         SendCurrentDateTime("Connect");
                                     }
@@ -479,30 +486,30 @@ namespace ASCOM.Meade.net
 
         private void ApplySkipAutoStarPrompts(string connect)
         {
-            //if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-            //{
-            //    var displayText = Action("Handbox", "readdisplay");
-            //    if (displayText.Contains("Daylight"))
-            //    {
-            //        for (var i = 0; i < 3; i++)
-            //        {
-            //            Action("Handbox", "enter");
-            //            _utilities.WaitForMilliseconds(2000);
-            //        }
-            //    }
-            //}
-            //else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
-            //{
-            var displayText = Action("Handbox", "readdisplay");
-            if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
+            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
             {
-                for (var i = 0; i < 4; i++)
+                var displayText = Action("Handbox", "readdisplay");
+                if (displayText.Contains("Daylight"))
                 {
-                    Action("Handbox", "mode");
-                    _utilities.WaitForMilliseconds(500);
+                    for (var i = 0; i < 3; i++)
+                    {
+                        Action("Handbox", "enter");
+                        _utilities.WaitForMilliseconds(2000);
+                    }
                 }
             }
-            //}
+            else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+            {
+                var displayText = Action("Handbox", "readdisplay");
+                if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
+                {
+                    for (var i = 0; i < 4; i++)
+                    {
+                        Action("Handbox", "mode");
+                        _utilities.WaitForMilliseconds(500);
+                    }
+                }
+            }
         }
 
         private void SetTelescopePrecision(string propertyName)
