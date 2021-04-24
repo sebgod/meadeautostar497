@@ -2619,14 +2619,19 @@ namespace ASCOM.Meade.net
 
         private void WriteProfile()
         {
-            var profileProperties = new ProfileProperties
-            {
-                TraceLogger = Tl.Enabled,
-                ComPort = ComPort,
-                GuideRateArcSecondsPerSecond = GuideRate
-            };
+            var changed = false;
 
-            SharedResourcesWrapper.WriteProfile(profileProperties);
+            var profileProperties = SharedResourcesWrapper.ReadProfile();
+
+
+            if (Math.Abs(profileProperties.GuideRateArcSecondsPerSecond - GuideRate) > 0.0000001)
+            {
+                changed = true;
+                profileProperties.GuideRateArcSecondsPerSecond = GuideRate;
+            }
+
+            if (changed)
+                SharedResourcesWrapper.WriteProfile(profileProperties);
         }
         #endregion
     }
