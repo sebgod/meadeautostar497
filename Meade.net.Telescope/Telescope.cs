@@ -423,7 +423,16 @@ namespace ASCOM.Meade.net
                                 {
                                     if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                                     {
-                                        BypassHandboxEntryForAutostarII();
+                                        var displayText = Action("Handbox", "readdisplay");
+                                        if (displayText.Contains("Daylight"))
+                                        {
+                                            BypassHandboxEntryForAutostarII();
+                                        }
+                                        else
+                                        {
+                                            SendCurrentDateTime("Connect");
+                                        }
+
                                     }
                                     else
                                     {

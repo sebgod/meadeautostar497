@@ -29,7 +29,10 @@ namespace ASCOM.Meade.net
         protected double SiteElevation;
         protected short ProfileSettleTime;
         protected bool SendDateTime;
-
+        protected ParkedBehaviour ParkedBehaviour;
+        protected double ParkedAzimuth;
+        protected double ParkedAlt;
+        
         protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
         public MeadeTelescopeBase()
@@ -71,6 +74,9 @@ namespace ASCOM.Meade.net
             SiteElevation = profileProperties.SiteElevation;
             ProfileSettleTime = profileProperties.SettleTime;
             SendDateTime = profileProperties.SendDateTime;
+            ParkedBehaviour = profileProperties.ParkedBehaviour;
+            ParkedAlt = profileProperties.ParkedAlt;
+            ParkedAzimuth = profileProperties.ParkedAz;
 
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
@@ -82,6 +88,9 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
             LogMessage("ReadProfile", $"Settle Time after slew: {ProfileSettleTime}");
             LogMessage("ReadProfile", $"Send date and time on connect: {SendDateTime}");
+            LogMessage("ReadProfile", $"Parked Behaviour: {ParkedBehaviour}");
+            LogMessage("ReadProfile", $"Parked Alt: {ParkedAlt}");
+            LogMessage("ReadProfile", $"Parked Az: {ParkedAzimuth}");
         }
 
         /// <summary>

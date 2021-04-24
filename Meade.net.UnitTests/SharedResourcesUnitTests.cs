@@ -166,6 +166,10 @@ namespace Meade.net.UnitTests
             string SendDateTimeDefault = "true";
             string SkipPromptsDefault = "true";
 
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
@@ -205,6 +209,16 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Rts / Dtr", string.Empty, "false"))
                 .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Send Date and time on connect", string.Empty, "false"))
@@ -276,6 +290,10 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
 
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
@@ -307,6 +325,16 @@ namespace Meade.net.UnitTests
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
             profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -341,7 +369,11 @@ namespace Meade.net.UnitTests
 
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
-            
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
@@ -372,6 +404,16 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
                 .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -421,6 +463,10 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
 
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
@@ -451,6 +497,16 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
                 .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -497,6 +553,10 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
 
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
@@ -527,6 +587,15 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
                 .Returns(() => RtsDtrEnabledDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);

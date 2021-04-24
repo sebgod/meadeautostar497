@@ -20,5 +20,8 @@ namespace ASCOM.Meade.net
         public int Speed { get; set; }
         public string Handshake { get; set; }
         public bool SendDateTime { get; set; }
+        public ParkedBehaviour ParkedBehaviour { get; set; }
+        public double ParkedAlt { get; set; }
+        public double ParkedAz { get; set; }
     }
 }
