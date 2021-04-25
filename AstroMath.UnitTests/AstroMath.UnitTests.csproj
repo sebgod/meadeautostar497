@@ -90,6 +90,10 @@
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Meade.net.Telescope</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Meade.net\Meade.net.csproj">
+      <Project>{3689a2cb-94c5-4012-a5cf-7e7d1dd27143}</Project>
+      <Name>Meade.net</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

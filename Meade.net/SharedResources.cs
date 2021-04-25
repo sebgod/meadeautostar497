@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
@@ -93,13 +94,25 @@ namespace ASCOM.Meade.net
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static string SendString(string message)
+        public static string SendString(string message, bool includePrefix = true)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
-                SharedSerial.Transmit(message);
-                return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+
+                SharedSerial.Transmit(includePrefix ? $"#{message}" : message);
+
+                try
+                {
+                    return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+                }
+                catch (COMException ex)
+                {
+                    if (ex.Message.Contains("Timed out waiting for received data"))
+                        throw new TimeoutException(ex.Message, ex);
+
+                    throw;
+                }
             }
         }
 
@@ -109,7 +122,18 @@ namespace ASCOM.Meade.net
             {
                 SharedSerial.ClearBuffers();
                 SharedSerial.Transmit(message);
-                return SharedSerial.ReceiveCounted(1);
+
+                try
+                {
+                    return SharedSerial.ReceiveCounted(1);
+                }
+                catch (COMException ex)
+                {
+                    if (ex.Message.Contains("Timed out waiting for received data"))
+                        throw new TimeoutException(ex.Message, ex);
+
+                    throw;
+                }
             }
         }
 
@@ -148,6 +172,16 @@ namespace ASCOM.Meade.net
         private const string SiteElevationName = "Site Elevation";
         private const string SettleTimeName = "Settle Time";
 
+        private const string SpeedName = "Speed";
+        private const string DataBitsName = "Data Bits";
+        private const string StopBitsName = "Stop Bits";
+        private const string HandShakeName = "Hand Shake";
+        private const string ParityName = "Parity";
+        private const string SendDateTimeName = "Send Date and time on connect";
+        private const string ParkedBehaviourName = "Parked Behaviour";
+        private const string ParkedAltName = "Parked Altitude";
+        private const string ParkedAzimuthName = "Parked Azimuth";
+
         public static void WriteProfile(ProfileProperties profileProperties)
         {
             lock (LockObject)
@@ -158,6 +192,11 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, TraceStateProfileName, profileProperties.TraceLogger.ToString());
                     driverProfile.WriteValue(DriverId, ComPortProfileName, profileProperties.ComPort);
                     driverProfile.WriteValue(DriverId, RtsDtrProfileName, profileProperties.RtsDtrEnabled.ToString());
+                    driverProfile.WriteValue(DriverId, SpeedName, profileProperties.Speed.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, DataBitsName, profileProperties.DataBits.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, StopBitsName, profileProperties.StopBits);
+                    driverProfile.WriteValue(DriverId, HandShakeName, profileProperties.Handshake);
+                    driverProfile.WriteValue(DriverId, ParityName, profileProperties.Parity);
                     driverProfile.WriteValue(DriverId, GuideRateProfileName, profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, PrecisionProfileName, profileProperties.Precision);
                     driverProfile.WriteValue(DriverId, GuidingStyleProfileName, profileProperties.GuidingStyle);
@@ -166,6 +205,10 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, DynamicBreakingName, profileProperties.DynamicBreaking.ToString());
                     driverProfile.WriteValue(DriverId, SiteElevationName, profileProperties.SiteElevation.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, SettleTimeName, profileProperties.SettleTime.ToString());
+                    driverProfile.WriteValue(DriverId, SendDateTimeName, profileProperties.SendDateTime.ToString());
+                    driverProfile.WriteValue(DriverId, ParkedBehaviourName, profileProperties.ParkedBehaviour.GetDescription());
+                    driverProfile.WriteValue(DriverId, ParkedAltName, profileProperties.ParkedAlt.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, ParkedAzimuthName, profileProperties.ParkedAz.ToString(CultureInfo.InvariantCulture));
                 }
             }
         }
@@ -181,6 +224,15 @@ namespace ASCOM.Meade.net
         private const string DynamicBreakingDefault = "true";
         private const string SiteElevationDefault = "0";
         private const string SettleTimeDefault = "2";
+        private const string SpeedDefault = "9600";
+        private const string DataBitsDefault = "8";
+        private const string StopBitsDefault = "One";
+        private const string HandShakeDefault = "None";
+        private const string ParityDefault = "None";
+        private const string SendDateTimeDefault = "false";
+        private static string ParkedBehaviourDefault = "No Coordinates";
+        private const string ParkedAltDefault = "0";
+        private const string ParkedAzimuthDefault = "180";
 
         public static ProfileProperties ReadProfile()
         {
@@ -201,6 +253,16 @@ namespace ASCOM.Meade.net
                     profileProperties.DynamicBreaking = Convert.ToBoolean(driverProfile.GetValue(DriverId, DynamicBreakingName, string.Empty, DynamicBreakingDefault));
                     profileProperties.SiteElevation = Convert.ToInt32(driverProfile.GetValue(DriverId, SiteElevationName, string.Empty, SiteElevationDefault));
                     profileProperties.SettleTime = Convert.ToInt16(driverProfile.GetValue(DriverId, SettleTimeName, string.Empty, SettleTimeDefault));
+                    profileProperties.StopBits = driverProfile.GetValue(DriverId, StopBitsName, string.Empty, StopBitsDefault);
+                    profileProperties.DataBits = Convert.ToInt32(driverProfile.GetValue(DriverId, DataBitsName, string.Empty, DataBitsDefault));
+                    profileProperties.Handshake = driverProfile.GetValue(DriverId, HandShakeName, string.Empty, HandShakeDefault);
+                    profileProperties.Speed = Convert.ToInt32(driverProfile.GetValue(DriverId, SpeedName, string.Empty, SpeedDefault));
+                    profileProperties.Parity = driverProfile.GetValue(DriverId, ParityName, string.Empty, ParityDefault);
+                    profileProperties.SendDateTime = Convert.ToBoolean(driverProfile.GetValue(DriverId, SendDateTimeName, string.Empty, SendDateTimeDefault));
+                    
+                    profileProperties.ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(driverProfile.GetValue(DriverId, ParkedBehaviourName, string.Empty, ParkedBehaviourDefault));
+                    profileProperties.ParkedAlt = double.Parse(driverProfile.GetValue(DriverId, ParkedAltName, string.Empty, ParkedAltDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.ParkedAz = double.Parse(driverProfile.GetValue(DriverId, ParkedAzimuthName, string.Empty, ParkedAzimuthDefault), NumberFormatInfo.InvariantInfo);
                 }
 
                 return profileProperties;
@@ -286,17 +348,17 @@ namespace ASCOM.Meade.net
                         SharedSerial.PortName = profileProperties.ComPort;
                         SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
-                        SharedSerial.DataBits = 8;
-                        SharedSerial.StopBits = SerialStopBits.One;
-                        SharedSerial.Parity = SerialParity.None;
-                        SharedSerial.Speed = SerialSpeed.ps9600;
-                        SharedSerial.Handshake = SerialHandshake.None;
+                        SharedSerial.DataBits = profileProperties.DataBits;
+                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits );
+                        SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
+                        SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
+                        SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
                         SharedSerial.Connected = true;
 
                         try
                         {
-                            ProductName = SendString("#:GVP#");
-                            FirmwareVersion = SendString("#:GVN#");
+                            ProductName = SendString(":GVP#");
+                            FirmwareVersion = SendString(":GVN#");
                         }
                         catch (Exception ex)
                         {
@@ -316,7 +378,7 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            string utcOffSet = SendString("#:GG#");
+                            string utcOffSet = SendString(":GG#");
                             //:GG# Get UTC offset time
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the

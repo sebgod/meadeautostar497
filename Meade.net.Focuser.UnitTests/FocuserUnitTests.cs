@@ -27,6 +27,12 @@ namespace Meade.net.Focuser.UnitTests
             {
                 TraceLogger = false,
                 ComPort = "TestCom1",
+                Speed = 9600,
+                Parity = "None",
+                Handshake = "None",
+                StopBits = "One",
+                DataBits = 8,
+                
                 GuideRateArcSecondsPerSecond = 1.23,
                 Precision = "Unchanged",
                 GuidingStyle = "Auto"
@@ -153,11 +159,11 @@ namespace Meade.net.Focuser.UnitTests
 
             ConnectFocuser();
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage)).Returns(() => expectedMessage);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage, true)).Returns(() => expectedMessage);
 
             var actualMessage = _focuser.CommandString(sendMessage, true);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage, true), Times.Once);
             Assert.That(actualMessage, Is.EqualTo(expectedMessage));
         }
 

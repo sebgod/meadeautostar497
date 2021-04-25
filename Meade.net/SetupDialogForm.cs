@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Properties;
+using ASCOM.Utilities;
 
 namespace ASCOM.Meade.net
 {
@@ -20,6 +22,33 @@ namespace ASCOM.Meade.net
             var assemblyInfo = new AssemblyInfo();
 
             Text = string.Format(Resources.SetupDialogForm_SetupDialogForm__0__Settings___1__, assemblyInfo.Product, assemblyInfo.AssemblyVersion);
+
+            SetItemsFromEnum(cboStopBits.Items, typeof(SerialStopBits));
+            SetItemsFromEnum(cboParity.Items, typeof(SerialParity));
+            SetItemsFromEnumValues(cboSpeed.Items, typeof(SerialSpeed));
+            SetItemsFromEnum(cboHandShake.Items, typeof(SerialHandshake));
+            SetItemsFromEnum(cboParkedBehaviour.Items, typeof(ParkedBehaviour));
+        }
+
+        private void SetItemsFromEnum(IList items, Type enumItems)
+        {
+            items.Clear();
+
+            foreach (var value in Enum.GetValues(enumItems) )
+            {
+                var val = value as Enum;
+                items.Add(val.GetDescription());
+            }
+        }
+
+        private void SetItemsFromEnumValues(IList items, Type enumItems)
+        {
+            items.Clear();
+
+            foreach (int item in Enum.GetValues(enumItems))
+            {
+                items.Add(item);
+            }
         }
 
         public sealed override string Text
@@ -83,12 +112,83 @@ namespace ASCOM.Meade.net
                 cboGuidingStyle.SelectedItem = "Auto";
             }
 
+            numDatabits.Value = profileProperties.DataBits;
+
+            try
+            {
+                cboStopBits.SelectedItem = profileProperties.StopBits;
+            }
+            catch (Exception)
+            {
+                cboStopBits.SelectedItem = "One";
+            }
+
+
+            try
+            {
+                cboParity.SelectedItem = profileProperties.Parity;
+            }
+            catch (Exception)
+            {
+                cboParity.SelectedItem = "None";
+            }
+
+            try
+            {
+                cboSpeed.SelectedItem = profileProperties.Speed;
+            }
+            catch (Exception)
+            {
+                cboParity.SelectedItem = "9600";
+            }
+
+
+            try
+            {
+                cboHandShake.SelectedItem = profileProperties.Handshake;
+            }
+            catch (Exception)
+            {
+                cboHandShake.SelectedItem = "None";
+            }
+
             txtBacklashSteps.Text = profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture);
             txtElevation.Text = profileProperties.SiteElevation.ToString(CultureInfo.CurrentCulture);
 
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
             cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
             nudSettleTime.Value = profileProperties.SettleTime;
+
+            cbxSendDateTime.Checked = profileProperties.SendDateTime;
+
+            try
+            {
+                cboParkedBehaviour.SelectedItem = profileProperties.ParkedBehaviour.GetDescription();
+            }
+            catch (Exception)
+            {
+                cboParkedBehaviour.SelectedItem = ParkedBehaviour.NoCoordinates.GetDescription();
+            }
+
+            try
+            {
+                txtParkedAlt.Text = profileProperties.ParkedAlt.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtParkedAlt.Text = "0";
+            }
+
+            try
+            {
+                txtParkedAz.Text = profileProperties.ParkedAz.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtParkedAz.Text = "180";
+            }
+
+            UpdateParkedItemsEnabled();
         }
 
     public ProfileProperties GetProfile()
@@ -98,6 +198,11 @@ namespace ASCOM.Meade.net
                 TraceLogger = chkTrace.Checked,
                 ComPort = comboBoxComPort.SelectedItem.ToString(),
                 RtsDtrEnabled = cbxRtsDtr.Checked,
+                DataBits = Convert.ToInt32(numDatabits.Value),
+                StopBits = cboStopBits.SelectedItem.ToString(),
+                Parity = cboParity.SelectedItem.ToString(),
+                Speed = Convert.ToInt32(cboSpeed.SelectedItem),
+                Handshake = cboHandShake.SelectedItem.ToString(),
                 GuideRateArcSecondsPerSecond = double.Parse(txtGuideRate.Text.Trim()),
                 Precision = cboPrecision.SelectedItem.ToString(),
                 GuidingStyle = cboGuidingStyle.SelectedItem.ToString(),
@@ -105,8 +210,12 @@ namespace ASCOM.Meade.net
                 ReverseFocusDirection = cbxReverseDirection.Checked,
                 DynamicBreaking = cbxDynamicBreaking.Checked,
                 SiteElevation = double.Parse(txtElevation.Text),
-                SettleTime = Convert.ToInt16(nudSettleTime.Value)
-        };
+                SettleTime = Convert.ToInt16(nudSettleTime.Value),
+                SendDateTime = cbxSendDateTime.Checked,
+                ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(cboParkedBehaviour.SelectedItem.ToString()),
+                ParkedAlt = double.Parse(txtParkedAlt.Text),
+                ParkedAz = double.Parse(txtParkedAz.Text)
+            };
 
             return profileProperties;
         }
@@ -182,5 +291,36 @@ namespace ASCOM.Meade.net
                 txtBacklashSteps.Text = txtElevation.Text.Remove(txtBacklashSteps.Text.Length - 1);
             }
         }
+
+        private void cboParkedBehaviour_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            UpdateParkedItemsEnabled();
+        }
+
+        private void UpdateParkedItemsEnabled()
+        {
+            txtParkedAlt.Enabled = cboParkedBehaviour.SelectedItem?.ToString() == "Report coordinates as";
+            txtParkedAz.Enabled = txtParkedAlt.Enabled;
+        }
+
+        private void txtParkedAlt_TextChanged(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtParkedAlt.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
+                txtParkedAlt.Text = txtParkedAlt.Text.Remove(txtParkedAlt.Text.Length - 1);
+            }
+        }
+
+        private void txtParkedAz_TextChanged(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtParkedAz.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
+                txtParkedAz.Text = txtParkedAz.Text.Remove(txtParkedAz.Text.Length - 1);
+            }
+        }
     }
 }
+
+
