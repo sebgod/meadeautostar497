@@ -1814,7 +1814,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private double _lastGoodSiteLatitude;
+        private double? _lastGoodSiteLatitude;
         public double SiteLatitude
         {
             get
@@ -1829,15 +1829,23 @@ namespace ASCOM.Meade.net
                     //Returns: sDD* MM#
                     //The latitude of the current site. Positive inplies North latitude.
 
-                    var siteLatitude = _utilities.DMSToDegrees(latitude);
-                    LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
+                    if (latitude != null)
+                    {
+                        var siteLatitude = _utilities.DMSToDegrees(latitude);
+                        LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
 
-                    _lastGoodSiteLatitude = siteLatitude;
-                    return siteLatitude;
+                        _lastGoodSiteLatitude = siteLatitude;
+                        return siteLatitude;
+                    }
+
+                    throw new InvalidOperationException("unable to get site latitude from telescope.");
                 }
                 catch (ParkedException)
                 {
-                    return _lastGoodSiteLatitude;
+                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
+                        throw;
+
+                    return _lastGoodSiteLatitude.Value;
                 }
             }
             set
@@ -1898,6 +1906,9 @@ namespace ASCOM.Meade.net
                 }
                 catch (ParkedException)
                 {
+                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
+                        throw;
+
                     return _lastGoodSiteLongitude;
                 }
             }
@@ -2578,6 +2589,9 @@ namespace ASCOM.Meade.net
                 }
                 catch (ParkedException e)
                 {
+                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
+                        throw;
+
                     return _clock.UtcNow;
                 }
             }

@@ -18,6 +18,10 @@ namespace Meade.net.Telescope.UnitTests
     {
         internal string telescopeRaResult = "HH:MM:SS";
         internal double rightAscension = 1.2; //todo rename to RightAscension;
+
+        internal string SiteLatitudeString = "testLatString";
+        internal double SiteLatitudeValue = 123.45;
+
     }
 
     [TestFixture]
@@ -94,6 +98,9 @@ namespace Meade.net.Telescope.UnitTests
 
         private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
         {
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gt#", true)).Returns(_testProperties.SiteLatitudeString);
+            _utilMock.Setup(x => x.DMSToDegrees(_testProperties.SiteLatitudeString)).Returns(_testProperties.SiteLatitudeValue);
+
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":GR#", true)).Returns(_testProperties.telescopeRaResult);
             _utilMock.Setup(x => x.HMSToHours(_testProperties.telescopeRaResult)).Returns(_testProperties.rightAscension);
 
@@ -391,8 +398,10 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
-            _telescope.Connected = expectedConnected;
 
+            if (expectedConnected)
+                ConnectTelescope();
+            
             Assert.That(_telescope.Connected, Is.EqualTo(expectedConnected));
 
             if (expectedConnected)
@@ -948,7 +957,7 @@ namespace Meade.net.Telescope.UnitTests
                 }
             });
 
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             Assert.That(currentPrecision, Is.EqualTo(finalPrecision));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(":P#"), Times.AtLeastOnce);
@@ -1842,19 +1851,13 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Get_WhenConnected_ThenRetrievesAndReturnsExpectedValue()
         {
-            var siteLatitudeString = "testLatString";
-            var siteLatitudeValue = 123.45;
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(":Gt#", true)).Returns(siteLatitudeString);
-            _utilMock.Setup(x => x.DMSToDegrees(siteLatitudeString)).Returns(siteLatitudeValue);
-
             ConnectTelescope();
 
             var result = _telescope.SiteLatitude;
             
             _sharedResourcesWrapperMock.Verify( x => x.SendString(":Gt#", true), Times.AtLeastOnce);
 
-            Assert.That(result,Is.EqualTo(siteLatitudeValue));
+            Assert.That(result,Is.EqualTo(_testProperties.SiteLatitudeValue));
         }
 
         [Test]
@@ -3074,6 +3077,183 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(isSloSlewing, Is.False);
             _sharedResourcesWrapperMock.Verify( x => x.SendString(":D#", true), Times.Once);
+        }
+
+        [Test]
+        public void AbortSlew_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.AbortSlew(); });
+        }
+
+        [Test]
+        public void MoveAxis_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0); });
+        }
+
+        [Test]
+        public void PulseGuide_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.PulseGuide(GuideDirections.guideEast, 0); });
+        }
+
+        [Test]
+        public void SlewToAltAz_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToAltAz(0, 0); });
+        }
+
+        [Test]
+        public void SlewToAltAzAsync_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToAltAzAsync(0, 0); });
+        }
+
+        [Test]
+        public void SlewToCoordinates_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToCoordinates(0, 0); });
+        }
+
+        [Test]
+        public void SlewToCoordinatesAsync_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToCoordinatesAsync(0, 0); });
+        }
+
+        [Test]
+        public void SlewToTarget_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToTarget(); });
+        }
+
+        [Test]
+        public void SlewToTargetAsync_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SlewToTargetAsync(); });
+        }
+
+        [Test]
+        public void SyncToCoordinates_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SyncToCoordinates(0,0); });
+        }
+
+        [Test]
+        public void SyncToTarget_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.SyncToTarget(); });
+        }
+
+        [Test]
+        public void TargetDeclination_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.TargetDeclination = 1; });
+        }
+
+        [Test]
+        public void TargetRightAscension_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.TargetRightAscension = 1; });
+        }
+
+        [Test]
+        public void TrackingRate_WhenParked_ThenThrowsParkedException()
+        {
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { _telescope.TrackingRate = DriveRates.driveLunar; });
+        }
+
+
+        [Test]
+        public void UTCDate_WhenParked_ThenThrowsParkedException()
+        {
+            //todo Modes
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { var date = _telescope.UTCDate; });
+        }
+
+        [Test]
+        public void SiteLatitude_WhenParked_ThenThrowsParkedException()
+        {
+            //todo modes
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { var lat = _telescope.SiteLatitude; });
+        }
+
+        [Test]
+        public void SiteLongitude_WhenParked_ThenThrowsParkedException()
+        {
+            //todo modes
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { var siteLong = _telescope.SiteLongitude; });
+        }
+
+        [Test]
+        public void Declination_WhenParked_ThenThrowsParkedException()
+        {
+            //todo modes
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { var dec = _telescope.Declination; });
+        }
+
+        [Test]
+        public void RightAscension_WhenParked_ThenThrowsParkedException()
+        {
+            //todo modes
+            ConnectTelescope();
+            _telescope.Park();
+
+            Assert.Throws<ParkedException>(() => { var ra = _telescope.RightAscension; });
         }
     }
 }
