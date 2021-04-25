@@ -58,14 +58,33 @@ namespace ASCOM.Meade.net
             this.cbxDynamicBreaking = new System.Windows.Forms.CheckBox();
             this.cbxRtsDtr = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.cbxSendDateTime = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.txtElevation = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.nudSettleTime = new System.Windows.Forms.NumericUpDown();
             this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.cboStopBits = new System.Windows.Forms.ComboBox();
+            this.numDatabits = new System.Windows.Forms.NumericUpDown();
+            this.cboParity = new System.Windows.Forms.ComboBox();
+            this.cboSpeed = new System.Windows.Forms.ComboBox();
+            this.cboHandShake = new System.Windows.Forms.ComboBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.cboParkedBehaviour = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.txtParkedAlt = new System.Windows.Forms.TextBox();
+            this.txtParkedAz = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -125,6 +144,7 @@ namespace ASCOM.Meade.net
             // 
             resources.ApplyResources(this.txtGuideRate, "txtGuideRate");
             this.txtGuideRate.Name = "txtGuideRate";
+            this.toolTip1.SetToolTip(this.txtGuideRate, resources.GetString("txtGuideRate.ToolTip"));
             this.txtGuideRate.TextChanged += new System.EventHandler(this.TextBox1_TextChanged);
             // 
             // label4
@@ -219,6 +239,13 @@ namespace ASCOM.Meade.net
             this.toolTip1.SetToolTip(this.cbxRtsDtr, resources.GetString("cbxRtsDtr.ToolTip"));
             this.cbxRtsDtr.UseVisualStyleBackColor = true;
             // 
+            // cbxSendDateTime
+            // 
+            resources.ApplyResources(this.cbxSendDateTime, "cbxSendDateTime");
+            this.cbxSendDateTime.Name = "cbxSendDateTime";
+            this.toolTip1.SetToolTip(this.cbxSendDateTime, resources.GetString("cbxSendDateTime.ToolTip"));
+            this.cbxSendDateTime.UseVisualStyleBackColor = true;
+            // 
             // label12
             // 
             resources.ApplyResources(this.label12, "label12");
@@ -255,10 +282,135 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label15, "label15");
             this.label15.Name = "label15";
             // 
+            // label16
+            // 
+            resources.ApplyResources(this.label16, "label16");
+            this.label16.Name = "label16";
+            // 
+            // cboStopBits
+            // 
+            this.cboStopBits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboStopBits.FormattingEnabled = true;
+            resources.ApplyResources(this.cboStopBits, "cboStopBits");
+            this.cboStopBits.Name = "cboStopBits";
+            // 
+            // numDatabits
+            // 
+            resources.ApplyResources(this.numDatabits, "numDatabits");
+            this.numDatabits.Maximum = new decimal(new int[] {
+            32767,
+            0,
+            0,
+            0});
+            this.numDatabits.Name = "numDatabits";
+            // 
+            // cboParity
+            // 
+            this.cboParity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboParity.FormattingEnabled = true;
+            resources.ApplyResources(this.cboParity, "cboParity");
+            this.cboParity.Name = "cboParity";
+            // 
+            // cboSpeed
+            // 
+            this.cboSpeed.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboSpeed.FormattingEnabled = true;
+            resources.ApplyResources(this.cboSpeed, "cboSpeed");
+            this.cboSpeed.Name = "cboSpeed";
+            // 
+            // cboHandShake
+            // 
+            this.cboHandShake.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboHandShake.FormattingEnabled = true;
+            resources.ApplyResources(this.cboHandShake, "cboHandShake");
+            this.cboHandShake.Name = "cboHandShake";
+            // 
+            // label17
+            // 
+            resources.ApplyResources(this.label17, "label17");
+            this.label17.Name = "label17";
+            // 
+            // label18
+            // 
+            resources.ApplyResources(this.label18, "label18");
+            this.label18.Name = "label18";
+            // 
+            // label19
+            // 
+            resources.ApplyResources(this.label19, "label19");
+            this.label19.Name = "label19";
+            // 
+            // label20
+            // 
+            resources.ApplyResources(this.label20, "label20");
+            this.label20.Name = "label20";
+            // 
+            // label21
+            // 
+            resources.ApplyResources(this.label21, "label21");
+            this.label21.Name = "label21";
+            // 
+            // cboParkedBehaviour
+            // 
+            this.cboParkedBehaviour.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboParkedBehaviour.FormattingEnabled = true;
+            this.cboParkedBehaviour.Items.AddRange(new object[] {
+            resources.GetString("cboParkedBehaviour.Items"),
+            resources.GetString("cboParkedBehaviour.Items1"),
+            resources.GetString("cboParkedBehaviour.Items2")});
+            resources.ApplyResources(this.cboParkedBehaviour, "cboParkedBehaviour");
+            this.cboParkedBehaviour.Name = "cboParkedBehaviour";
+            this.cboParkedBehaviour.SelectionChangeCommitted += new System.EventHandler(this.cboParkedBehaviour_SelectionChangeCommitted);
+            // 
+            // label22
+            // 
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.Name = "label22";
+            // 
+            // label23
+            // 
+            resources.ApplyResources(this.label23, "label23");
+            this.label23.Name = "label23";
+            // 
+            // label24
+            // 
+            resources.ApplyResources(this.label24, "label24");
+            this.label24.Name = "label24";
+            // 
+            // txtParkedAlt
+            // 
+            resources.ApplyResources(this.txtParkedAlt, "txtParkedAlt");
+            this.txtParkedAlt.Name = "txtParkedAlt";
+            this.txtParkedAlt.TextChanged += new System.EventHandler(this.txtParkedAlt_TextChanged);
+            // 
+            // txtParkedAz
+            // 
+            resources.ApplyResources(this.txtParkedAz, "txtParkedAz");
+            this.txtParkedAz.Name = "txtParkedAz";
+            this.txtParkedAz.TextChanged += new System.EventHandler(this.txtParkedAz_TextChanged);
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.txtParkedAz);
+            this.Controls.Add(this.txtParkedAlt);
+            this.Controls.Add(this.label24);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.cboParkedBehaviour);
+            this.Controls.Add(this.cbxSendDateTime);
+            this.Controls.Add(this.label21);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label18);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.cboHandShake);
+            this.Controls.Add(this.cboSpeed);
+            this.Controls.Add(this.cboParity);
+            this.Controls.Add(this.numDatabits);
+            this.Controls.Add(this.cboStopBits);
+            this.Controls.Add(this.label16);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.nudSettleTime);
             this.Controls.Add(this.label14);
@@ -298,6 +450,7 @@ namespace ASCOM.Meade.net
             this.Shown += new System.EventHandler(this.SetupDialogForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -336,5 +489,23 @@ namespace ASCOM.Meade.net
         private Label label14;
         private NumericUpDown nudSettleTime;
         private Label label15;
+        private Label label16;
+        private ComboBox cboStopBits;
+        private NumericUpDown numDatabits;
+        private ComboBox cboParity;
+        private ComboBox cboSpeed;
+        private ComboBox cboHandShake;
+        private Label label17;
+        private Label label18;
+        private Label label19;
+        private Label label20;
+        private Label label21;
+        private CheckBox cbxSendDateTime;
+        private ComboBox cboParkedBehaviour;
+        private Label label22;
+        private Label label23;
+        private Label label24;
+        private TextBox txtParkedAlt;
+        private TextBox txtParkedAz;
     }
 }

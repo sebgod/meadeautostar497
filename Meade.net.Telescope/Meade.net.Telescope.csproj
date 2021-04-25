@@ -122,7 +122,6 @@
     <Compile Include="AstroMaths\AstroMathExtensions.cs" />
     <Compile Include="AstroMaths\AstroMaths.cs" />
     <Compile Include="AstroMaths\EquatorialCoordinates.cs" />
-    <Compile Include="AstroMaths\HorizonCoordinates.cs" />
     <Compile Include="AstroMaths\IAstroMaths.cs" />
     <Compile Include="Clock.cs" />
     <Compile Include="ComparisonResult.cs" />

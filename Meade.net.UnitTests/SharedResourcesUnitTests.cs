@@ -59,15 +59,16 @@ namespace Meade.net.UnitTests
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
-        [Test]
-        public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound()
+        [TestCase(false, "Test")]
+        [TestCase(true, "#Test")]
+        public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound(bool includePrefix, string expectedMessage)
         {
-            var expectedMessage = "Test";
+            var transmitMessage = "Test";
             var expectedResult = "TestMessage#";
 
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(expectedResult);
 
-            var result = SharedResources.SendString(expectedMessage);
+            var result = SharedResources.SendString(transmitMessage, includePrefix);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x => x.Transmit(expectedMessage), Times.Once);
@@ -123,10 +124,19 @@ namespace Meade.net.UnitTests
 
             Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
             profileWrapperMock.Verify( x => x.WriteValue(DriverId, "Trace Level", profileProperties.TraceLogger.ToString()), Times.Once);
+
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "COM Port", profileProperties.ComPort), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Speed", profileProperties.Speed.ToString()), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Data Bits", profileProperties.DataBits.ToString()), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Stop Bits", profileProperties.StopBits), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Hand Shake", profileProperties.Handshake), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Parity", profileProperties.Parity), Times.Once);
+            profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Rts / Dtr", profileProperties.RtsDtrEnabled.ToString()), Times.Once);
+
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guide Rate Arc Seconds Per Second", profileProperties.GuideRateArcSecondsPerSecond.ToString(CultureInfo.CurrentCulture)), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Precision", profileProperties.Precision), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Guiding Style", profileProperties.GuidingStyle), Times.Once);
+
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Backlash Compensation", profileProperties.BacklashCompensation.ToString(CultureInfo.CurrentCulture)), Times.Once);
             profileWrapperMock.Verify(x => x.WriteValue(DriverId, "Reverse Focuser Direction", profileProperties.ReverseFocusDirection.ToString()), Times.Once);
         }
@@ -136,13 +146,29 @@ namespace Meade.net.UnitTests
         {
             string DriverId = "ASCOM.MeadeGeneric.Telescope";
 
-            string ComPortDefault = "COM1";
             string TraceStateDefault = "false";
+
+            string ComPortDefault = "COM1";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "true";
+
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
+            
             string BacklashCompensationDefault = "3000";
             string ReverseFocuserDiectionDefault = "true";
+
+            string SendDateTimeDefault = "true";
+            string SkipPromptsDefault = "true";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -163,8 +189,46 @@ namespace Meade.net.UnitTests
                     x.GetValue(DriverId, "Backlash Compensation", string.Empty, BacklashCompensationDefault))
                 .Returns(BacklashCompensationDefault);
             profileWrapperMock.Setup(x =>
-                    x.GetValue(DriverId, "Reverse Focuser Direction", string.Empty, ReverseFocuserDiectionDefault))
+                    x.GetValue(DriverId, "Reverse Focuser Direction", string.Empty, "true"))
                 .Returns(() => ReverseFocuserDiectionDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, "false"))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Send Date and time on connect", string.Empty, "false"))
+                .Returns(() => SendDateTimeDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Skip date prompts on connect", string.Empty, "false"))
+                .Returns(() => SkipPromptsDefault);
+
+
 
             IProfileWrapper profeWrapper = profileWrapperMock.Object;
 
@@ -174,16 +238,29 @@ namespace Meade.net.UnitTests
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
             var profileProperties = SharedResources.ReadProfile();
-
+            
             Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
-            Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
-            Assert.That(profileProperties.GuideRateArcSecondsPerSecond,
-                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
+
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
+
+            Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
+            
+            Assert.That(profileProperties.GuideRateArcSecondsPerSecond,
+                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));           
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
+
             Assert.That(profileProperties.BacklashCompensation, Is.EqualTo(int.Parse(BacklashCompensationDefault)));
             Assert.That(profileProperties.ReverseFocusDirection, Is.EqualTo(bool.Parse(ReverseFocuserDiectionDefault)));
+
+            Assert.That(profileProperties.Speed, Is.EqualTo(int.Parse(SpeedDefault)));
+            Assert.That(profileProperties.DataBits, Is.EqualTo(int.Parse(DataBitsDefault)));
+            Assert.That(profileProperties.StopBits, Is.EqualTo(StopBitsDefault));
+            Assert.That(profileProperties.Handshake, Is.EqualTo(HandshakeDefault));
+            Assert.That(profileProperties.Parity, Is.EqualTo(ParityDefault));
+            Assert.That(profileProperties.RtsDtrEnabled, Is.EqualTo(bool.Parse(RtsDtrEnabledDefault)));
+
+            Assert.That(profileProperties.SendDateTime, Is.EqualTo(bool.Parse(SendDateTimeDefault)));
         }
 
         [TestCase("TCP")]
@@ -199,26 +276,65 @@ namespace Meade.net.UnitTests
         public void Connect_WhenDeviceIdIsSerialButGVPEchos_ThenThrowsException()
         {
             string deviceId = "Serial";
-
-            string driverDriverId = "ASCOM.MeadeGeneric.Telescope";
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
 
             string ComPortDefault = "COM1";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
             string TraceStateDefault = "false";
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
 
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Trace Level", string.Empty, TraceStateDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
                 .Returns(TraceStateDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "COM Port", string.Empty, ComPortDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
                 .Returns(ComPortDefault);
+            profileWrapperMock.Setup(x =>
+                x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                    .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
             profileWrapperMock
-                .Setup(x => x.GetValue(driverDriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -239,26 +355,65 @@ namespace Meade.net.UnitTests
         public void Connect_WhenDeviceIdIsSerialButGVPNotSupported_ThenConnectsAndSetsProductToLX200Classic()
         {
             string deviceId = "Serial";
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
 
-            string driverDriverId = "ASCOM.MeadeGeneric.Telescope";
+            string TraceStateDefault = "false";
 
             string ComPortDefault = "COM1";
-            string TraceStateDefault = "false";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Trace Level", string.Empty, TraceStateDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
                 .Returns(TraceStateDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "COM Port", string.Empty, ComPortDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
                 .Returns(ComPortDefault);
             profileWrapperMock
-                .Setup(x => x.GetValue(driverDriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+                x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                    .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -293,25 +448,65 @@ namespace Meade.net.UnitTests
         {
             string deviceId = "Serial";
 
-            string driverDriverId = "ASCOM.MeadeGeneric.Telescope";
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string TraceStateDefault = "false";
 
             string ComPortDefault = "COM1";
-            string TraceStateDefault = "false";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Trace Level", string.Empty, TraceStateDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
                 .Returns(TraceStateDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "COM Port", string.Empty, ComPortDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
                 .Returns(ComPortDefault);
             profileWrapperMock
-                .Setup(x => x.GetValue(driverDriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+               x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                   .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -343,25 +538,64 @@ namespace Meade.net.UnitTests
         {
             string deviceId = "Serial";
 
-            string driverDriverId = "ASCOM.MeadeGeneric.Telescope";
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string TraceStateDefault = "false";
 
             string ComPortDefault = "COM1";
-            string TraceStateDefault = "false";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
 
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Trace Level", string.Empty, TraceStateDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
                 .Returns(TraceStateDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "COM Port", string.Empty, ComPortDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
                 .Returns(ComPortDefault);
             profileWrapperMock
-                .Setup(x => x.GetValue(driverDriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
                     GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
-            profileWrapperMock.Setup(x => x.GetValue(driverDriverId, "Precision", string.Empty, PrecisionDefault))
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
                 .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+               x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                   .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
