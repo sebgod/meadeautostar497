@@ -27,15 +27,17 @@ namespace ASCOM.Meade.net
             SetItemsFromEnum(cboParity.Items, typeof(SerialParity));
             SetItemsFromEnumValues(cboSpeed.Items, typeof(SerialSpeed));
             SetItemsFromEnum(cboHandShake.Items, typeof(SerialHandshake));
+            SetItemsFromEnum(cboParkedBehaviour.Items, typeof(ParkedBehaviour));
         }
 
         private void SetItemsFromEnum(IList items, Type enumItems)
         {
             items.Clear();
 
-            foreach (var item in Enum.GetNames(enumItems))
+            foreach (var value in Enum.GetValues(enumItems) )
             {
-                items.Add(item);
+                var val = value as Enum;
+                items.Add(val.GetDescription());
             }
         }
 
@@ -156,6 +158,37 @@ namespace ASCOM.Meade.net
             cbxReverseDirection.Checked = profileProperties.ReverseFocusDirection;
             cbxDynamicBreaking.Checked = profileProperties.DynamicBreaking;
             nudSettleTime.Value = profileProperties.SettleTime;
+
+            cbxSendDateTime.Checked = profileProperties.SendDateTime;
+
+            try
+            {
+                cboParkedBehaviour.SelectedItem = profileProperties.ParkedBehaviour.GetDescription();
+            }
+            catch (Exception)
+            {
+                cboParkedBehaviour.SelectedItem = ParkedBehaviour.NoCoordinates.GetDescription();
+            }
+
+            try
+            {
+                txtParkedAlt.Text = profileProperties.ParkedAlt.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtParkedAlt.Text = "0";
+            }
+
+            try
+            {
+                txtParkedAz.Text = profileProperties.ParkedAz.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtParkedAz.Text = "180";
+            }
+
+            UpdateParkedItemsEnabled();
         }
 
     public ProfileProperties GetProfile()
@@ -177,8 +210,12 @@ namespace ASCOM.Meade.net
                 ReverseFocusDirection = cbxReverseDirection.Checked,
                 DynamicBreaking = cbxDynamicBreaking.Checked,
                 SiteElevation = double.Parse(txtElevation.Text),
-                SettleTime = Convert.ToInt16(nudSettleTime.Value)
-        };
+                SettleTime = Convert.ToInt16(nudSettleTime.Value),
+                SendDateTime = cbxSendDateTime.Checked,
+                ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(cboParkedBehaviour.SelectedItem.ToString()),
+                ParkedAlt = double.Parse(txtParkedAlt.Text),
+                ParkedAz = double.Parse(txtParkedAz.Text)
+            };
 
             return profileProperties;
         }
@@ -254,5 +291,36 @@ namespace ASCOM.Meade.net
                 txtBacklashSteps.Text = txtElevation.Text.Remove(txtBacklashSteps.Text.Length - 1);
             }
         }
+
+        private void cboParkedBehaviour_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            UpdateParkedItemsEnabled();
+        }
+
+        private void UpdateParkedItemsEnabled()
+        {
+            txtParkedAlt.Enabled = cboParkedBehaviour.SelectedItem?.ToString() == "Report coordinates as";
+            txtParkedAz.Enabled = txtParkedAlt.Enabled;
+        }
+
+        private void txtParkedAlt_TextChanged(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtParkedAlt.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
+                txtParkedAlt.Text = txtParkedAlt.Text.Remove(txtParkedAlt.Text.Length - 1);
+            }
+        }
+
+        private void txtParkedAz_TextChanged(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtParkedAz.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
+                txtParkedAz.Text = txtParkedAz.Text.Remove(txtParkedAz.Text.Length - 1);
+            }
+        }
     }
 }
+
+

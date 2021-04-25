@@ -159,11 +159,11 @@ namespace Meade.net.Focuser.UnitTests
 
             ConnectFocuser();
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage)).Returns(() => expectedMessage);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage, true)).Returns(() => expectedMessage);
 
             var actualMessage = _focuser.CommandString(sendMessage, true);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage, true), Times.Once);
             Assert.That(actualMessage, Is.EqualTo(expectedMessage));
         }
 

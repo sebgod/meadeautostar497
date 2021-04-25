@@ -129,6 +129,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="ClassFactory.cs" />
     <Compile Include="ConnectionInfo.cs" />
+    <Compile Include="EnumExtensionMethods.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -136,8 +137,10 @@
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="GarbageCollection.cs" />
+    <Compile Include="AstroMaths\HorizonCoordinates.cs" />
     <Compile Include="LocalServer.cs" />
     <Compile Include="MeadeTelescopeBase.cs" />
+    <Compile Include="ParkedBehaviour.cs" />
     <Compile Include="ProfileFactory.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -199,6 +202,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

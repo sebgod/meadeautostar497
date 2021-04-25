@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using ASCOM.Meade.net.AstroMaths;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
 
@@ -28,8 +29,11 @@ namespace ASCOM.Meade.net
         protected string GuidingStyle;
         protected double SiteElevation;
         protected short ProfileSettleTime;
+        protected bool SendDateTime;
+        protected ParkedBehaviour ParkedBehaviour;
+        protected HorizonCoordinates ParkedAltAz;
 
-        protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
+    protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
         public MeadeTelescopeBase()
         {
@@ -69,7 +73,15 @@ namespace ASCOM.Meade.net
             GuidingStyle = profileProperties.GuidingStyle.ToLower();
             SiteElevation = profileProperties.SiteElevation;
             ProfileSettleTime = profileProperties.SettleTime;
+            SendDateTime = profileProperties.SendDateTime;
+            ParkedBehaviour = profileProperties.ParkedBehaviour;
 
+            ParkedAltAz = new HorizonCoordinates
+            {
+                Altitude = profileProperties.ParkedAlt,
+                Azimuth = profileProperties.ParkedAz
+            };
+            
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
             LogMessage("ReadProfile", $"Backlash Steps: {BacklashCompensation}");
@@ -79,6 +91,10 @@ namespace ASCOM.Meade.net
             LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
             LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
             LogMessage("ReadProfile", $"Settle Time after slew: {ProfileSettleTime}");
+            LogMessage("ReadProfile", $"Send date and time on connect: {SendDateTime}");
+            LogMessage("ReadProfile", $"Parked Behaviour: {ParkedBehaviour}");
+            LogMessage("ReadProfile", $"Parked Alt: {ParkedAltAz.Altitude}");
+            LogMessage("ReadProfile", $"Parked Az: {ParkedAltAz.Azimuth}");
         }
 
         /// <summary>

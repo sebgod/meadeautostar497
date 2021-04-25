@@ -58,6 +58,7 @@ namespace ASCOM.Meade.net
             this.cbxDynamicBreaking = new System.Windows.Forms.CheckBox();
             this.cbxRtsDtr = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.cbxSendDateTime = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.txtElevation = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -75,6 +76,12 @@ namespace ASCOM.Meade.net
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
+            this.cboParkedBehaviour = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.txtParkedAlt = new System.Windows.Forms.TextBox();
+            this.txtParkedAz = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
@@ -137,6 +144,7 @@ namespace ASCOM.Meade.net
             // 
             resources.ApplyResources(this.txtGuideRate, "txtGuideRate");
             this.txtGuideRate.Name = "txtGuideRate";
+            this.toolTip1.SetToolTip(this.txtGuideRate, resources.GetString("txtGuideRate.ToolTip"));
             this.txtGuideRate.TextChanged += new System.EventHandler(this.TextBox1_TextChanged);
             // 
             // label4
@@ -230,6 +238,13 @@ namespace ASCOM.Meade.net
             this.cbxRtsDtr.Name = "cbxRtsDtr";
             this.toolTip1.SetToolTip(this.cbxRtsDtr, resources.GetString("cbxRtsDtr.ToolTip"));
             this.cbxRtsDtr.UseVisualStyleBackColor = true;
+            // 
+            // cbxSendDateTime
+            // 
+            resources.ApplyResources(this.cbxSendDateTime, "cbxSendDateTime");
+            this.cbxSendDateTime.Name = "cbxSendDateTime";
+            this.toolTip1.SetToolTip(this.cbxSendDateTime, resources.GetString("cbxSendDateTime.ToolTip"));
+            this.cbxSendDateTime.UseVisualStyleBackColor = true;
             // 
             // label12
             // 
@@ -335,10 +350,56 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label21, "label21");
             this.label21.Name = "label21";
             // 
+            // cboParkedBehaviour
+            // 
+            this.cboParkedBehaviour.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboParkedBehaviour.FormattingEnabled = true;
+            this.cboParkedBehaviour.Items.AddRange(new object[] {
+            resources.GetString("cboParkedBehaviour.Items"),
+            resources.GetString("cboParkedBehaviour.Items1"),
+            resources.GetString("cboParkedBehaviour.Items2")});
+            resources.ApplyResources(this.cboParkedBehaviour, "cboParkedBehaviour");
+            this.cboParkedBehaviour.Name = "cboParkedBehaviour";
+            this.cboParkedBehaviour.SelectionChangeCommitted += new System.EventHandler(this.cboParkedBehaviour_SelectionChangeCommitted);
+            // 
+            // label22
+            // 
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.Name = "label22";
+            // 
+            // label23
+            // 
+            resources.ApplyResources(this.label23, "label23");
+            this.label23.Name = "label23";
+            // 
+            // label24
+            // 
+            resources.ApplyResources(this.label24, "label24");
+            this.label24.Name = "label24";
+            // 
+            // txtParkedAlt
+            // 
+            resources.ApplyResources(this.txtParkedAlt, "txtParkedAlt");
+            this.txtParkedAlt.Name = "txtParkedAlt";
+            this.txtParkedAlt.TextChanged += new System.EventHandler(this.txtParkedAlt_TextChanged);
+            // 
+            // txtParkedAz
+            // 
+            resources.ApplyResources(this.txtParkedAz, "txtParkedAz");
+            this.txtParkedAz.Name = "txtParkedAz";
+            this.txtParkedAz.TextChanged += new System.EventHandler(this.txtParkedAz_TextChanged);
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.txtParkedAz);
+            this.Controls.Add(this.txtParkedAlt);
+            this.Controls.Add(this.label24);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.cboParkedBehaviour);
+            this.Controls.Add(this.cbxSendDateTime);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.label20);
             this.Controls.Add(this.label19);
@@ -439,5 +500,12 @@ namespace ASCOM.Meade.net
         private Label label19;
         private Label label20;
         private Label label21;
+        private CheckBox cbxSendDateTime;
+        private ComboBox cboParkedBehaviour;
+        private Label label22;
+        private Label label23;
+        private Label label24;
+        private TextBox txtParkedAlt;
+        private TextBox txtParkedAz;
     }
 }

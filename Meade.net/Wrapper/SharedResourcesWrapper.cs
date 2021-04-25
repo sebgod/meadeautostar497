@@ -15,7 +15,7 @@ namespace ASCOM.Meade.net.Wrapper
         void Lock(Action action);
         T Lock<T>(Func<T> func);
 
-        string SendString(string message);
+        string SendString(string message, bool includePrefix = true);
         void SendBlind(string message);
         string SendChar(string message);
 
@@ -54,9 +54,9 @@ namespace ASCOM.Meade.net.Wrapper
             return SharedResources.Lock(func);
         }
 
-        public string SendString(string message)
+        public string SendString(string message, bool includePrefix = true)
         {
-            return SharedResources.SendString(message);
+            return SharedResources.SendString(message, includePrefix);
         }
 
         public void SendBlind(string message)
