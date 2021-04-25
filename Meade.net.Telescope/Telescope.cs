@@ -484,7 +484,7 @@ namespace ASCOM.Meade.net
         {
             if (SendDateTime)
             {
-                UTCDate = DateTime.UtcNow;
+                UTCDate = _clock.UtcNow;
             }
         }
 
@@ -505,14 +505,19 @@ namespace ASCOM.Meade.net
             }
             else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
             {
-                var displayText = Action("Handbox", "readdisplay");
-                if (displayText.Contains("Press 0 to Alignor MODE for Menu"))
+                var i = 10;
+                while (i > 0)
                 {
-                    for (var i = 0; i < 4; i++)
+                    var displayText = Action("Handbox", "readdisplay");
+                    if (displayText.Contains("Align:"))
                     {
-                        Action("Handbox", "mode");
-                        _utilities.WaitForMilliseconds(500);
+                        i = 0;
+                        continue;
                     }
+
+                    Action("Handbox", "mode");
+                    _utilities.WaitForMilliseconds(500);
+                    i--;
                 }
             }
         }
@@ -1764,7 +1769,7 @@ namespace ASCOM.Meade.net
                 double siderealTime = 0.0;
                 using (var novas = new NOVAS31())
                 {
-                    var jd = _utilities.DateUTCToJulian(DateTime.UtcNow);
+                    var jd = _utilities.DateUTCToJulian(_clock.UtcNow);
                     novas.SiderealTime(jd, 0, novas.DeltaT(jd),
                         GstType.GreenwichApparentSiderealTime,
                         Method.EquinoxBased,
@@ -2573,7 +2578,7 @@ namespace ASCOM.Meade.net
                 }
                 catch (ParkedException e)
                 {
-                    return DateTime.UtcNow;
+                    return _clock.UtcNow;
                 }
             }
             set
@@ -2639,18 +2644,19 @@ namespace ASCOM.Meade.net
             AtPark = false;
         }
 
-        private void BypassHandboxEntryForAutostarII()
+        private bool BypassHandboxEntryForAutostarII()
         {
             var utcCorrection = GetUtcCorrection();
-            var localDateTime = DateTime.UtcNow - utcCorrection;
+            var localDateTime = _clock.UtcNow - utcCorrection;
 
             //localDateTime: HH: mm: ss
-            SharedResourcesWrapper.SendBlind($":hI{localDateTime:yyMMddHHmmss}#");
+            var result = SharedResourcesWrapper.SendChar($":hI{localDateTime:yyMMddHHmmss}#");
             //:hIYYMMDDHHMMSS#
             //Bypass handbox entry of daylight savings, date and time.Use the values supplied in this command.This feature is
             //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
             //metal domes. This command must be issued while the telescope is waiting at the initial daylight savings prompt.
             //Returns: 1 – if command was accepted.
+            return result == "1";
         }
 
         #endregion

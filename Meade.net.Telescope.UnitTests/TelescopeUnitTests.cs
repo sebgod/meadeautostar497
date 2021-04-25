@@ -52,8 +52,13 @@ namespace Meade.net.Telescope.UnitTests
                 DataBits = 8,
 
                 GuideRateArcSecondsPerSecond = 1.23,
-                Precision = "Unchanged", 
-                GuidingStyle = "Auto"
+                Precision = "Unchanged",
+                GuidingStyle = "Auto",
+
+                SendDateTime = false,
+                ParkedBehaviour = ParkedBehaviour.NoCoordinates,
+                ParkedAlt = 0,
+                ParkedAz = 180
             };
 
             _utilMock = new Mock<IUtil>();
@@ -400,17 +405,96 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Connected_Set_WhenConnectingLX200GPS_Then_ConnectsToSerialDevice()
         {
-            var productName = TelescopeList.LX200GPS;
-            var firmware = string.Empty;
-
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
-            _telescope.Connected = true;
+            ConnectTelescope(TelescopeList.LX200GPS, string.Empty);
 
             _sharedResourcesWrapperMock.Verify( x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
             _sharedResourcesWrapperMock.Verify(x => x.SendString(":GZ#", true), Times.Once);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($":Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}#"),Times.Once);
+        }
+
+        [Test]
+        public void Connected_WhenConnectingLX200GPSAndSendDateTimeIsTrue_Then_SpecialStartupInstructionSendOnFirstConnect()
+        {
+            _profileProperties.SendDateTime = true;
+
+            DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() =>
+            {
+                return endSlewingDatetime;
+            });
+
+            string setDateCommand = $":hI{endSlewingDatetime:yyMMddHHmmss}#";
+
+            string expectedResult = "Daylight Savings Time:";
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#", true)).Returns(expectedResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#", true)).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(setDateCommand)).Returns("1");
+
+            ConnectTelescope(TelescopeList.LX200GPS, string.Empty);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(setDateCommand), Times.Once);
+        }
+
+        [Test]
+        public void Connected_WhenConnectingLX200GPSAndSendDateTimeIsTrue_Then_ByPassDisplaysWhenNotOnDaylightScreen()
+        {
+            _profileProperties.SendDateTime = true;
+
+            string telescopeTime = "20:36:25";
+            string telescopeDate = "10/03/21";
+            DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() =>
+            {
+                return endSlewingDatetime;
+            });
+
+            string setDateCommand = $":hI{endSlewingDatetime:yyMMddHHmmss}#";
+
+            string expectedResult = "Align";
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#", true)).Returns(expectedResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#", true)).Returns("0");
+
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{telescopeDate}#")).Returns("1");
+            
+            ConnectTelescope(TelescopeList.LX200GPS, string.Empty);
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(setDateCommand), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.ReadTerminated(), Times.Exactly(2));
+        }
+
+        [Test]
+        public void Connected_WhenConnectingAutostarAndSendDateTimeIsTrue_Then_ByPassDisplaysWhenNotOnDaylightScreen()
+        {
+            _profileProperties.SendDateTime = true;
+
+            string telescopeTime = "20:36:25";
+            string telescopeDate = "10/03/21";
+            DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() =>
+            {
+                return endSlewingDatetime;
+            });
+
+            string setDateCommand = $":hI{endSlewingDatetime:yyMMddHHmmss}#";
+
+            string expectedResult = "Align";
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#", true)).Returns(expectedResult);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(":GG#", true)).Returns("0");
+
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SL{telescopeTime}#")).Returns("1");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar($":SC{telescopeDate}#")).Returns("1");
+
+            ConnectTelescope();
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(setDateCommand), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.ReadTerminated(), Times.Exactly(2));
         }
 
         [Test]
@@ -473,6 +557,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("Auto", "Autostar", "30Ab", false)]
         [TestCase("Auto","Autostar", "31Ee", true)]
         [TestCase("Auto","Autostar", "43Eg", true)]
+        [TestCase("Auto","Autostar", "A4S4", true)]
         [TestCase("Auto","Autostar II", "", false)]
         [TestCase("Auto","LX2001", "", true)]
         [TestCase("Auto",":GVP", "", false)] //LX200 Classic
