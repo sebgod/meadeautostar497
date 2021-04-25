@@ -427,14 +427,11 @@ namespace Meade.net.Telescope.UnitTests
         {
             _profileProperties.SendDateTime = true;
 
-            DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+            DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
 
-            _clockMock.Setup(x => x.UtcNow).Returns(() =>
-            {
-                return endSlewingDatetime;
-            });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
 
-            string setDateCommand = $":hI{endSlewingDatetime:yyMMddHHmmss}#";
+            string setDateCommand = $":hI{testNow:yyMMddHHmmss}#";
 
             string expectedResult = "Daylight Savings Time:";
             _sharedResourcesWrapperMock.Setup(x => x.SendString(":ED#", true)).Returns(expectedResult);
@@ -3206,54 +3203,142 @@ namespace Meade.net.Telescope.UnitTests
         }
 
 
-        [Test]
-        public void UTCDate_WhenParked_ThenThrowsParkedException()
+        [TestCase(ParkedBehaviour.NoCoordinates, true)]
+        [TestCase(ParkedBehaviour.LastGoodPosition, false)]
+        [TestCase(ParkedBehaviour.ReportCoordinates, false)]
+        public void UTCDate_WhenParked_ReturnsExpectedResult(ParkedBehaviour behaviour, bool throwsException)
         {
-            //todo Modes
+            _profileProperties.ParkedBehaviour = behaviour;
+            DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { var date = _telescope.UTCDate; });
+            if (throwsException)
+                Assert.Throws<ParkedException>(() => { var date = _telescope.UTCDate; });
+            else
+            {
+                DateTime date = DateTime.MinValue;
+                Assert.DoesNotThrow(() => { date = _telescope.UTCDate; });
+
+                Assert.That(date, Is.EqualTo(testNow));
+            }
         }
 
-        [Test]
-        public void SiteLatitude_WhenParked_ThenThrowsParkedException()
+        [TestCase(ParkedBehaviour.NoCoordinates, true)]
+        [TestCase(ParkedBehaviour.LastGoodPosition, false)]
+        [TestCase(ParkedBehaviour.ReportCoordinates, false)]
+        public void SiteLatitude_WhenParked_ThenThrowsParkedException(ParkedBehaviour behaviour, bool throwsParkedException)
         {
-            //todo modes
+            _profileProperties.ParkedBehaviour = behaviour;
+
             ConnectTelescope();
+            var siteLatitude = _telescope.SiteLatitude;
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { var lat = _telescope.SiteLatitude; });
+            if (throwsParkedException)
+                Assert.Throws<ParkedException>(() => { var lat = _telescope.SiteLatitude; });
+            else
+            {
+                var lat = _telescope.SiteLatitude;
+                Assert.That(lat, Is.EqualTo(siteLatitude));
+            }
         }
 
-        [Test]
-        public void SiteLongitude_WhenParked_ThenThrowsParkedException()
+        [TestCase(ParkedBehaviour.NoCoordinates, true)]
+        [TestCase(ParkedBehaviour.LastGoodPosition, false)]
+        [TestCase(ParkedBehaviour.ReportCoordinates, false)]
+        public void SiteLongitude_WhenParked_ThenThrowsParkedException(ParkedBehaviour behaviour, bool throwsParkedException)
         {
-            //todo modes
+            _profileProperties.ParkedBehaviour = behaviour;
+
             ConnectTelescope();
+            var siteLongitude = _telescope.SiteLongitude;
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { var siteLong = _telescope.SiteLongitude; });
+            if (throwsParkedException)
+                Assert.Throws<ParkedException>(() => { var siteLong = _telescope.SiteLongitude; });
+            else
+            {
+                var l = _telescope.SiteLongitude;
+                Assert.That(l, Is.EqualTo(siteLongitude));
+            }
+            
         }
 
-        [Test]
-        public void Declination_WhenParked_ThenThrowsParkedException()
+        [TestCase(ParkedBehaviour.NoCoordinates)]
+        [TestCase(ParkedBehaviour.LastGoodPosition)]
+        [TestCase(ParkedBehaviour.ReportCoordinates)]
+        public void Declination_WhenParked_ThenThrowsParkedException(ParkedBehaviour behaviour)
         {
-            //todo modes
+            _profileProperties.ParkedBehaviour = behaviour;
+            _profileProperties.ParkedAlt = 0;
+            _profileProperties.ParkedAz = 180;
+            DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var declination = 45;
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+
+            _astroMathsMock
+                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
+                It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = _testProperties.rightAscension });
+
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { var dec = _telescope.Declination; });
+            switch (_profileProperties.ParkedBehaviour)
+            {
+                case ParkedBehaviour.LastGoodPosition:
+                    var lastGoodDec = _telescope.Declination;
+                    Assert.That(lastGoodDec, Is.EqualTo(0));
+                    break;
+                case ParkedBehaviour.ReportCoordinates:
+                    var dec = _telescope.Declination;
+                    Assert.That(dec, Is.EqualTo(declination));
+                    break;
+                default:
+                    Assert.Throws<ParkedException>(() => { var d = _telescope.Declination; });
+                    break;
+            }
         }
 
-        [Test]
-        public void RightAscension_WhenParked_ThenThrowsParkedException()
+        [TestCase(ParkedBehaviour.NoCoordinates)]
+        [TestCase(ParkedBehaviour.LastGoodPosition)]
+        [TestCase(ParkedBehaviour.ReportCoordinates)]
+        public void RightAscension_WhenParked_ThenThrowsParkedException(ParkedBehaviour behaviour)
         {
-            //todo modes
+            _profileProperties.ParkedBehaviour = behaviour;
+            _profileProperties.ParkedAlt = 0;
+            _profileProperties.ParkedAz = 180;
+            DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var declination = 45;
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+
+            _astroMathsMock
+                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
+                It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = _testProperties.rightAscension });
+
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { var ra = _telescope.RightAscension; });
+            switch (_profileProperties.ParkedBehaviour)
+            {
+                case ParkedBehaviour.LastGoodPosition:
+                    var lastGoodRa = _telescope.RightAscension;
+                    Assert.That(lastGoodRa, Is.EqualTo(1.2));
+                    break;
+                case ParkedBehaviour.ReportCoordinates:
+                    var reportRa = _telescope.RightAscension;
+                    Assert.That(reportRa, Is.EqualTo(_testProperties.rightAscension));
+                    break;
+                default:
+                    Assert.Throws<ParkedException>(() => { var ra = _telescope.RightAscension; });
+                    break;
+            }
         }
     }
 }
