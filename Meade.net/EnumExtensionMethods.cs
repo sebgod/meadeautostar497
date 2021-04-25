@@ -8,13 +8,13 @@ namespace ASCOM.Meade.net
     {
         public static string GetDescription(this Enum GenericEnum)
         {
-            Type genericEnumType = GenericEnum.GetType();
-            MemberInfo[] memberInfo = genericEnumType.GetMember(GenericEnum.ToString());
-            if ((memberInfo != null && memberInfo.Length > 0))
+            var genericEnumType = GenericEnum.GetType();
+            var memberInfo = genericEnumType.GetMember(GenericEnum.ToString());
+            if (memberInfo.Length > 0)
             {
                 var _Attribs = memberInfo[0]
                     .GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
-                if ((_Attribs != null && _Attribs.Count() > 0))
+                if (_Attribs.Any())
                 {
                     return ((System.ComponentModel.DescriptionAttribute) _Attribs.ElementAt(0)).Description;
                 }

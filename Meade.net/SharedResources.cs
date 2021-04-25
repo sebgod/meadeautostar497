@@ -100,10 +100,7 @@ namespace ASCOM.Meade.net
             {
                 SharedSerial.ClearBuffers();
 
-                if (includePrefix)
-                    SharedSerial.Transmit( $"#{message}");
-                else
-                    SharedSerial.Transmit(message);
+                SharedSerial.Transmit(includePrefix ? $"#{message}" : message);
 
                 try
                 {

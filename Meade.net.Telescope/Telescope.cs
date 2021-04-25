@@ -446,7 +446,7 @@ namespace ASCOM.Meade.net
                                     }
                                     else
                                     {
-                                        LogMessage("Connected Set", $"Autostar Attempting manual bypass of prompts");
+                                        LogMessage("Connected Set", "Autostar Attempting manual bypass of prompts");
                                         ApplySkipAutoStarPrompts("Connect");
                                         SendCurrentDateTime("Connect");
                                     }
@@ -633,7 +633,7 @@ namespace ASCOM.Meade.net
             if((Math.Abs(RightAscension - rightTargetAscension ) <= eps) &&
                 (Math.Abs(Declination - targetDeclination) <= eps))
             {
-                LogMessage("IsTargetCoordinateInitRequired", $"0 diff -> false");
+                LogMessage("IsTargetCoordinateInitRequired", "0 diff -> false");
                 _isTargetCoordinateInitRequired = false;
                 return _isTargetCoordinateInitRequired;
             }
@@ -657,7 +657,7 @@ namespace ASCOM.Meade.net
             }
             catch (Exception ex)
             {
-                LogMessage("InitTargetCoordinates", $"Error sync telescope position", ex.Message);
+                LogMessage("InitTargetCoordinates", "Error sync telescope position", ex.Message);
             }
         }
 
@@ -1804,13 +1804,13 @@ namespace ASCOM.Meade.net
                 LogMessage("SiteElevation", $"Set: {value}");
                 if (Math.Abs(value - base.SiteElevation) < 0.1)
                 {
-                    LogMessage("SiteElevation", $"Set: no change detected");
+                    LogMessage("SiteElevation", "Set: no change detected");
                     return;
                 }
                 
                 LogMessage("SiteElevation", $"Set: {value} was {base.SiteElevation}");
                 base.SiteElevation = value;
-                base.UpdateSiteElevation();
+                UpdateSiteElevation();
             }
         }
 
@@ -2184,16 +2184,7 @@ namespace ASCOM.Meade.net
             try
             {
                 if (Connected)
-                {
-                    if (!MovingAxis())
-                    {
-                        result = IsSlewingToTarget();
-                    }
-                    else
-                    {
-                        result = true;
-                    }
-                }
+                    result = MovingAxis() || IsSlewingToTarget();
             }
             finally
             {
@@ -2210,7 +2201,7 @@ namespace ASCOM.Meade.net
             if (_isGuiding)
                 return false;
 
-            var result = string.Empty;
+            string result;
             try
             {
                 result = SharedResourcesWrapper.SendString(":D#");

@@ -14,6 +14,7 @@
         // ReSharper disable once InconsistentNaming
         public const string Autostar497_43Eg = "43Eg";
 
+        // ReSharper disable once InconsistentNaming
         public const string AudioStar_A4S4 = "A4S4";
         #endregion
 
