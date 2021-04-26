@@ -32,35 +32,36 @@ namespace Meade.net.UnitTests
             Assert.That(SharedResources.SharedSerial,Is.EqualTo(_serialMock.Object));
         }
 
-        [Test]
-        public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage()
+        [TestCase(true, "Test")]
+        [TestCase(false, "#:Test#")]
+        public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage(bool raw, string expectedMessage)
         {
-            var expectedMessage = "Test";
-
-            SharedResources.SendBlind(expectedMessage);
+            var sendMessage = "Test";
+            SharedResources.SendBlind(sendMessage, raw);
 
             _serialMock.Verify(x=> x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x=>x.Transmit(expectedMessage), Times.Once);
         }
 
-        [Test]
-        public void SendChar_WhenCalled_ThenSendsMessageAndReadsExpectedNumberOfCharacters()
+        [TestCase(false, "#:Test#")]
+        [TestCase(true, "Test")]
+        public void SendChar_WhenCalled_ThenSendsMessageAndReadsExpectedNumberOfCharacters(bool raw, string expectedCommand)
         {
-            var expectedMessage = "Test";
+            var command = "Test";
             var expectedResult = "A";
 
             _serialMock.Setup(x => x.ReceiveCounted(1)).Returns(expectedResult);
 
-            var result = SharedResources.SendChar(expectedMessage);
+            var result = SharedResources.SendChar(command, raw);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
-            _serialMock.Verify(x => x.Transmit(expectedMessage), Times.Once);
+            _serialMock.Verify(x => x.Transmit(expectedCommand), Times.Once);
             _serialMock.Verify(x => x.ReceiveCounted(1), Times.Once);
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
-        [TestCase(false, "Test")]
-        [TestCase(true, "#Test")]
+        [TestCase(true, "Test")]
+        [TestCase(false, "#:Test#")]
         public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound(bool includePrefix, string expectedMessage)
         {
             var transmitMessage = "Test";
