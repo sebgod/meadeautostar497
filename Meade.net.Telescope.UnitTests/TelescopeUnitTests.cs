@@ -17,11 +17,19 @@ namespace Meade.net.Telescope.UnitTests
     public class TestProperties
     {
         internal string telescopeRaResult = "HH:MM:SS";
-        internal double rightAscension = 1.2; //todo rename to RightAscension;
+        internal double rightAscension = 1.2; //todo rename to declination;
+        internal double declination = 45;
 
         internal string SiteLatitudeString = "testLatString";
         internal double SiteLatitudeValue = 123.45;
 
+        internal string telescopeDate = "10/15/20";
+        internal string telescopeTime = "20:15:10";
+        internal string telescopeUtcCorrection = "-1.0";
+
+        internal double hourAngle;
+        internal int telescopeAltitude = 45;
+        internal int telescopeAzimuth = 200;
     }
 
     [TestFixture]
@@ -84,8 +92,7 @@ namespace Meade.net.Telescope.UnitTests
             };
 
             _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
-
-
+            
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
 
             _astroMathsMock = new Mock<IAstroMaths>();
@@ -98,14 +105,27 @@ namespace Meade.net.Telescope.UnitTests
 
         private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("Gt", false)).Returns(_testProperties.SiteLatitudeString);
-            _utilMock.Setup(x => x.DMSToDegrees(_testProperties.SiteLatitudeString)).Returns(_testProperties.SiteLatitudeValue);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("Gt", false)).Returns( () => _testProperties.SiteLatitudeString);
+            _utilMock.Setup(x => x.DMSToDegrees(_testProperties.SiteLatitudeString)).Returns( () => _testProperties.SiteLatitudeValue);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GR", false)).Returns(_testProperties.telescopeRaResult);
-            _utilMock.Setup(x => x.HMSToHours(_testProperties.telescopeRaResult)).Returns(_testProperties.rightAscension);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GR", false)).Returns( () =>_testProperties.telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(_testProperties.telescopeRaResult)).Returns( () => _testProperties.rightAscension);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns(() => _testProperties.telescopeDate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(() => _testProperties.telescopeTime);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(() => _testProperties.telescopeUtcCorrection);
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
+
+            _astroMathsMock
+                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
+                    It.IsAny<HorizonCoordinates>())).Returns(() => new EquatorialCoordinates { Declination = _testProperties.declination, RightAscension = _testProperties.rightAscension });
+
+            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(() =>_testProperties.hourAngle);
+
+            _astroMathsMock.Setup(x => x.ConvertEqToHoz(_testProperties.hourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = _testProperties.telescopeAltitude, Azimuth = _testProperties.telescopeAzimuth });
+
             _telescope.Connected = true;
         }
 
@@ -146,10 +166,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Action_WhenNotConnected_ThrowsNotConnectedException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() =>
-            {
-                _telescope.Action(string.Empty, string.Empty);
-            });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.Action(string.Empty, string.Empty) );
             Assert.That(exception.Message,Is.EqualTo("Not connected to telescope when trying to execute: Action"));
         }
 
@@ -217,7 +234,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             string parameters = $"select {site}";
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.Action("site", parameters) );
 
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
@@ -246,7 +263,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             string parameters = $"GetName {site}";
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.Action("site", parameters) );
 
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
@@ -286,7 +303,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             string parameters = $"SetName {site}";
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.Action("site", parameters));
 
             Assert.That(exception.Message, Is.EqualTo($"Site {parameters} not allowed, must be between 1 and 4"));
         }
@@ -297,7 +314,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             string parameters = "unknown";
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.Action("site", parameters); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.Action("site", parameters));
 
             Assert.That(exception.Message, Is.EqualTo($"Site parameters {parameters} not known"));
         }
@@ -309,7 +326,7 @@ namespace Meade.net.Telescope.UnitTests
 
             string actionName = "handbox";
             string actionParameters = "doesnotexist";
-            var exception = Assert.Throws<ActionNotImplementedException>(() => { _telescope.Action(actionName, actionParameters); });
+            var exception = Assert.Throws<ActionNotImplementedException>(() => _telescope.Action(actionName, actionParameters));
 
             Assert.That(exception.Message, Is.EqualTo($"Action {actionName}({actionParameters}) is not implemented in this driver is not implemented in this driver."));
         }
@@ -320,7 +337,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             string actionName = "doesnotexist";
-            var exception = Assert.Throws<ActionNotImplementedException>(() => { _telescope.Action(actionName, string.Empty); });
+            var exception = Assert.Throws<ActionNotImplementedException>(() => _telescope.Action(actionName, string.Empty));
 
             Assert.That(exception.Message, Is.EqualTo($"Action {actionName} is not implemented in this driver is not implemented in this driver."));
         }
@@ -329,7 +346,7 @@ namespace Meade.net.Telescope.UnitTests
         public void CommandBlind_WhenNotConnected_ThenThrowsNotConnectedException()
         {
             string expectedMessage = "test blind Message";
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.CommandBlind(expectedMessage, true); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.CommandBlind(expectedMessage, true));
 
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CommandBlind"));
         }
@@ -351,7 +368,7 @@ namespace Meade.net.Telescope.UnitTests
         public void CommandBool_WhenNotConnected_ThenThrowsNotConnectedException()
         {
             string expectedMessage = "test blind Message";
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.CommandBool(expectedMessage, true); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.CommandBool(expectedMessage, true));
 
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CommandBool"));
         }
@@ -376,7 +393,7 @@ namespace Meade.net.Telescope.UnitTests
         public void CommandString_WhenNotConnected_ThenThrowsNotConnectedException()
         {
             string expectedMessage = "test blind Message";
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.CommandString(expectedMessage, true); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.CommandString(expectedMessage, true));
 
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CommandString"));
         }
@@ -432,16 +449,15 @@ namespace Meade.net.Telescope.UnitTests
         public void Connected_WhenConnectingLX200GPSAndSendDateTimeIsTrue_Then_SpecialStartupInstructionSendOnFirstConnect()
         {
             _profileProperties.SendDateTime = true;
-
+            _testProperties.telescopeUtcCorrection = "0";
             DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
 
-            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => testNow);
 
             string setDateCommand = $"hI{testNow:yyMMddHHmmss}";
 
             string expectedResult = "Daylight Savings Time:";
             _sharedResourcesWrapperMock.Setup(x => x.SendString("ED", false)).Returns(expectedResult);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("0");
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(setDateCommand, false)).Returns("1");
 
             ConnectTelescope(TelescopeList.LX200GPS, string.Empty);
@@ -456,19 +472,15 @@ namespace Meade.net.Telescope.UnitTests
 
             string telescopeTime = "20:36:25";
             string telescopeDate = "10/03/21";
+            _testProperties.telescopeUtcCorrection = "0";
             DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
 
-            _clockMock.Setup(x => x.UtcNow).Returns(() =>
-            {
-                return endSlewingDatetime;
-            });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => endSlewingDatetime);
 
             string setDateCommand = $"hI{endSlewingDatetime:yyMMddHHmmss}";
 
             string expectedResult = "Align";
             _sharedResourcesWrapperMock.Setup(x => x.SendString("ED", false)).Returns(expectedResult);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("0");
-
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SL{telescopeTime}", false)).Returns("1");
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SC{telescopeDate}", false)).Returns("1");
@@ -486,6 +498,7 @@ namespace Meade.net.Telescope.UnitTests
 
             string telescopeTime = "20:36:25";
             string telescopeDate = "10/03/21";
+            _testProperties.telescopeUtcCorrection = "0";
             DateTime endSlewingDatetime = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
 
             _clockMock.Setup(x => x.UtcNow).Returns(() =>
@@ -497,7 +510,6 @@ namespace Meade.net.Telescope.UnitTests
 
             string expectedResult = "Align";
             _sharedResourcesWrapperMock.Setup(x => x.SendString("ED", false)).Returns(expectedResult);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("0");
 
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SL{telescopeTime}", false)).Returns("1");
@@ -629,7 +641,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SelectSite_Get_WhenNotConnected_ThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SelectSite(1); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SelectSite(1));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SelectSite"));
         }
 
@@ -639,7 +651,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             var site = 0;
-            var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
+            var result = Assert.Throws<ArgumentOutOfRangeException>(() => _telescope.SelectSite(site));
 
             Assert.That(result.Message, Is.EqualTo($"Site cannot be lower than 1\r\nParameter name: site\r\nActual value was {site}."));
         }
@@ -650,7 +662,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             var site = 5;
-            var result = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.SelectSite(site); });
+            var result = Assert.Throws<ArgumentOutOfRangeException>(() => _telescope.SelectSite(site));
 
             Assert.That(result.Message, Is.EqualTo($"Site cannot be higher than 4\r\nParameter name: site\r\nActual value was {site}."));
         }
@@ -761,7 +773,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Set_WhenNotConnected_ThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.AlignmentMode = AlignmentModes.algAltAz; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.AlignmentMode = AlignmentModes.algAltAz);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Set"));
         }
 
@@ -786,7 +798,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
             _telescope.Connected = true;
 
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.AlignmentMode = AlignmentModes.algAltAz; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.AlignmentMode = AlignmentModes.algAltAz);
 
             Assert.That(excpetion.Property, Is.EqualTo("AlignmentMode"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1102,10 +1114,10 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(productVersion, firmware);
 
             if (canUnPark)
-                Assert.DoesNotThrow(() => { _telescope.Unpark(); });
+                Assert.DoesNotThrow(() => _telescope.Unpark());
             else
             {
-                var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => { _telescope.Unpark(); });
+                var exception = Assert.Throws<ASCOM.InvalidOperationException>(() => _telescope.Unpark());
 
                 Assert.That(exception.Message, Is.EqualTo("Unable to unpark this telescope type"));
             }
@@ -1166,7 +1178,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void DeclinationRate_Set_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.DeclinationRate = 0; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.DeclinationRate = 0);
 
             Assert.That(excpetion.Property, Is.EqualTo("DeclinationRate"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1200,7 +1212,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void DoesRefraction_Set_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.DoesRefraction = true; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.DoesRefraction = true);
 
             Assert.That(excpetion.Property, Is.EqualTo("DoesRefraction"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1217,7 +1229,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void FindHome_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.FindHome(); });
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => _telescope.FindHome());
 
             Assert.That(excpetion.Method, Is.EqualTo("FindHome"));
         }
@@ -1248,7 +1260,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
 
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateDeclination = 0; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.GuideRateDeclination = 0);
 
             Assert.That(excpetion.Property, Is.EqualTo("GuideRateDeclination"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1281,7 +1293,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
 
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.GuideRateRightAscension = 0; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.GuideRateRightAscension = 0);
 
             Assert.That(excpetion.Property, Is.EqualTo("GuideRateRightAscension"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1313,7 +1325,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void MoveAxis_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: MoveAxis"));
         }
 
@@ -1396,7 +1408,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate));
 
             Assert.That(exception.Message, Is.EqualTo($"Rate {testRate} not supported"));
         }
@@ -1408,7 +1420,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.MoveAxis(TelescopeAxes.axisTertiary, testRate));
 
             Assert.That(exception.Message, Is.EqualTo("Can not move this axis."));
         }
@@ -1416,7 +1428,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Park_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.Park(); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.Park());
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: Park"));
         }
 
@@ -1455,7 +1467,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void PulseGuide_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.PulseGuide(GuideDirections.guideEast, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.PulseGuide(GuideDirections.guideEast, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: PulseGuide"));
         }
 
@@ -1502,7 +1514,7 @@ namespace Meade.net.Telescope.UnitTests
             var duration = 0;
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.PulseGuide(direction, duration); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
 
             Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide whilst slewing to target."));
         }
@@ -1520,7 +1532,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.MoveAxis(axes, 1);
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.PulseGuide(direction, duration); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
 
             Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide while moving same axis."));
         }
@@ -1702,7 +1714,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void RightAscensionRate_Set_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.RightAscensionRate = 1; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.RightAscensionRate = 1);
 
             Assert.That(excpetion.Property, Is.EqualTo("RightAscensionRate"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1711,7 +1723,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SetPark_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SetPark(); });
+            var excpetion = Assert.Throws<MethodNotImplementedException>(() => _telescope.SetPark());
 
             Assert.That(excpetion.Method, Is.EqualTo("SetPark"));
         }
@@ -1732,7 +1744,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SideOfPier_Set_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => { _telescope.SideOfPier = 0; });
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.SideOfPier = 0);
 
             Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
             Assert.That(excpetion.AccessorSet, Is.True);
@@ -1866,7 +1878,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLatitude_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLatitude = 123.45; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SiteLatitude = 123.45);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLatitude Set"));
         }
 
@@ -1875,7 +1887,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = 90.01; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SiteLatitude = 90.01);
             Assert.That(exception.Message, Is.EqualTo("Latitude cannot be greater than 90 degrees."));
         }
 
@@ -1884,7 +1896,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLatitude = -90.01; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SiteLatitude = -90.01);
             Assert.That(exception.Message, Is.EqualTo("Latitude cannot be less than -90 degrees."));
         }
 
@@ -1896,7 +1908,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLatitude = siteLatitude; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SiteLatitude = siteLatitude);
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set site latitude."));
         }
@@ -1947,7 +1959,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SiteLongitude_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SiteLongitude = 123.45; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SiteLongitude = 123.45);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiteLongitude Set"));
         }
 
@@ -1956,7 +1968,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = 180.1; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SiteLongitude = 180.1);
             Assert.That(exception.Message, Is.EqualTo("Longitude cannot be greater than 180 degrees."));
         }
 
@@ -1965,7 +1977,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SiteLongitude = -180.1; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SiteLongitude = -180.1);
             Assert.That(exception.Message, Is.EqualTo("Longitude cannot be lower than -180 degrees."));
         }
 
@@ -1977,7 +1989,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SiteLongitude = 10; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SiteLongitude = 10);
             Assert.That(exception.Message, Is.EqualTo("Failed to set site longitude."));
         }
 
@@ -1998,7 +2010,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<MethodNotImplementedException>(() => { _telescope.SyncToAltAz(0, 0); });
+            var exception = Assert.Throws<MethodNotImplementedException>(() => _telescope.SyncToAltAz(0, 0));
 
             Assert.That(exception.Message, Is.EqualTo("Method SyncToAltAz is not implemented in this driver."));
         }
@@ -2006,7 +2018,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SyncToTarget_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SyncToTarget(); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SyncToTarget());
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SyncToTarget"));
         }
 
@@ -2017,7 +2029,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SyncToTarget(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SyncToTarget());
 
             Assert.That(exception.Message, Is.EqualTo("Unable to perform sync"));
             _sharedResourcesWrapperMock.Verify(x => x.SendString("CM", false), Times.Once);
@@ -2030,7 +2042,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            Assert.DoesNotThrow(() => { _telescope.SyncToTarget(); });
+            Assert.DoesNotThrow(() => _telescope.SyncToTarget());
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString("CM", false), Times.Once);
         }
@@ -2038,7 +2050,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetDeclination_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetDeclination = 0; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.TargetDeclination = 0);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetDeclination Set"));
         }
 
@@ -2047,7 +2059,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = 90.1; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.TargetDeclination = 90.1);
             Assert.That(exception.Message, Is.EqualTo("Declination cannot be greater than 90."));
         }
 
@@ -2056,7 +2068,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetDeclination = -90.1; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.TargetDeclination = -90.1);
             Assert.That(exception.Message, Is.EqualTo("Declination cannot be less than -90."));
         }
 
@@ -2067,7 +2079,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetDeclination = 50; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.TargetDeclination = 50);
             Assert.That(exception.Message, Is.EqualTo("Target declination invalid"));
         }
 
@@ -2125,7 +2137,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TargetRightAscension_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TargetRightAscension = 0; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.TargetRightAscension = 0);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TargetRightAscension Set"));
         }
 
@@ -2134,7 +2146,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = 24; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.TargetRightAscension = 24);
             Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be greater than 23:59:59"));
         }
 
@@ -2143,7 +2155,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.TargetRightAscension = -0.1; });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.TargetRightAscension = -0.1);
             Assert.That(exception.Message, Is.EqualTo("Right ascension value cannot be below 0"));
         }
 
@@ -2154,7 +2166,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.TargetRightAscension = 1; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.TargetRightAscension = 1);
             Assert.That(exception.Message, Is.EqualTo("Failed to set TargetRightAscension."));
         }
 
@@ -2222,7 +2234,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TrackingRate_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.TrackingRate = DriveRates.driveSidereal; });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.TrackingRate = DriveRates.driveSidereal);
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: TrackingRate Set"));
         }
 
@@ -2242,7 +2254,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => { _telescope.TrackingRate = DriveRates.driveKing; });
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _telescope.TrackingRate = DriveRates.driveKing);
 
             Assert.That(exception.Message, Is.EqualTo("Exception of type 'System.ArgumentOutOfRangeException' was thrown.\r\nParameter name: value\r\nActual value was driveKing."));
         }
@@ -2295,9 +2307,9 @@ namespace Meade.net.Telescope.UnitTests
         public void UTCDate_Get_WhenConnected_ThenReturnsUTCDateTime(string telescopeDate, string telescopeTime,
             string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns(telescopeDate);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(telescopeTime);
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(telescopeUtcCorrection);
+            _testProperties.telescopeDate = telescopeDate;
+            _testProperties.telescopeTime = telescopeTime;
+            _testProperties.telescopeUtcCorrection = telescopeUtcCorrection;
 
             ConnectTelescope();
 
@@ -2317,7 +2329,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void UTCDate_Set_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.UTCDate = new DateTime(2010, 10, 15, 16, 42, 32, DateTimeKind.Utc); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.UTCDate = new DateTime(2010, 10, 15, 16, 42, 32, DateTimeKind.Utc));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: UTCDate Set"));
         }
 
@@ -2335,7 +2347,7 @@ namespace Meade.net.Telescope.UnitTests
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.UTCDate = newDate);
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set local time"));
         }
@@ -2344,18 +2356,18 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("12/03/15", "21:30:45", "+0.0", 2015, 12, 3, 21, 30, 45)]
         public void UTCDate_Set_WhenFailsToSetTelescopeDate_ThenThrowsException(string telescopeDate, string telescopeTime, string telescopeUtcCorrection, int year, int month, int day, int hour, int min, int second)
         {
+            _testProperties.telescopeUtcCorrection = telescopeUtcCorrection;
             double utcOffsetHours = double.Parse(telescopeUtcCorrection);
             TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
 
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(telescopeUtcCorrection);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SL{telescopeTime}", false)).Returns("1");
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SC{newDate:MM/dd/yy}", false)).Returns("0");
 
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.UTCDate = newDate; });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.UTCDate = newDate);
 
             Assert.That(exception.Message, Is.EqualTo("Failed to set local date"));
         }
@@ -2369,9 +2381,10 @@ namespace Meade.net.Telescope.UnitTests
             double utcOffsetHours = double.Parse(telescopeUtcCorrection);
             TimeSpan utcCorrection = TimeSpan.FromHours(utcOffsetHours);
 
+            _testProperties.telescopeUtcCorrection = telescopeUtcCorrection;
+
             var newDate = new DateTime(year, month, day, hour, min, second, DateTimeKind.Local) + utcCorrection;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(telescopeUtcCorrection);
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SL{telescopeTime}", false)).Returns("1");
             _sharedResourcesWrapperMock.Setup(x => x.SendChar($"SC{telescopeDate}", false)).Returns("1");
 
@@ -2625,7 +2638,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTargetAsync"));
         }
 
@@ -2636,7 +2649,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.TargetRightAscension = 1;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
         }
 
@@ -2647,7 +2660,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.TargetDeclination = 1;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("Target not set"));
         }
 
@@ -2659,7 +2672,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
 
-            var exception = Assert.Throws<DriverException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<DriverException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("This error should not happen"));
         }
 
@@ -2690,7 +2703,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("Below horizon"));
         }
 
@@ -2705,7 +2718,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("Above below elevation"));
         }
 
@@ -2720,14 +2733,14 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.TargetRightAscension = 2;
             _telescope.TargetDeclination = 1;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => { _telescope.SlewToTargetAsync(); });
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.SlewToTargetAsync());
             Assert.That(exception.Message, Is.EqualTo("the telescope can hit the tripod"));
         }
 
         [Test]
         public void SlewToTarget_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToTarget(); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToTarget());
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToTarget"));
         }
 
@@ -2759,7 +2772,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinatesAsync_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinatesAsync(0, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToCoordinatesAsync(0, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinatesAsync"));
         }
 
@@ -2807,7 +2820,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinates_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToCoordinates(0, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToCoordinates(0, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToCoordinates"));
         }
 
@@ -2853,7 +2866,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAzAsync_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAzAsync(0, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToAltAzAsync(0, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAzAsync"));
         }
 
@@ -2862,7 +2875,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, 90.1); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SlewToAltAzAsync(0, 90.1));
             Assert.That(exception.Message, Is.EqualTo("Altitude cannot be greater than 90."));
         }
 
@@ -2871,7 +2884,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(0, -0.1); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SlewToAltAzAsync(0, -0.1));
             Assert.That(exception.Message, Is.EqualTo("Altitide cannot be less than 0."));
         }
 
@@ -2880,7 +2893,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(360, 0); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SlewToAltAzAsync(360, 0));
             Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be 360 or higher."));
         }
 
@@ -2889,7 +2902,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             ConnectTelescope();
 
-            var exception = Assert.Throws<InvalidValueException>(() => { _telescope.SlewToAltAzAsync(-0.1, 0); });
+            var exception = Assert.Throws<InvalidValueException>(() => _telescope.SlewToAltAzAsync(-0.1, 0));
             Assert.That(exception.Message, Is.EqualTo("Azimuth cannot be less than 0."));
         }
 
@@ -2897,18 +2910,12 @@ namespace Meade.net.Telescope.UnitTests
         public void SlewToAltAzAsync_WhenAltAndAzValid_ThenConvertsToRADec()
         {
             _testProperties.rightAscension = 20;
+            _testProperties.declination = 10;
 
             var altitude = 30;
             var azimuth = 45;
-            var declination = 10;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("-1.0");
-
-            _astroMathsMock
-                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
-                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = _testProperties.rightAscension });
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
@@ -2920,22 +2927,22 @@ namespace Meade.net.Telescope.UnitTests
 
             _utilMock.Setup(x => x.HoursToHMS(_testProperties.rightAscension, ":", ":", ":", digitsRA)).Returns(telescopeRaResult);
             _utilMock.Setup(x => x.HMSToHours(telescopeRaResult)).Returns(_testProperties.rightAscension);
-            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
-            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(declination);
+            _utilMock.Setup(x => x.DegreesToDMS(_testProperties.declination, "*", ":", ":", digitsRA)).Returns(telescopeDecResult);
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeDecResult)).Returns(_testProperties.declination);
 
             ConnectTelescope();
 
             _telescope.SlewToAltAzAsync(azimuth, altitude);
 
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(_testProperties.rightAscension));
-            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(_testProperties.declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
         }
 
         [Test]
         public void SlewToAltAz_WhenAzimuthLowerThan0_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.SlewToAltAz(0, 0); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.SlewToAltAz(0, 0));
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SlewToAltAz"));
         }
 
@@ -2943,22 +2950,16 @@ namespace Meade.net.Telescope.UnitTests
         public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
         {
             _testProperties.rightAscension = 10.0;
-            var declination = 20;
+            _testProperties.declination = 20;
             var azimuth = 30;
             var altitude = 40;
 
             _utilMock.Setup(x => x.HoursToHMS(_testProperties.rightAscension, ":", ":", ":", 2)).Returns(_testProperties.telescopeRaResult);
-            _utilMock.Setup(x => x.DegreesToDMS(declination, "*", ":", ":", 2)).Returns(_testProperties.telescopeRaResult);
-            _utilMock.Setup(x => x.DMSToDegrees(_testProperties.telescopeRaResult)).Returns(declination);
+            _utilMock.Setup(x => x.DegreesToDMS(_testProperties.declination, "*", ":", ":", 2)).Returns(_testProperties.telescopeRaResult);
+            _utilMock.Setup(x => x.DMSToDegrees(_testProperties.telescopeRaResult)).Returns(_testProperties.declination);
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("-1.0");
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("Sd+HH:MM:SS", false)).Returns("1");
-
-            _astroMathsMock
-                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
-                    It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = _testProperties.rightAscension });
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
@@ -2977,7 +2978,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.SlewToAltAz(azimuth, altitude);
 
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(_testProperties.rightAscension));
-            Assert.That(_telescope.TargetDeclination, Is.EqualTo(declination));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(_testProperties.declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
         }
@@ -2996,29 +2997,24 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void Azimuth_WhenConnected_ThenReturnsTelescopeAzumith()
         {
-            var expectedAzimuth = 200;
-
             var telescopeLongitude = "350";
             var telescopeLongitudeValue = 350;
 
-            var mockHourAngle = 3;
+            _testProperties.telescopeAltitude = 45;
+            _testProperties.telescopeAzimuth = 200;
+            _testProperties.hourAngle = 3;
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("-1.0");
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString("Gg", false)).Returns(telescopeLongitude);
-            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
-
-            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
-
-            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = 45, Azimuth = expectedAzimuth });
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);        
+            
 
             ConnectTelescope();
 
             var result = _telescope.Azimuth;
 
-            Assert.That(result, Is.EqualTo(expectedAzimuth));
+            Assert.That(result, Is.EqualTo(_testProperties.telescopeAzimuth));
         }
 
         [Test]
@@ -3040,17 +3036,13 @@ namespace Meade.net.Telescope.UnitTests
             var telescopeLongitude = "350";
             var telescopeLongitudeValue = 350;
 
-            var mockHourAngle = 3;
-
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns("10/15/20");
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns("20:15:10");
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("-1.0");
 
             _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
 
-            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(mockHourAngle);
+            _astroMathsMock.Setup(x => x.RightAscensionToHourAngle(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>())).Returns(_testProperties.hourAngle);
 
-            _astroMathsMock.Setup(x => x.ConvertEqToHoz(mockHourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = expectedAltitude, Azimuth = 200 });
+            _astroMathsMock.Setup(x => x.ConvertEqToHoz(_testProperties.hourAngle, It.IsAny<double>(), It.IsAny<EquatorialCoordinates>())).Returns(new HorizonCoordinates { Altitude = expectedAltitude, Azimuth = 200 });
 
             ConnectTelescope();
 
@@ -3062,7 +3054,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AbortSlew_WhenNotConnected_ThenThrowsException()
         {
-            var exception = Assert.Throws<NotConnectedException>(() => { _telescope.AbortSlew(); });
+            var exception = Assert.Throws<NotConnectedException>(() => _telescope.AbortSlew());
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AbortSlew"));
         }
 
@@ -3087,7 +3079,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.AbortSlew(); });
+            Assert.Throws<ParkedException>(() => _telescope.AbortSlew());
         }
 
         [Test]
@@ -3096,7 +3088,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.MoveAxis(TelescopeAxes.axisPrimary, 0));
         }
 
         [Test]
@@ -3105,7 +3097,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.PulseGuide(GuideDirections.guideEast, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.PulseGuide(GuideDirections.guideEast, 0));
         }
 
         [Test]
@@ -3114,7 +3106,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToAltAz(0, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToAltAz(0, 0));
         }
 
         [Test]
@@ -3123,7 +3115,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToAltAzAsync(0, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToAltAzAsync(0, 0));
         }
 
         [Test]
@@ -3132,7 +3124,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToCoordinates(0, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToCoordinates(0, 0));
         }
 
         [Test]
@@ -3141,7 +3133,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToCoordinatesAsync(0, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToCoordinatesAsync(0, 0));
         }
 
         [Test]
@@ -3150,7 +3142,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToTarget(); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToTarget());
         }
 
         [Test]
@@ -3159,7 +3151,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SlewToTargetAsync(); });
+            Assert.Throws<ParkedException>(() => _telescope.SlewToTargetAsync());
         }
 
         [Test]
@@ -3168,7 +3160,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SyncToCoordinates(0, 0); });
+            Assert.Throws<ParkedException>(() => _telescope.SyncToCoordinates(0, 0));
         }
 
         [Test]
@@ -3177,7 +3169,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.SyncToTarget(); });
+            Assert.Throws<ParkedException>(() => _telescope.SyncToTarget());
         }
 
         [Test]
@@ -3186,7 +3178,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.TargetDeclination = 1; });
+            Assert.Throws<ParkedException>(() => _telescope.TargetDeclination = 1);
         }
 
         [Test]
@@ -3195,7 +3187,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.TargetRightAscension = 1; });
+            Assert.Throws<ParkedException>(() => _telescope.TargetRightAscension = 1);
         }
 
         [Test]
@@ -3204,7 +3196,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
             _telescope.Park();
 
-            Assert.Throws<ParkedException>(() => { _telescope.TrackingRate = DriveRates.driveLunar; });
+            Assert.Throws<ParkedException>(() => _telescope.TrackingRate = DriveRates.driveLunar);
         }
 
 
@@ -3215,7 +3207,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _profileProperties.ParkedBehaviour = behaviour;
             DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
-            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => testNow);
 
             ConnectTelescope();
             _telescope.Park();
@@ -3282,13 +3274,9 @@ namespace Meade.net.Telescope.UnitTests
             _profileProperties.ParkedAz = 180;
             DateTime testNow = DateTime.ParseExact("2021-10-03T20:36:25", "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
 
-            var declination = 45;
+            _testProperties.declination = 45;
 
-            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
-
-            _astroMathsMock
-                .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
-                It.IsAny<HorizonCoordinates>())).Returns(new EquatorialCoordinates { Declination = declination, RightAscension = _testProperties.rightAscension });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => testNow);
 
             ConnectTelescope();
             _telescope.Park();
@@ -3301,7 +3289,7 @@ namespace Meade.net.Telescope.UnitTests
                     break;
                 case ParkedBehaviour.ReportCoordinates:
                     var dec = _telescope.Declination;
-                    Assert.That(dec, Is.EqualTo(declination));
+                    Assert.That(dec, Is.EqualTo(_testProperties.declination));
                     break;
                 default:
                     Assert.Throws<ParkedException>(() => { var d = _telescope.Declination; });
@@ -3321,7 +3309,7 @@ namespace Meade.net.Telescope.UnitTests
 
             var declination = 45;
 
-            _clockMock.Setup(x => x.UtcNow).Returns(() => { return testNow; });
+            _clockMock.Setup(x => x.UtcNow).Returns(() => testNow);
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),

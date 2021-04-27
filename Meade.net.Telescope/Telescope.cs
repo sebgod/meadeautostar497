@@ -74,6 +74,8 @@ namespace ASCOM.Meade.net
 
         private short _settleTime;
 
+        private ParkedPosition _parkedPosition;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -987,23 +989,36 @@ namespace ASCOM.Meade.net
             get
             {
                 CheckConnected("Altitude Get");
-                
+
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                {
+                    try
+                    {
+                        //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
+                        var result = SharedResourcesWrapper.SendString("GA");
+                        //:GA# Get Telescope Altitude
+                        //Returns: sDD* MM# or sDD*MM’SS#
+                        //The current scope altitude. The returned format depending on the current precision setting.
+
+                        var alt = _utilities.DMSToDegrees(result);
+                        LogMessage("Altitude", $"{alt}");
+                        return alt;
+                    }
+                    catch (ParkedException)
+                    {
+                        switch (ParkedBehaviour)
+                        {
+                            case ParkedBehaviour.NoCoordinates:
+                                throw;
+                            default:
+                                return _parkedPosition.Altitude;
+                        }
+                    }
+                }
+
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Altitude", $"{altAz.Altitude}");
                 return altAz.Altitude;
-
-                //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
-                //var result = _sharedResourcesWrapper.SendString("GA");
-                ////:GA# Get Telescope Altitude
-                ////Returns: sDD* MM# or sDD*MM’SS#
-                ////The current scope altitude. The returned format depending on the current precision setting.
-
-                //var alt = utilities.DMSToDegrees(result);
-                //LogMessage("Altitude", $"{alt}");
-                //return alt;
-
-                //LogMessage("Altitude Get", "Not implemented");
-                //throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
         }
 
@@ -1083,15 +1098,31 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("Azimuth Get");
 
-                //var result = _sharedResourcesWrapper.SendString("GZ");
-                //:GZ# Get telescope azimuth
-                //Returns: DDD*MM#T or DDD*MM’SS#
-                //The current telescope Azimuth depending on the selected precision.
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                {
+                    try
+                    {
+                        var result = SharedResourcesWrapper.SendString("GZ");
+                        //:GZ# Get telescope azimuth
+                        //Returns: DDD*MM#T or DDD*MM’SS#
+                        //The current telescope Azimuth depending on the selected precision.
 
-                //double az = utilities.DMSToDegrees(result);
+                        double az = _utilities.DMSToDegrees(result);
 
-                //LogMessage("Azimuth Get", $"{az}");
-                //return az;
+                        LogMessage("Azimuth Get", $"{az}");
+                        return az;
+                    }
+                    catch (ParkedException)
+                    {
+                        switch (ParkedBehaviour)
+                        {
+                            case ParkedBehaviour.NoCoordinates:
+                                throw;
+                            default:
+                                return _parkedPosition.Azimuth;
+                        }
+                    }
+                }
 
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Azimuth Get", $"{altAz.Azimuth}");
@@ -1288,13 +1319,10 @@ namespace ASCOM.Meade.net
                 {
                     switch (ParkedBehaviour)
                     {
-                        case ParkedBehaviour.LastGoodPosition:
-                            return _lastGoodDeclination;
-                        case ParkedBehaviour.ReportCoordinates:
-                            var raDec = _astroMaths.ConvertHozToEq(UTCDate, SiteLatitude, SiteLongitude, ParkedAltAz);
-                            return raDec.Declination;
-                        default:
+                        case ParkedBehaviour.NoCoordinates:
                             throw;
+                        default:
+                            return _parkedPosition.Declination;
                     }
                 }
             }
@@ -1557,8 +1585,37 @@ namespace ASCOM.Meade.net
             if (AtPark)
                 return;
 
+            switch (ParkedBehaviour)
+            {
+                case ParkedBehaviour.LastGoodPosition:
+                    _parkedPosition = new ParkedPosition
+                    {
+                        Altitude = Altitude,
+                        Azimuth = Azimuth,
+                        RightAscension = RightAscension,
+                        Declination = Declination
+                    };
+                    break;
+                case ParkedBehaviour.ReportCoordinates:
+                    var utcDateTime = UTCDate;
+                    var latitude = SiteLatitude;
+                    var longitude = SiteLongitude;
+                    var raDec = _astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, ParkedAltAz);
+
+                    _parkedPosition = new ParkedPosition
+                    {
+                        Altitude = ParkedAltAz.Altitude,
+                        Azimuth = ParkedAltAz.Azimuth,
+                        RightAscension = raDec.RightAscension,
+                        Declination = raDec.Declination
+                    };
+                    break;
+            }
+
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
             AtPark = true;
+
+
             SharedResourcesWrapper.SendBlind("hP");
             //:hP# Autostar, Autostar II and LX 16”Slew to Park Position
             //Returns: Nothing
@@ -1709,13 +1766,10 @@ namespace ASCOM.Meade.net
                 {
                     switch (ParkedBehaviour)
                     {
-                        case ParkedBehaviour.LastGoodPosition:
-                            return _lastGoodRightAsension;
-                        case ParkedBehaviour.ReportCoordinates:
-                            var raDec = _astroMaths.ConvertHozToEq(UTCDate, SiteLatitude, SiteLongitude, ParkedAltAz);
-                            return raDec.RightAscension;
-                        default:
+                        case ParkedBehaviour.NoCoordinates:
                             throw;
+                        default:
+                            return _parkedPosition.RightAscension;
                     }
                 }
                 
