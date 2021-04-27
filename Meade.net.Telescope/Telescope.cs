@@ -416,6 +416,7 @@ namespace ASCOM.Meade.net
 
                             if (connectionInfo.SameDevice == 1)
                             {
+                                SharedResourcesWrapper.SetParked(false, null);
                                 LogMessage("Connected Set", "Making first connection telescope adjustments");
 
                                 LogMessage("Connected Set", $"Site Longitude: {SiteLongitude}");
@@ -469,6 +470,7 @@ namespace ASCOM.Meade.net
                             {
                                 LogMessage("Connected Set",
                                     $"Skipping first connection telescope adjustments (current connections: {connectionInfo.SameDevice})");
+                                CheckParked();
                             }
 
                             var raAndDec = GetTelescopeRaAndDec();
