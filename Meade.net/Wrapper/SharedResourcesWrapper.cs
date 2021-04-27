@@ -27,6 +27,10 @@ namespace ASCOM.Meade.net.Wrapper
         void SetupDialog();
         void WriteProfile(ProfileProperties profileProperties);
         void ReadCharacters(int throwAwayCharacters);
+
+        void SetParked(bool atPark, ParkedPosition parkedPosition);
+        bool IsParked { get; }
+        ParkedPosition ParkedPosition { get; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -99,5 +103,14 @@ namespace ASCOM.Meade.net.Wrapper
         {
             SharedResources.WriteProfile(profileProperties);
         }
+
+        public void SetParked(bool atPark, ParkedPosition parkedPosition)
+        {
+            SharedResources.SetParked(atPark, parkedPosition);
+        }
+
+        public bool IsParked => SharedResources.IsParked;
+
+        public ParkedPosition ParkedPosition => SharedResources.ParkedPosition;
     }
 }

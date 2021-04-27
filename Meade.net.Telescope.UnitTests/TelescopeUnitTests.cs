@@ -48,9 +48,15 @@ namespace Meade.net.Telescope.UnitTests
 
         private TestProperties _testProperties;
 
+        private bool _isParked;
+        private ParkedPosition _parkedPosition;
+
         [SetUp]
         public void Setup()
         {
+            _isParked = false;
+            _parkedPosition = null;
+
             _testProperties = new TestProperties();
 
             _profileProperties = new ProfileProperties
@@ -117,6 +123,14 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SetParked(It.IsAny<bool>(), It.IsAny<ParkedPosition>())).Callback<bool,ParkedPosition>((isParked, parkedPostion) => {
+                _isParked = isParked;
+                _parkedPosition = parkedPostion;
+            });
+
+            _sharedResourcesWrapperMock.SetupGet(x => x.IsParked).Returns(() => _isParked);
+            _sharedResourcesWrapperMock.SetupGet(x => x.ParkedPosition).Returns(() => _parkedPosition);
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),

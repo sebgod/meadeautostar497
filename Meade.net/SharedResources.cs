@@ -493,5 +493,15 @@ namespace ASCOM.Meade.net
                 Count = 0;
             }
         }
+        
+        public static void SetParked(bool atPark, ParkedPosition parkedPosition)
+        {
+            IsParked = atPark;
+            ParkedPosition = parkedPosition;
+        }
+
+        public static bool IsParked { get; private set; }
+
+        public static ParkedPosition ParkedPosition { get; private set; }
     }
 }
