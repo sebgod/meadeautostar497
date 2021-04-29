@@ -15,9 +15,10 @@ namespace ASCOM.Meade.net.Wrapper
         void Lock(Action action);
         T Lock<T>(Func<T> func);
 
-        string SendString(string message, bool includePrefix = true);
-        void SendBlind(string message);
-        string SendChar(string message);
+        string SendString(string message, bool raw = false);
+        void SendBlind(string message, bool raw = false);
+        bool SendBool(string command, bool raw = false);
+        string SendChar(string message, bool raw = false);
 
         string ReadTerminated();
 
@@ -26,6 +27,10 @@ namespace ASCOM.Meade.net.Wrapper
         void SetupDialog();
         void WriteProfile(ProfileProperties profileProperties);
         void ReadCharacters(int throwAwayCharacters);
+
+        void SetParked(bool atPark, ParkedPosition parkedPosition);
+        bool IsParked { get; }
+        ParkedPosition ParkedPosition { get; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -54,19 +59,24 @@ namespace ASCOM.Meade.net.Wrapper
             return SharedResources.Lock(func);
         }
 
-        public string SendString(string message, bool includePrefix = true)
+        public string SendString(string message, bool raw = false)
         {
-            return SharedResources.SendString(message, includePrefix);
+            return SharedResources.SendString(message, raw);
         }
 
-        public void SendBlind(string message)
+        public void SendBlind(string message, bool raw = false)
         {
-            SharedResources.SendBlind(message);
+            SharedResources.SendBlind(message, raw);
         }
 
-        public string SendChar(string message)
+        public bool SendBool(string command, bool raw = false)
         {
-            return SharedResources.SendChar(message);
+            return SharedResources.SendBool(command, raw);
+        }
+
+        public string SendChar(string message,bool raw = false)
+        {
+            return SharedResources.SendChar(message, raw);
         }
 
         public string ReadTerminated()
@@ -93,5 +103,14 @@ namespace ASCOM.Meade.net.Wrapper
         {
             SharedResources.WriteProfile(profileProperties);
         }
+
+        public void SetParked(bool atPark, ParkedPosition parkedPosition)
+        {
+            SharedResources.SetParked(atPark, parkedPosition);
+        }
+
+        public bool IsParked => SharedResources.IsParked;
+
+        public ParkedPosition ParkedPosition => SharedResources.ParkedPosition;
     }
 }

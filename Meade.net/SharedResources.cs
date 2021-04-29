@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using System.Windows.Forms;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
@@ -77,12 +78,13 @@ namespace ASCOM.Meade.net
         }
 
         //todo add code to ensure that there is a minimum gap between commands. 5ms as default.
-        public static void SendBlind(string message)
+        public static void SendBlind(string message, bool raw = false)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
-                SharedSerial.Transmit(message);
+                var encodedMessage = raw ? message : $"#:{message}#";
+                SharedSerial.Transmit(encodedMessage);
             }
         }
 
@@ -93,14 +95,16 @@ namespace ASCOM.Meade.net
         /// and that the reply will always be terminated by a "#" character.
         /// </summary>
         /// <param name="message"></param>
+        /// <param name="raw"></param>
         /// <returns></returns>
-        public static string SendString(string message, bool includePrefix = true)
+        public static string SendString(string message, bool raw = false)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
 
-                SharedSerial.Transmit(includePrefix ? $"#{message}" : message);
+                var encodedMessage = raw ? message : $"#:{message}#";
+                SharedSerial.Transmit(encodedMessage);
 
                 try
                 {
@@ -116,12 +120,22 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static string SendChar(string message)
+        public static bool SendBool(string command, bool raw = false)
+        {
+        
+            var result = SendChar(command, raw);
+
+            return result == "1";
+        }
+
+        public static string SendChar(string command, bool raw = false)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
-                SharedSerial.Transmit(message);
+
+                var encodedMessage = raw ? command : $"#:{command}#";
+                SharedSerial.Transmit(encodedMessage);
 
                 try
                 {
@@ -357,8 +371,8 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            ProductName = SendString(":GVP#");
-                            FirmwareVersion = SendString(":GVN#");
+                            ProductName = SendString("GVP");
+                            FirmwareVersion = SendString("GVN");
                         }
                         catch (Exception ex)
                         {
@@ -378,7 +392,7 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            string utcOffSet = SendString(":GG#");
+                            string utcOffSet = SendString("GG");
                             //:GG# Get UTC offset time
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
@@ -479,5 +493,15 @@ namespace ASCOM.Meade.net
                 Count = 0;
             }
         }
+        
+        public static void SetParked(bool atPark, ParkedPosition parkedPosition)
+        {
+            IsParked = atPark;
+            ParkedPosition = parkedPosition;
+        }
+
+        public static bool IsParked { get; private set; }
+
+        public static ParkedPosition ParkedPosition { get; private set; }
     }
 }

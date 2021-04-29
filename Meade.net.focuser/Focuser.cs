@@ -104,7 +104,7 @@ namespace ASCOM.Meade.net
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
-            SharedResourcesWrapper.SendBlind(command);
+            SharedResourcesWrapper.SendBlind(command, raw);
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
@@ -114,9 +114,10 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("CommandBool");
             //string ret = CommandString(command, raw);
+            return SharedResourcesWrapper.SendBool(command, raw);
             // decode the return string and return true or false
             // or
-            throw new MethodNotImplementedException("CommandBool");
+            //throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
         }
 
@@ -126,7 +127,7 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResourcesWrapper.SendString(command);
+            return SharedResourcesWrapper.SendString(command, raw);
             //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -225,7 +226,7 @@ namespace ASCOM.Meade.net
 
             //todo fix this issue: A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
 
-            SharedResourcesWrapper.SendBlind(":FQ#");
+            SharedResourcesWrapper.SendBlind("FQ");
             //:FQ# Halt Focuser Motion
             //Returns: Nothing
         }
@@ -329,7 +330,7 @@ namespace ASCOM.Meade.net
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            //_sharedResourcesWrapper.SendBlind(":FF#");
+            //_sharedResourcesWrapper.SendBlind("FF");
             //:FF# Set Focus speed to fastest setting
             //Returns: Nothing
 
@@ -350,7 +351,7 @@ namespace ASCOM.Meade.net
 
         private void PerformFocuserMove(bool directionOut)
         {
-            SharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
+            SharedResourcesWrapper.SendBlind(directionOut ? "F+" : "F-");
             //:F+# Start Focuser moving inward (toward objective)
             //Returns: None
 
