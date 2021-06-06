@@ -101,6 +101,7 @@ namespace ASCOM.Meade.net
 
         public void CommandBlind(string command, bool raw)
         {
+            LogMessage("CommandBlind", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
@@ -108,14 +109,16 @@ namespace ASCOM.Meade.net
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
+            LogMessage("CommandBlind", "Completed");
         }
 
         public bool CommandBool(string command, bool raw)
         {
+            LogMessage("CommandBool", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandBool");
-            //string ret = CommandString(command, raw);
-            return SharedResourcesWrapper.SendBool(command, raw);
-            // decode the return string and return true or false
+            var result = SharedResourcesWrapper.SendBool(command, raw);
+            LogMessage("CommandBool", "Completed: {0}", result);
+            return result;
             // or
             //throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
@@ -123,11 +126,14 @@ namespace ASCOM.Meade.net
 
         public string CommandString(string command, bool raw)
         {
+            LogMessage("CommandString", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResourcesWrapper.SendString(command, raw);
+            var result = SharedResourcesWrapper.SendString(command, raw);
+            LogMessage("CommandBool", "Completed: {0}", result);
+            return result;
             //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
