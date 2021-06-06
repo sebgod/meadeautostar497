@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using ASCOM;
 using ASCOM.Astrometry.AstroUtils;
+using ASCOM.Astrometry.NOVAS;
 using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.AstroMaths;
@@ -42,6 +43,7 @@ namespace Meade.net.Telescope.UnitTests
         private Mock<ISharedResourcesWrapper> _sharedResourcesWrapperMock;
         private Mock<IAstroMaths> _astroMathsMock;
         private Mock<IClock> _clockMock;
+        private Mock<INOVAS31> _novasMock;
 
         private ProfileProperties _profileProperties;
         private ConnectionInfo _connectionInfo;
@@ -98,15 +100,17 @@ namespace Meade.net.Telescope.UnitTests
             };
 
             _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
-            
+
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
 
             _astroMathsMock = new Mock<IAstroMaths>();
 
             _clockMock = new Mock<IClock>();
 
+            _novasMock = new Mock<INOVAS31>();
+
             _telescope = new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
-                _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object);
+                _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
         }
 
         private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
@@ -191,7 +195,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("ED", false)).Returns(expectedResult);
             _telescope.Connected = true;
 
-            
+
 
             var actualResult = _telescope.Action("handbox", "readdisplay");
 
@@ -402,7 +406,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendBool(expectedMessage, raw), Times.Once);
             Assert.That(result, Is.True);
         }
-        
+
         [Test]
         public void CommandString_WhenNotConnected_ThenThrowsNotConnectedException()
         {
@@ -1199,15 +1203,89 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void DestinationSideOfPier_ThenThrowsException()
+        public void DestinationSideOfPier_WhenNotConnected_ThenThrowsException()
         {
-            var excpetion = Assert.Throws<MethodNotImplementedException>(() =>
+            var excpetion = Assert.Throws<NotConnectedException>(() =>
             {
                 var result = _telescope.DestinationSideOfPier(0, 0);
                 Assert.Fail($"{result} should not have returned");
             });
 
-            Assert.That(excpetion.Method, Is.EqualTo("DestinationSideOfPier"));
+            Assert.That(excpetion.Message, Is.EqualTo("Not connected to telescope when trying to execute: DestinationSideOfPier"));
+        }
+
+        [TestCase(1, 1, 4, PierSide.pierEast)]
+        [TestCase(1, -1, 4, PierSide.pierEast)]
+        [TestCase(4, 1, 1, PierSide.pierWest)]
+        [TestCase(4, -1, 1, PierSide.pierWest)]
+        [TestCase(0, 0, 0, PierSide.pierUnknown)]
+        [TestCase(5, 0, 5, PierSide.pierUnknown)]
+        [TestCase(23.8, 1, 23.9, PierSide.pierEast)]
+        [TestCase(23.8, -1, 23.9, PierSide.pierEast)]
+        [TestCase(23.9, 1, 1, PierSide.pierEast)]
+        [TestCase(23.9, -1, 1, PierSide.pierEast)]
+        [TestCase(1, 1, 23.9, PierSide.pierWest)]
+        [TestCase(1, -1, 23.9, PierSide.pierWest)]
+        public void DestinationSideOfPier_WhenHASiderealTimeDiffIsNotNull_ThenSideOfPierIsCalculated(double ra, double dec, double siderealTime, PierSide expectedDSOP)
+        {
+            // given
+            // SideralTime uses ConditionRA to normalize to 0..24h, so we use it to mock the property
+            _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns(siderealTime);
+
+            var ha = siderealTime - ra;
+            var normalisedHA = ha > 12 ? ha - 24 : ha < -12 ? ha + 24 : ha;
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.Is<double>(v => v == ha))).Returns(normalisedHA);
+
+            ConnectTelescope();
+
+            // when
+            var actualDSOP = _telescope.DestinationSideOfPier(ra, dec);
+
+            // then
+            Assert.That(siderealTime, Is.InRange(0, 24 + double.Epsilon));
+            Assert.That(normalisedHA, Is.InRange(-12, 12 + double.Epsilon));
+            Assert.That(actualDSOP, Is.EqualTo(expectedDSOP));
+
+            _astroUtilsMock.Verify(x => x.ConditionRA(It.IsAny<double>()), Times.Once);
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.Is<double>(v => v == ha)), Times.Once);
+        }
+
+        [Test]
+        public void SiderealTime_Get_WhenNotConnected_ThenThrowsException()
+        {
+            // when
+            var exception = Assert.Throws<NotConnectedException>(() =>
+            {
+                var result = _telescope.SiderealTime;
+                Assert.Fail($"{result} should not have returned");
+            });
+
+            // then
+            Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: SiderealTime Get"));
+        }
+
+        [Test]
+        public void SiderealTime_Get_WhenNOVASErrors_ThenThrowsException()
+        {
+            // given
+            double gst = 0.0;
+            _novasMock
+                .Setup(x => x.SiderealTime(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<double>(), ASCOM.Astrometry.GstType.GreenwichApparentSiderealTime, ASCOM.Astrometry.Method.EquinoxBased, ASCOM.Astrometry.Accuracy.Reduced, ref gst))
+                .Returns(3)
+                .Verifiable();
+
+            ConnectTelescope();
+
+            // when
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var result = _telescope.SiderealTime;
+                Assert.Fail($"{result} should not have returned");
+            });
+
+            // then
+            Assert.That(exception.Message, Is.EqualTo("NOVAS 3.1 SiderealTime returned: 3 in SiderealTime"));
+            _novasMock.Verify();
         }
 
         [Test]
@@ -1470,7 +1548,7 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.AtPark, Is.True);
 
 
-            //act 
+            //act
             _telescope.Park();
 
             //no change from previous state.
@@ -1743,8 +1821,11 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void SideOfPier_Get_ThenThrowsException()
+        public void SideOfPier_Get_WhenMeridianFlipNotSupported_ThenThrowsException()
         {
+            // LX200 classic is a fork mounted scope so it does not support meridian flips
+            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(TelescopeList.LX200CLASSIC);
+
             var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
             {
                 var result = _telescope.SideOfPier;
@@ -2761,6 +2842,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
         {
+            // avoid calling SideOfPier because it will call Slewing
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
+
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
             var slewCounter = 0;
@@ -2781,6 +2865,7 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.SlewToTarget();
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]
@@ -2841,6 +2926,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinates_WhenCalled_ThenSetsTargetAndSlews()
         {
+            // avoid calling SideOfPier because it will call Slewing
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
+
             _testProperties.rightAscension = 1;
             var declination = 2;
 
@@ -2875,6 +2963,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]
@@ -2963,6 +3052,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
         {
+            // avoid calling SideOfPier because it will call Slewing
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
+
             _testProperties.rightAscension = 10.0;
             _testProperties.declination = 20;
             var azimuth = 30;
@@ -2995,6 +3087,7 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(_testProperties.declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]
@@ -3021,8 +3114,8 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns("-1.0");
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString("Gg", false)).Returns(telescopeLongitude);
-            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);        
-            
+            _utilMock.Setup(x => x.DMSToDegrees(telescopeLongitude)).Returns(telescopeLongitudeValue);
+
 
             ConnectTelescope();
 

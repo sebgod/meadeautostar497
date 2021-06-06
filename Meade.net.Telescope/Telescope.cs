@@ -57,13 +57,16 @@ namespace ASCOM.Meade.net
         private readonly IUtilExtra _utilitiesExtra;
 
         /// <summary>
-        /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
+        /// Private variable to hold an ASCOM AstroUtilities object to provide the <see cref="IAstroUtils.Range(double, double, bool, double, bool)"> method
+        /// and <see cref="IAstroUtils.ConditionHA(double)"/>
         /// </summary>
         private readonly IAstroUtils _astroUtilities;
 
         private readonly IAstroMaths _astroMaths;
 
         private readonly IClock _clock;
+
+        private readonly INOVAS31 _novas;
 
         /// <summary>
         /// Private variable to hold number of decimals for RA
@@ -76,7 +79,7 @@ namespace ASCOM.Meade.net
         private int _digitsDe = 2;
 
         private short _settleTime;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -92,6 +95,7 @@ namespace ASCOM.Meade.net
                 _astroUtilities = new AstroUtils(); // Initialise astro utilities object
                 _astroMaths = new AstroMaths.AstroMaths();
                 _clock = new Clock();
+                _novas = new NOVAS31();
 
                 Initialise(nameof(Telescope));
             }
@@ -125,7 +129,7 @@ namespace ASCOM.Meade.net
         }
 
         public Telescope(IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities,
-            ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock) : base(
+            ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock, INOVAS31 novas) : base(
             sharedResourcesWrapper)
         {
             _clock = clock;
@@ -133,6 +137,7 @@ namespace ASCOM.Meade.net
             _utilitiesExtra = utilExtra; //Initialise util object
             _astroUtilities = astroUtilities; // Initialise astro utilities object
             _astroMaths = astroMaths;
+            _novas = novas;
 
             Initialise(nameof(Telescope));
         }
@@ -605,6 +610,18 @@ namespace ASCOM.Meade.net
             }
 
             return false;
+        }
+
+        // true iff the mount will perform a meridian flip when required
+        // TODO: Needs checking what mounts actually support this
+        private bool IsMeridianFlipOnSlewSupported()
+        {
+            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private bool FirmwareIsGreaterThan(string minVersion)
@@ -1099,7 +1116,7 @@ namespace ASCOM.Meade.net
                 return false;
             }
         }
-        
+
         public bool AtPark
         {
             get
@@ -1368,8 +1385,18 @@ namespace ASCOM.Meade.net
 
         public PierSide DestinationSideOfPier(double rightAscension, double declination)
         {
-            LogMessage("DestinationSideOfPier Get", "Not implemented");
-            throw new MethodNotImplementedException("DestinationSideOfPier");
+            CheckConnected("DestinationSideOfPier");
+
+            double hourAngle = _astroUtilities.ConditionHA(SiderealTime - rightAscension);
+
+            var destinationSOP = hourAngle > 0
+                ? PierSide.pierEast :
+                (hourAngle < 0 ? PierSide.pierWest : SideOfPier);
+
+            LogMessage("DestinationSideOfPier",
+                $"Destination SOP of RA {rightAscension.ToString(CultureInfo.InvariantCulture)} is {destinationSOP}");
+
+            return destinationSOP;
         }
 
         public bool DoesRefraction
@@ -1433,7 +1460,7 @@ namespace ASCOM.Meade.net
             //sidereal speed(approx 15.0417”/sec)[Autostar II only]
             //Returns: Nothing
 
-            //info from RickB says that 15.04107 is a better value for 
+            //info from RickB says that 15.04107 is a better value for
 
             GuideRate = value;
 
@@ -1464,7 +1491,7 @@ namespace ASCOM.Meade.net
                 SetNewGuideRate(newValue, "GuideRateDeclination");
             }
         }
-        
+
         public double GuideRateRightAscension
         {
             get
@@ -1493,7 +1520,7 @@ namespace ASCOM.Meade.net
 
         private bool _movingPrimary;
         private bool _movingSecondary;
-        
+
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
             LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
@@ -1555,12 +1582,16 @@ namespace ASCOM.Meade.net
                             //:Me# Move Telescope East at current slew rate
                             //Returns: Nothing
                             _movingPrimary = true;
+                            // in principle we could calculate the current side of pier, but unknown is the safer option.
+                            _pierSide = PierSide.pierUnknown;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind("Mw");
                             //:Mw# Move Telescope West at current slew rate
                             //Returns: Nothing
                             _movingPrimary = true;
+                            // in principle we could calculate the current side of pier, but unknown is the safer option.
+                            _pierSide = PierSide.pierUnknown;
                             break;
                     }
                     break;
@@ -1763,7 +1794,7 @@ namespace ASCOM.Meade.net
             var hms = $"{token[0]}:{seconds}";
             return _utilities.HMSToHours(hms);
         }
-        
+
         double _lastGoodRightAsension;
 
         public double RightAscension
@@ -1792,9 +1823,9 @@ namespace ASCOM.Meade.net
                     if (parkedPosition != null)
                         return parkedPosition.RightAscension;
 
-                        throw;
+                    throw;
                 }
-                
+
             }
         }
 
@@ -1820,10 +1851,25 @@ namespace ASCOM.Meade.net
             throw new MethodNotImplementedException("SetPark");
         }
 
+        /// <summary>
+        /// Start with <see cref="PierSide.pierUnknown"/>.
+        /// As we do not know the physical declination axis position, we have to keep track manually.
+        /// </summary>
+        private PierSide _pierSide = PierSide.pierUnknown;
         public PierSide SideOfPier
         {
             get
             {
+                if (IsMeridianFlipOnSlewSupported())
+                {
+                    // while mount is slewing return unknown, this is required since
+                    // DoSlewAsync updates _pierSide before slew is finished
+                    var pierSide = Slewing ? PierSide.pierUnknown : _pierSide;
+
+                    LogMessage("SideOfPier", "Get - " + pierSide);
+                    return pierSide;
+                }
+
                 LogMessage("SideOfPier Get", "Not implemented");
                 throw new PropertyNotImplementedException("SideOfPier", false);
             }
@@ -1839,15 +1885,20 @@ namespace ASCOM.Meade.net
         {
             get
             {
+                CheckConnected("SiderealTime Get");
+
                 // Now using NOVAS 3.1
                 double siderealTime = 0.0;
-                using (var novas = new NOVAS31())
+
+                var jd = _utilities.DateUTCToJulian(_clock.UtcNow);
+                var siderealTimeResult = _novas.SiderealTime(jd, 0, _novas.DeltaT(jd),
+                    GstType.GreenwichApparentSiderealTime,
+                    Method.EquinoxBased,
+                    Accuracy.Reduced, ref siderealTime);
+
+                if (siderealTimeResult != 0)
                 {
-                    var jd = _utilities.DateUTCToJulian(_clock.UtcNow);
-                    novas.SiderealTime(jd, 0, novas.DeltaT(jd),
-                        GstType.GreenwichApparentSiderealTime,
-                        Method.EquinoxBased,
-                        Accuracy.Reduced, ref siderealTime);
+                    throw new InvalidOperationException($"NOVAS 3.1 SiderealTime returned: {siderealTimeResult} in SiderealTime");
                 }
 
                 // Allow for the longitude
@@ -1881,7 +1932,7 @@ namespace ASCOM.Meade.net
                     LogMessage("SiteElevation", "Set: no change detected");
                     return;
                 }
-                
+
                 LogMessage("SiteElevation", $"Set: {value} was {base.SiteElevation}");
                 base.SiteElevation = value;
                 UpdateSiteElevation();
@@ -2052,7 +2103,7 @@ namespace ASCOM.Meade.net
                 _utilities.WaitForMilliseconds(200); //be responsive to AbortSlew();
             }
         }
-        
+
         public void SlewToAltAzAsync(double azimuth, double altitude)
         {
             CheckConnected("SlewToAltAzAsync");
@@ -2116,15 +2167,23 @@ namespace ASCOM.Meade.net
                             case "0":
                                 //We're slewing everything should be working just fine.
                                 LogMessage("DoSlewAsync", "Slewing to target");
+
+                                if (IsMeridianFlipOnSlewSupported())
+                                {
+                                    // Update side of pier to destination side of pier
+                                    // Assumption: Mount will do meridian flip if required
+                                    _pierSide = DestinationSideOfPier(TargetRightAscension, TargetDeclination);
+                                }
+
                                 SetSlewingMinEndTime();
                                 break;
                             case "1":
-                                //Below Horizon 
+                                //Below Horizon
                                 string belowHorizonMessage = SharedResourcesWrapper.ReadTerminated();
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowHorizonMessage}\"");
                                 throw new InvalidOperationException(belowHorizonMessage);
                             case "2":
-                                //Below minimum elevation 
+                                //Below minimum elevation
                                 string belowMinimumElevationMessage = SharedResourcesWrapper.ReadTerminated();
                                 LogMessage("DoSlewAsync", $"Slew failed \"{belowMinimumElevationMessage}\"");
                                 throw new InvalidOperationException(belowMinimumElevationMessage);
@@ -2362,7 +2421,7 @@ namespace ASCOM.Meade.net
             LogMessage("SyncToTarget", "Executing");
             CheckConnected("SyncToTarget");
             CheckParked();
-                
+
             var result = SharedResourcesWrapper.SendString("CM");
             //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
             //Returns:
@@ -2480,7 +2539,7 @@ namespace ASCOM.Meade.net
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
                 var hms = IsLongFormat ?
-                    _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa) : 
+                    _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa) :
                     _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
 
                 var command = $"Sr{hms}";
@@ -2696,7 +2755,7 @@ namespace ASCOM.Meade.net
                         throw new InvalidOperationException("Failed to set local date");
                     }
 
-                    //throwing away these two strings which represent 
+                    //throwing away these two strings which represent
                     SharedResourcesWrapper.ReadTerminated(); //Updating Planetary Data#
                     SharedResourcesWrapper.ReadTerminated(); //                       #
                 });
@@ -2721,6 +2780,9 @@ namespace ASCOM.Meade.net
             BypassHandboxEntryForAutostarII();
 
             SharedResourcesWrapper.SetParked(false, null);
+
+            // reset side of pier
+            SideOfPier = PierSide.pierUnknown;
         }
 
         private bool BypassHandboxEntryForAutostarII()
@@ -2747,7 +2809,7 @@ namespace ASCOM.Meade.net
         #region ASCOM Registration
 
         // Register or unregister driver for ASCOM. This is harmless if already
-        // registered or unregistered. 
+        // registered or unregistered.
         //
         /// <summary>
         /// Register or unregister the driver with the ASCOM Platform.
