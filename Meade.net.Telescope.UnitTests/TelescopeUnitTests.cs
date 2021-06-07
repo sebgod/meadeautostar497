@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 using ASCOM;
+using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Astrometry.NOVAS;
 using ASCOM.DeviceInterface;
@@ -1229,10 +1230,11 @@ namespace Meade.net.Telescope.UnitTests
         public void DestinationSideOfPier_WhenHASiderealTimeDiffIsNotNull_ThenSideOfPierIsCalculated(double ra, double dec, double siderealTime, PierSide expectedDSOP)
         {
             // given
-            // SideralTime uses ConditionRA to normalize to 0..24h, so we use it to mock the property
+            // SideralTime uses ConditionRA to normalize to [0..24h), so we use it to mock the property
             _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns(siderealTime);
 
             var ha = siderealTime - ra;
+            // normalized hour angle range is [-12h..12h]
             var normalisedHA = ha > 12 ? ha - 24 : ha < -12 ? ha + 24 : ha;
             _astroUtilsMock.Setup(x => x.ConditionHA(It.Is<double>(v => v == ha))).Returns(normalisedHA);
 
@@ -1242,7 +1244,7 @@ namespace Meade.net.Telescope.UnitTests
             var actualDSOP = _telescope.DestinationSideOfPier(ra, dec);
 
             // then
-            Assert.That(siderealTime, Is.InRange(0, 24 + double.Epsilon));
+            Assert.That(siderealTime, Is.InRange(0, 24));
             Assert.That(normalisedHA, Is.InRange(-12, 12 + double.Epsilon));
             Assert.That(actualDSOP, Is.EqualTo(expectedDSOP));
 
@@ -1843,6 +1845,135 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
             Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        delegate void NovasSiderealTimeDelegate(double jdHigh, double jdLow, double jdDelta, GstType gstType, Method method, Accuracy accuracy, ref double sideralTime);
+
+        /// <summary>
+        /// Test cases obtained via .NET telescope simulator
+        /// </summary>
+        [TestCase(9.4337648353882, -76.7178112042103, "2021-06-07T05:23:41.7610000Z", 8.13556526999591, 145.166333333333, 2d, PierSide.pierWest, PierSide.pierEast)]
+        [TestCase(10.1581570159006, 11.8639491368916, "2021-06-07T10:59:19.7000000Z", 9.72726050605156, 145.166333333333, 1d, PierSide.pierWest, PierSide.pierEast)]
+        [TestCase(9.66583199112222, 81.2310578173083, "2021-06-07T11:19:24.5540000Z", 7.73744116673785, 110.285166666667, 2d, PierSide.pierWest, PierSide.pierEast)]
+        [TestCase(8.32978972808615, -29.816491813155, "2021-06-07T11:29:33.7040000Z", 7.90712206850482, 110.285166666667, 1d, PierSide.pierWest, PierSide.pierEast)]
+        [TestCase(1.76405553984887, 60.7756226366989, "2021-06-07T11:34:07.5270000Z", 0.214893775091689, -6.24266666666667, 2d, PierSide.pierWest, PierSide.pierEast)]
+        [TestCase(0.523375885742411, -33.1288722052936, "2021-06-07T11:38:25.1670000Z", 0.286661722506396, -6.24266666666667, 0.5d, PierSide.pierWest, PierSide.pierEast)]
+        public void SideOfPier_WhenTrackingThroughMeridianAfterSubsequentGoto_ThenAMeridianFlipIsPerformed(
+            double ra,
+            double dec,
+            string jnowTimeStr, /* JNOW of object before transit */
+            double jnowSiderealTime,
+            double siteLongitude,
+            double trackingTimeHours,
+            PierSide pierSideBeforeTransit,
+            PierSide pierSideAfterRetargeting
+        )
+        {
+            // given
+            var jnowTime = DateTimeOffset.ParseExact(jnowTimeStr, "o", CultureInfo.InvariantCulture).UtcDateTime;
+            var trackingTimeDiff = TimeSpan.FromHours(trackingTimeHours);
+            var timeAfterTracking = jnowTime + trackingTimeDiff;
+            var raAsHMS = ra + "HMS";
+            var decAsDMS = dec + "DMS";
+            var currentTime = jnowTime;
+
+            _clockMock.Setup(x => x.UtcNow).Returns(() => currentTime);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+
+            // setup for RA
+            _utilMock.Setup(x => x.HoursToHMS(ra, ":", ":", ":", 2)).Returns(raAsHMS);
+            _utilMock.Setup(x => x.HMSToHours(raAsHMS)).Returns(ra);
+
+            // setup for DEC
+            _utilMock.Setup(x => x.DMSToDegrees(decAsDMS)).Returns(dec);
+            _utilMock.Setup(x => x.DegreesToDMS(dec, "*", ":", ":", 2)).Returns(decAsDMS);
+
+            // setup for SiteLongitude
+            var siteLongitudeResult = siteLongitude + "Gg";
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("Gg", false)).Returns(siteLongitudeResult);
+            // remember to invert longitude
+            _utilMock.Setup(x => x.DMSToDegrees(siteLongitudeResult)).Returns(-siteLongitude);
+
+            // setup for SideralTime
+            var siteLongitudeAdj = siteLongitude / 360.0 * 24.0;
+            var jnowSiderealTimeWithoutLongAdj = jnowSiderealTime - siteLongitudeAdj;
+            var afterTrackingSiderealTimeWithoutLongAdj = jnowSiderealTimeWithoutLongAdj + trackingTimeHours;
+
+            _utilMock.Setup(x => x.DateUTCToJulian(It.IsAny<DateTime>())).Returns<DateTime>(pDateTime => pDateTime.Ticks);
+
+            _novasMock
+                .Setup(x => x.SiderealTime(
+                    It.IsAny<double>(),
+                    0d,
+                    0d,
+                    GstType.GreenwichApparentSiderealTime,
+                    Method.EquinoxBased,
+                    Accuracy.Reduced,
+                    ref It.Ref<double>.IsAny))
+                .Callback(new NovasSiderealTimeDelegate(NovasSiderealTime))
+                .Returns(0);
+
+            _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns<double>(pRA => pRA < 0 ? pRA + 24 : pRA >= 24 ? pRA - 24 : pRA);
+
+            void NovasSiderealTime(double pJDHigh, double pJDLow, double pJDDelta, GstType pGSTType, Method pMethod, Accuracy pAccuracy, ref double pSideralTime)
+            {
+                if (pJDHigh == jnowTime.Ticks)
+                {
+                    pSideralTime = jnowSiderealTimeWithoutLongAdj;
+                }
+                else if (pJDHigh == timeAfterTracking.Ticks)
+                {
+                    pSideralTime = afterTrackingSiderealTimeWithoutLongAdj;
+                }
+                else
+                {
+                    Assert.Fail($"No sideral time defined for {pJDHigh}");
+                }
+            }
+
+            // Setup DestinationSideOfPier
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
+
+            ConnectTelescope();
+
+            // when
+            _telescope.SlewToCoordinatesAsync(ra, dec);
+            var actualSideOfPierAfterSlew = _telescope.SideOfPier;
+            // simulate tracking time
+            currentTime += trackingTimeDiff;
+            var actualSideOfPierAfterTracking = _telescope.SideOfPier;
+            _telescope.SlewToTargetAsync();
+            var actualSideOfPierAfterRetargeting = _telescope.SideOfPier;
+
+            // then
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(ra));
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(dec));
+            Assert.That(actualSideOfPierAfterSlew, Is.EqualTo(pierSideBeforeTransit));
+            Assert.That(actualSideOfPierAfterTracking, Is.EqualTo(pierSideBeforeTransit));
+            Assert.That(actualSideOfPierAfterRetargeting, Is.EqualTo(pierSideAfterRetargeting));
+
+            _clockMock.Verify(x => x.UtcNow, Times.AtLeast(2));
+
+            foreach (var time in new[] { jnowTime, timeAfterTracking })
+            {
+                _utilMock.Verify(x => x.DateUTCToJulian(time));
+
+                _novasMock
+                    .Verify(x => x.SiderealTime(
+                        time.Ticks,
+                        0d,
+                        0d,
+                        GstType.GreenwichApparentSiderealTime,
+                        Method.EquinoxBased,
+                        Accuracy.Reduced,
+                        ref It.Ref<double>.IsAny),
+                    Times.Once);
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("Gg", false), Times.Exactly(3));
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Exactly(2));
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.Exactly(3));
         }
 
         [Test]
