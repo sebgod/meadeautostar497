@@ -2516,6 +2516,44 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(rightAscension));
         }
 
+        [TestCase(0d)]
+        [TestCase(6d)]
+        [TestCase(12d)]
+        [TestCase(23.599d)]
+        public void TargetRightAscension_Set_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(double targetRightAscension)
+        {
+            var targetRightAscensionHMS = targetRightAscension + "HMS";
+            var command = $"Sr{targetRightAscensionHMS}";
+
+            _utilMock.Setup(x => x.HoursToHMS(targetRightAscension, ":", ":", ":", 2)).Returns(targetRightAscensionHMS);
+            _utilMock.Setup(x => x.HMSToHours(targetRightAscensionHMS)).Returns(targetRightAscension);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(command, false)).Returns("1");
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+
+            _telescope.TargetRightAscension = targetRightAscension;
+
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(targetRightAscension));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+            Assert.That(secondTelescopeInstance.TargetRightAscension, Is.EqualTo(targetRightAscension));
+
+            _utilMock.Verify(x => x.HoursToHMS(targetRightAscension, ":", ":", ":", 2), Times.Once);
+            _utilMock.Verify(x => x.HMSToHours(targetRightAscensionHMS), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(command, false), Times.Once);
+        }
+
         [Test]
         public void Tracking_Get_WhenDefault_ThenIsTrue()
         {
