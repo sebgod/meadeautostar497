@@ -3085,9 +3085,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
             var slewCounter = 0;
@@ -3169,9 +3166,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinates_WhenCalled_ThenSetsTargetAndSlews()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _testProperties.rightAscension = 1;
             var declination = 2;
 
@@ -3295,9 +3289,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _testProperties.rightAscension = 10.0;
             _testProperties.declination = 20;
             var azimuth = 30;
