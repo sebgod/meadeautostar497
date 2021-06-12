@@ -1394,7 +1394,7 @@ namespace ASCOM.Meade.net
 
             var destinationSOP = hourAngle > 0
                 ? PierSide.pierEast :
-                (hourAngle < 0 ? PierSide.pierWest : SideOfPier);
+                (hourAngle < 0 ? PierSide.pierWest : SharedResourcesWrapper.SideOfPier); // avoid pierUnknown while Slewing
 
             LogMessage("DestinationSideOfPier",
                 $"Destination SOP of RA {rightAscension.ToString(CultureInfo.InvariantCulture)} is {destinationSOP}");
