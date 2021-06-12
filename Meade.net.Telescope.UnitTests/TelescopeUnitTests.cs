@@ -107,7 +107,9 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock
                 .SetupProperty(x => x.SideOfPier)
                 .SetupProperty(x => x.TargetRightAscension)
-                .SetupProperty(x => x.TargetDeclination);
+                .SetupProperty(x => x.TargetDeclination)
+                .SetupProperty(x => x.SlewSettleTime)
+                .SetupProperty(x => x.IsLongFormat);
 
             _astroMathsMock = new Mock<IAstroMaths>();
 
@@ -1016,6 +1018,29 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.Never);
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void SlewSettleTime_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(short slewSettleTime)
+        {
+            ConnectTelescope();
+
+            _telescope.SlewSettleTime = slewSettleTime;
+
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(secondTelescopeInstance.SlewSettleTime, Is.EqualTo(slewSettleTime));
         }
 
         [Test]
@@ -2367,6 +2392,46 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.TargetDeclination;
 
             Assert.That(result, Is.EqualTo(declination));
+        }
+
+        [TestCase(-90d)]
+        [TestCase(-45d)]
+        [TestCase(0d)]
+        [TestCase(45d)]
+        [TestCase(90d)]
+        public void TargetDeclination_Set_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(double targetDeclination)
+        {
+            var targetDeclinationDMS = targetDeclination + "DMS";
+            var sign = targetDeclination >= 0 ? "+" : string.Empty;
+            var command = $"Sd{sign}{targetDeclinationDMS}";
+
+            _utilMock.Setup(x => x.DegreesToDMS(targetDeclination, "*", ":", ":", 2)).Returns(targetDeclinationDMS);
+            _utilMock.Setup(x => x.DMSToDegrees(targetDeclinationDMS)).Returns(targetDeclination);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(command, false)).Returns("1");
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+
+            _telescope.TargetDeclination = targetDeclination;
+
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(targetDeclination));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+            Assert.That(secondTelescopeInstance.TargetDeclination, Is.EqualTo(targetDeclination));
+
+            _utilMock.Verify(x => x.DegreesToDMS(targetDeclination, "*", ":", ":", 2), Times.Once);
+            _utilMock.Verify(x => x.DMSToDegrees(targetDeclinationDMS), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(command, false), Times.Once);
         }
 
         [Test]

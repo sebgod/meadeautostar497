@@ -36,6 +36,10 @@ namespace ASCOM.Meade.net.Wrapper
         PierSide SideOfPier { get; set; }
         double? TargetRightAscension { get; set; }
         double? TargetDeclination { get; set; }
+
+        short SlewSettleTime { get; set; }
+
+        bool IsLongFormat { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -134,6 +138,18 @@ namespace ASCOM.Meade.net.Wrapper
         {
             get => SharedResources.TargetDeclination;
             set => SharedResources.TargetDeclination = value;
+        }
+
+        public short SlewSettleTime
+        {
+            get => SharedResources.SlewSettleTime;
+            set => SharedResources.SlewSettleTime = value;
+        }
+
+        public bool IsLongFormat
+        {
+            get => SharedResources.IsLongFormat;
+            set => SharedResources.IsLongFormat = value;
         }
     }
 }

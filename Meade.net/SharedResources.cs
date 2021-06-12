@@ -509,10 +509,14 @@ namespace ASCOM.Meade.net
         /// Start with <see cref="PierSide.pierUnknown"/>.
         /// As we do not know the physical declination axis position, we have to keep track manually.
         /// </summary>
-        public static PierSide SideOfPier { get; set; } = PierSide.pierUnknown;
+        public static PierSide SideOfPier { get; internal set; } = PierSide.pierUnknown;
 
-        public static double? TargetRightAscension { get; set; }
+        public static double? TargetRightAscension { get; internal set; }
 
-        public static double? TargetDeclination { get; set; }
+        public static double? TargetDeclination { get; internal set; }
+
+        public static short SlewSettleTime { get; internal set; }
+
+        public static bool IsLongFormat { get; internal set; }
     }
 }

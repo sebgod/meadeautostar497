@@ -33,7 +33,7 @@ namespace ASCOM.Meade.net
         protected ParkedBehaviour ParkedBehaviour;
         protected HorizonCoordinates ParkedAltAz;
 
-    protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
+        protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
         public MeadeTelescopeBase()
         {
@@ -81,7 +81,7 @@ namespace ASCOM.Meade.net
                 Altitude = profileProperties.ParkedAlt,
                 Azimuth = profileProperties.ParkedAz
             };
-            
+
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
             LogMessage("ReadProfile", $"Com Port: {ComPort}");
             LogMessage("ReadProfile", $"Backlash Steps: {BacklashCompensation}");

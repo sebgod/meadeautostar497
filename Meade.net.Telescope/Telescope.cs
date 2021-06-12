@@ -78,8 +78,6 @@ namespace ASCOM.Meade.net
         /// </summary>
         private int _digitsDe = 2;
 
-        private short _settleTime;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -487,6 +485,13 @@ namespace ASCOM.Meade.net
                                 CheckParked();
                             }
 
+                            if (!SharedResourcesWrapper.IsLongFormat)
+                            {
+                                // use low precision digits
+                                _digitsRa = 1;
+                                _digitsDe = 0;
+                            }
+
                             var raAndDec = GetTelescopeRaAndDec();
                             LogMessage("Connected Set",
                                 $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
@@ -634,8 +639,6 @@ namespace ASCOM.Meade.net
             return comparison >= 0;
         }
 
-        private bool IsLongFormat { get; set; }
-
         /// <summary>
         /// classic LX200 needs initial set of target coordinates, if it is slewing and the target RA DE coordinates are 0 and differ from the current coordinates
         /// </summary>
@@ -708,13 +711,11 @@ namespace ASCOM.Meade.net
 
         public void SetLongFormat(bool setLongFormat)
         {
-            IsLongFormat = false;
-
             if (!IsLongFormatSupported())
             {
                 LogMessage("SetLongFormat", "Long coordinate format not supported for this mount");
-                _digitsRa = 1;
-                _digitsDe = 0;
+
+                SharedResourcesWrapper.Lock(() => SharedResourcesWrapper.IsLongFormat = false);
                 return;
             }
 
@@ -726,9 +727,9 @@ namespace ASCOM.Meade.net
                 //Returns: DDD*MM.T or DDD*MM'SS#
                 //The current telescope Azimuth depending on the selected precision.
 
-                IsLongFormat = result.Length > 6;
+                SharedResourcesWrapper.IsLongFormat = result.Length > 6;
 
-                if (IsLongFormat != setLongFormat)
+                if (SharedResourcesWrapper.IsLongFormat != setLongFormat)
                 {
                     _utilities.WaitForMilliseconds(500);
                     SharedResourcesWrapper.SendBlind("U");
@@ -737,9 +738,9 @@ namespace ASCOM.Meade.net
                     //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
                     //    Returns Nothing
                     result = SharedResourcesWrapper.SendString("GZ");
-                    IsLongFormat = result.Length > 6;
+                    SharedResourcesWrapper.IsLongFormat = result.Length > 6;
                     LogMessage("SetLongFormat", $"Get - Azimuth {result}");
-                    if (IsLongFormat == setLongFormat)
+                    if (SharedResourcesWrapper.IsLongFormat == setLongFormat)
                         LogMessage("SetLongFormat", $"Long coordinate format: {setLongFormat} ");
                 }
                 else
@@ -2077,14 +2078,14 @@ namespace ASCOM.Meade.net
             get
             {
                 CheckConnected("SlewSettleTime Get");
-                LogMessage("SlewSettleTime Get", $"{_settleTime} Seconds");
-                return _settleTime;
+                LogMessage("SlewSettleTime Get", $"{SharedResourcesWrapper.SlewSettleTime} Seconds");
+                return SharedResourcesWrapper.SlewSettleTime;
             }
             set
             {
                 CheckConnected("SlewSettleTime Set");
-                LogMessage("SlewSettleTime Set", $"Setting from {_settleTime} to {value}");
-                _settleTime = value;
+                LogMessage("SlewSettleTime Set", $"Setting from {SharedResourcesWrapper.SlewSettleTime} to {value}");
+                SharedResourcesWrapper.SlewSettleTime = value;
             }
         }
 
@@ -2481,7 +2482,7 @@ namespace ASCOM.Meade.net
                 if (value < -90)
                     throw new InvalidValueException("Declination cannot be less than -90.");
 
-                var dms = IsLongFormat ?
+                var dms = SharedResourcesWrapper.IsLongFormat ?
                     _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe) :
                     _utilities.DegreesToDM(value, "*", "", _digitsDe);
 
@@ -2537,7 +2538,7 @@ namespace ASCOM.Meade.net
                 if (value >= 24)
                     throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
-                var hms = IsLongFormat ?
+                var hms = SharedResourcesWrapper.IsLongFormat ?
                     _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa) :
                     _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',','.');
 
