@@ -4,7 +4,7 @@
 // ================
 //
 // This class is a container for all shared resources that may be needed
-// by the drivers served by the Local Server. 
+// by the drivers served by the Local Server.
 //
 // NOTES:
 //
@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Windows.Forms;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
 using ASCOM.Utilities.Interfaces;
@@ -49,7 +50,7 @@ namespace ASCOM.Meade.net
         #region single serial port connector
 
         //
-        // this region shows a way that a single serial port could be connected to by multiple 
+        // this region shows a way that a single serial port could be connected to by multiple
         // drivers.
         //
         // Connected is used to handle the connections to the port.
@@ -73,7 +74,7 @@ namespace ASCOM.Meade.net
 
         public static IProfileFactory ProfileFactory
         {
-            get => _profileFactory ?? ( _profileFactory = new ProfileFactory());
+            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
             set => _profileFactory = value;
         }
 
@@ -122,7 +123,7 @@ namespace ASCOM.Meade.net
 
         public static bool SendBool(string command, bool raw = false)
         {
-        
+
             var result = SendChar(command, raw);
 
             return result == "1";
@@ -273,7 +274,7 @@ namespace ASCOM.Meade.net
                     profileProperties.Speed = Convert.ToInt32(driverProfile.GetValue(DriverId, SpeedName, string.Empty, SpeedDefault));
                     profileProperties.Parity = driverProfile.GetValue(DriverId, ParityName, string.Empty, ParityDefault);
                     profileProperties.SendDateTime = Convert.ToBoolean(driverProfile.GetValue(DriverId, SendDateTimeName, string.Empty, SendDateTimeDefault));
-                    
+
                     profileProperties.ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(driverProfile.GetValue(DriverId, ParkedBehaviourName, string.Empty, ParkedBehaviourDefault));
                     profileProperties.ParkedAlt = double.Parse(driverProfile.GetValue(DriverId, ParkedAltName, string.Empty, ParkedAltDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.ParkedAz = double.Parse(driverProfile.GetValue(DriverId, ParkedAzimuthName, string.Empty, ParkedAzimuthDefault), NumberFormatInfo.InvariantInfo);
@@ -311,7 +312,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-        
+
         #region Multi Driver handling
 
         public static string ProductName { get; private set; } = string.Empty;
@@ -334,7 +335,7 @@ namespace ASCOM.Meade.net
         private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
         private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
-        private static IProfileFactory _profileFactory ;
+        private static IProfileFactory _profileFactory;
 
 
         /// <summary>
@@ -350,7 +351,7 @@ namespace ASCOM.Meade.net
             {
                 if (!ConnectedDevices.ContainsKey(deviceId))
                     ConnectedDevices.Add(deviceId, new DeviceHardware());
-                
+
                 if (!ConnectedDeviceIds.ContainsKey(driverId))
                     ConnectedDeviceIds.Add(driverId, new DeviceHardware());
 
@@ -363,7 +364,7 @@ namespace ASCOM.Meade.net
                         SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.DataBits = profileProperties.DataBits;
-                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits );
+                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
                         SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
@@ -493,7 +494,7 @@ namespace ASCOM.Meade.net
                 Count = 0;
             }
         }
-        
+
         public static void SetParked(bool atPark, ParkedPosition parkedPosition)
         {
             IsParked = atPark;
@@ -503,5 +504,15 @@ namespace ASCOM.Meade.net
         public static bool IsParked { get; private set; }
 
         public static ParkedPosition ParkedPosition { get; private set; }
+
+        /// <summary>
+        /// Start with <see cref="PierSide.pierUnknown"/>.
+        /// As we do not know the physical declination axis position, we have to keep track manually.
+        /// </summary>
+        public static PierSide SideOfPier { get; set; } = PierSide.pierUnknown;
+
+        public static double? TargetRightAscension { get; set; }
+
+        public static double? TargetDeclination { get; set; }
     }
 }

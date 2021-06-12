@@ -1,4 +1,5 @@
 ﻿using System;
+using ASCOM.DeviceInterface;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net.Wrapper
@@ -31,6 +32,10 @@ namespace ASCOM.Meade.net.Wrapper
         void SetParked(bool atPark, ParkedPosition parkedPosition);
         bool IsParked { get; }
         ParkedPosition ParkedPosition { get; }
+
+        PierSide SideOfPier { get; set; }
+        double? TargetRightAscension { get; set; }
+        double? TargetDeclination { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -74,7 +79,7 @@ namespace ASCOM.Meade.net.Wrapper
             return SharedResources.SendBool(command, raw);
         }
 
-        public string SendChar(string message,bool raw = false)
+        public string SendChar(string message, bool raw = false)
         {
             return SharedResources.SendChar(message, raw);
         }
@@ -112,5 +117,23 @@ namespace ASCOM.Meade.net.Wrapper
         public bool IsParked => SharedResources.IsParked;
 
         public ParkedPosition ParkedPosition => SharedResources.ParkedPosition;
+
+        public PierSide SideOfPier
+        {
+            get => SharedResources.SideOfPier;
+            set => SharedResources.SideOfPier = value;
+        }
+
+        public double? TargetRightAscension
+        {
+            get => SharedResources.TargetRightAscension;
+            set => SharedResources.TargetRightAscension = value;
+        }
+
+        public double? TargetDeclination
+        {
+            get => SharedResources.TargetDeclination;
+            set => SharedResources.TargetDeclination = value;
+        }
     }
 }

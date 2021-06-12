@@ -418,8 +418,6 @@ namespace ASCOM.Meade.net
                                 $"Connected to port {ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
 
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
-                            _targetDeclination = InvalidParameter;
-                            _targetRightAscension = InvalidParameter;
                             _tracking = true;
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
@@ -442,6 +440,11 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SetTelescopePrecision("Connect");
+
+                                // target RA, DEC and SideOfPier are set to default values
+                                SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
+                                SharedResourcesWrapper.TargetDeclination = InvalidParameter;
+                                SharedResourcesWrapper.TargetRightAscension = InvalidParameter;
 
                                 LogMessage("Connected Set", $"SendDateTime: {SendDateTime}");
                                 if (SendDateTime)
@@ -720,7 +723,7 @@ namespace ASCOM.Meade.net
                 var result = SharedResourcesWrapper.SendString("GZ");
                 LogMessage("SetLongFormat", $"Get - Azimuth {result}");
                 //:GZ# Get telescope azimuth
-                //Returns: DDD*MM.T or DDD*MM’SS#
+                //Returns: DDD*MM.T or DDD*MM'SS#
                 //The current telescope Azimuth depending on the selected precision.
 
                 IsLongFormat = result.Length > 6;
@@ -754,8 +757,8 @@ namespace ASCOM.Meade.net
             var result = SharedResourcesWrapper.SendChar("P");
             //:P# Toggles High Precsion Pointing. When High precision pointing is enabled scope will first allow the operator to center a nearby bright star before moving to the actual target.
             //Returns: <string>
-            //“HIGH PRECISION” Current setting after this command.
-            //“LOW PRECISION” Current setting after this command.
+            //"HIGH PRECISION" Current setting after this command.
+            //"LOW PRECISION" Current setting after this command.
 
             int throwAwayCharacters = "LOW PRECISION".Length - 1;
 
@@ -816,33 +819,33 @@ namespace ASCOM.Meade.net
                 case 1:
                     command = $"SM{sitename}";
                     //:SM<string>#
-                    //Set site 1’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //Set site 1's name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
                     //    Returns:
-                    //0 – Invalid
+                    //0 - Invalid
                     //1 - Valid
                     break;
                 case 2:
                     command = $"SN{sitename}";
                     //:SN<string>#
-                    //Set site 2’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //Set site 2's name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
                     //    Returns:
-                    //0 – Invalid
+                    //0 - Invalid
                     //1 - Valid
                     break;
                 case 3:
                     command = $"SO{sitename}";
                     //:SO<string>#
-                    //Set site 3’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //Set site 3's name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
                     //    Returns:
-                    //0 – Invalid
+                    //0 - Invalid
                     //1 - Valid
                     break;
                 case 4:
                     command = $"SP{sitename}";
                     //:SP<string>#
-                    //Set site 4’s name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
+                    //Set site 4's name to be<string>.LX200s only accept 3 character strings. Other scopes accept up to 15 characters.
                     //    Returns:
-                    //0 – Invalid
+                    //0 - Invalid
                     //1 - Valid
                     break;
                 default:
@@ -867,22 +870,22 @@ namespace ASCOM.Meade.net
                     return SharedResourcesWrapper.SendString("GM");
                 //:GM# Get Site 1 Name
                 //Returns: <string>#
-                //A ‘#’ terminated string with the name of the requested site.
+                //A '#' terminated string with the name of the requested site.
                 case 2:
                     return SharedResourcesWrapper.SendString("GN");
                 //:GN# Get Site 2 Name
                 //Returns: <string>#
-                //A ‘#’ terminated string with the name of the requested site.
+                //A '#' terminated string with the name of the requested site.
                 case 3:
                     return SharedResourcesWrapper.SendString("GO");
                 //:GO# Get Site 3 Name
                 //Returns: <string>#
-                //A ‘#’ terminated string with the name of the requested site.
+                //A '#' terminated string with the name of the requested site.
                 case 4:
                     return SharedResourcesWrapper.SendString("GP");
                 //:GP# Get Site 4 Name
                 //Returns: <string>#
-                //A ‘#’ terminated string with the name of the requested site.
+                //A '#' terminated string with the name of the requested site.
                 default:
                     throw new ArgumentOutOfRangeException(nameof(site), site,
                         Resources.Telescope_GetSiteName_Site_out_of_range);
@@ -1040,7 +1043,7 @@ namespace ASCOM.Meade.net
                         //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
                         var result = SharedResourcesWrapper.SendString("GA");
                         //:GA# Get Telescope Altitude
-                        //Returns: sDD* MM# or sDD*MM’SS#
+                        //Returns: sDD* MM# or sDD*MM'SS#
                         //The current scope altitude. The returned format depending on the current precision setting.
 
                         var alt = _utilities.DMSToDegrees(result);
@@ -1147,7 +1150,7 @@ namespace ASCOM.Meade.net
 
                         var result = SharedResourcesWrapper.SendString("GZ");
                         //:GZ# Get telescope azimuth
-                        //Returns: DDD*MM#T or DDD*MM’SS#
+                        //Returns: DDD*MM#T or DDD*MM'SS#
                         //The current telescope Azimuth depending on the selected precision.
 
                         double az = _utilities.DMSToDegrees(result);
@@ -1347,7 +1350,7 @@ namespace ASCOM.Meade.net
 
                     var result = SharedResourcesWrapper.SendString("GD");
                     //:GD# Get Telescope Declination.
-                    //Returns: sDD*MM# or sDD*MM’SS#
+                    //Returns: sDD*MM# or sDD*MM'SS#
                     //Depending upon the current precision setting for the telescope.
 
                     double declination = _utilities.DMSToDegrees(result);
@@ -1449,7 +1452,7 @@ namespace ASCOM.Meade.net
 
             if (!value.InRange(0, 15.0417))
             {
-                throw new InvalidValueException(propertyName, value.ToString(CultureInfo.CurrentCulture), $"{0.ToString(CultureInfo.CurrentCulture)} to {15.0417.ToString(CultureInfo.CurrentCulture)}”/sec");
+                throw new InvalidValueException(propertyName, value.ToString(CultureInfo.CurrentCulture), $"{0.ToString(CultureInfo.CurrentCulture)} to {15.0417.ToString(CultureInfo.CurrentCulture)}\"/sec");
             }
 
             LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString(CultureInfo.CurrentCulture)} arc seconds/second ({value.ToString(CultureInfo.CurrentCulture)} degrees/second)");
@@ -1457,7 +1460,7 @@ namespace ASCOM.Meade.net
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
-            //sidereal speed(approx 15.0417”/sec)[Autostar II only]
+            //sidereal speed(approx 15.0417"/sec)[Autostar II only]
             //Returns: Nothing
 
             //info from RickB says that 15.04107 is a better value for
@@ -1583,7 +1586,7 @@ namespace ASCOM.Meade.net
                             //Returns: Nothing
                             _movingPrimary = true;
                             // in principle we could calculate the current side of pier, but unknown is the safer option.
-                            _pierSide = PierSide.pierUnknown;
+                            SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind("Mw");
@@ -1591,7 +1594,7 @@ namespace ASCOM.Meade.net
                             //Returns: Nothing
                             _movingPrimary = true;
                             // in principle we could calculate the current side of pier, but unknown is the safer option.
-                            _pierSide = PierSide.pierUnknown;
+                            SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
                             break;
                     }
                     break;
@@ -1672,7 +1675,7 @@ namespace ASCOM.Meade.net
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
             SharedResourcesWrapper.SetParked(true, parkedPosition);
             SharedResourcesWrapper.SendBlind("hP");
-            //:hP# Autostar, Autostar II and LX 16”Slew to Park Position
+            //:hP# Autostar, Autostar II and LX 16" Slew to Park Position
             //Returns: Nothing
         }
 
@@ -1728,8 +1731,8 @@ namespace ASCOM.Meade.net
                         //:MgwDDDD#
                         //Guide telescope in the commanded direction(nsew) for the number of milliseconds indicated by the unsigned number
                         //passed in the command.These commands support serial port driven guiding.
-                        //Returns – Nothing
-                        //LX200 – Not Supported
+                        //Returns - Nothing
+                        //LX200   - Not Supported
                         _utilities.WaitForMilliseconds(duration);
                     }
                     else
@@ -1851,11 +1854,6 @@ namespace ASCOM.Meade.net
             throw new MethodNotImplementedException("SetPark");
         }
 
-        /// <summary>
-        /// Start with <see cref="PierSide.pierUnknown"/>.
-        /// As we do not know the physical declination axis position, we have to keep track manually.
-        /// </summary>
-        private PierSide _pierSide = PierSide.pierUnknown;
         public PierSide SideOfPier
         {
             get
@@ -1864,7 +1862,7 @@ namespace ASCOM.Meade.net
                 {
                     // while mount is slewing return unknown, this is required since
                     // DoSlewAsync updates _pierSide before slew is finished
-                    var pierSide = Slewing ? PierSide.pierUnknown : _pierSide;
+                    var pierSide = Slewing ? PierSide.pierUnknown : SharedResourcesWrapper.SideOfPier;
 
                     LogMessage("SideOfPier", "Get - " + pierSide);
                     return pierSide;
@@ -1996,7 +1994,7 @@ namespace ASCOM.Meade.net
                 //:StsDD*MM#
                 //Sets the current site latitude to sDD* MM#
                 //Returns:
-                //0 – Invalid
+                //0 - Invalid
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site latitude.");
@@ -2063,9 +2061,9 @@ namespace ASCOM.Meade.net
 
                 var result = SharedResourcesWrapper.SendChar(commandstring);
                 //:SgDDD*MM#
-                //Set current site’s longitude to DDD*MM an ASCII position string
+                //Set current site's longitude to DDD*MM an ASCII position string
                 //Returns:
-                //0 – Invalid
+                //0 - Invalid
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site longitude.");
@@ -2172,7 +2170,7 @@ namespace ASCOM.Meade.net
                                 {
                                     // Update side of pier to destination side of pier
                                     // Assumption: Mount will do meridian flip if required
-                                    _pierSide = DestinationSideOfPier(TargetRightAscension, TargetDeclination);
+                                    SharedResourcesWrapper.SideOfPier = DestinationSideOfPier(TargetRightAscension, TargetDeclination);
                                 }
 
                                 SetSlewingMinEndTime();
@@ -2201,11 +2199,11 @@ namespace ASCOM.Meade.net
                         break;
                     case false:
                         var maResponse = SharedResourcesWrapper.SendChar("MA");
-                        //:MA# Autostar, LX 16”, Autostar II – Slew to target Alt and Az
+                        //:MA# Autostar, LX 16", Autostar II - Slew to target Alt and Az
                         //Returns:
                         //0 - No fault
-                        //1 – Fault
-                        //    LX200 – Not supported
+                        //1 - Fault
+                        //LX200 - Not supported
 
                         if (maResponse == "1")
                         {
@@ -2345,8 +2343,8 @@ namespace ASCOM.Meade.net
             }
             //:D# Requests a string of bars indicating the distance to the current target location.
             //Returns:
-            //LX200's – a string of bar characters indicating the distance.
-            //Autostars and Autostar II – a string containing one bar until a slew is complete, then a null string is returned.
+            //LX200's - a string of bar characters indicating the distance.
+            //Autostars and Autostar II - a string containing one bar until a slew is complete, then a null string is returned.
 
             bool isSlewing = false;
             try
@@ -2433,41 +2431,42 @@ namespace ASCOM.Meade.net
 
             // At least the classic LX200 low precision might not slew to the exact target position
             // This Requires to retrieve the aimed target ra de from the telescope
+            double targetRA = SharedResourcesWrapper.TargetRightAscension ?? InvalidParameter;
             double ra = RightAscension;
-            if (Math.Abs(_targetRightAscension - InvalidParameter) > 0.1 &&
-                _utilities.HoursToHMS(ra, ":", ":", ":", _digitsRa) != _utilities.HoursToHMS(_targetRightAscension, ":", ":", ":", _digitsRa))
+            if (Math.Abs(targetRA - InvalidParameter) > 0.1 &&
+                _utilities.HoursToHMS(ra, ":", ":", ":", _digitsRa) != _utilities.HoursToHMS(targetRA, ":", ":", ":", _digitsRa))
             {
-                LogMessage("SyncToTarget", $"differ RA real {ra} targeted {_targetRightAscension}");
-                _targetRightAscension = ra;
+                LogMessage("SyncToTarget", $"differ RA real {ra} targeted {targetRA}");
+                SharedResourcesWrapper.TargetRightAscension = ra;
             }
+            double targetDEC = SharedResourcesWrapper.TargetDeclination ?? InvalidParameter;
             double de = Declination;
-            if (Math.Abs(_targetDeclination - InvalidParameter) > 0.1 &&
-                _utilities.DegreesToDMS(de, "*", ":", ":", _digitsDe) != _utilities.DegreesToDMS(_targetDeclination, "*", ":", ":", _digitsDe))
+            if (Math.Abs(targetDEC - InvalidParameter) > 0.1 &&
+                _utilities.DegreesToDMS(de, "*", ":", ":", _digitsDe) != _utilities.DegreesToDMS(targetDEC, "*", ":", ":", _digitsDe))
             {
-                LogMessage("SyncToTarget", $"differ DE real {de} targeted {_targetDeclination}");
-                _targetDeclination = de;
+                LogMessage("SyncToTarget", $"differ DE real {de} targeted {targetDEC}");
+                SharedResourcesWrapper.TargetDeclination = de;
             }
         }
 
-        private double _targetDeclination = InvalidParameter;
         public double TargetDeclination
         {
             get
             {
-                if (_targetDeclination.Equals(InvalidParameter))
+                var targetDeclination = SharedResourcesWrapper.TargetDeclination ?? InvalidParameter;
+                if (targetDeclination.Equals(InvalidParameter))
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gd#", "#");
                 ////:Gd# Get Currently Selected Object/Target Declination
-                ////Returns: sDD* MM# or sDD*MM’SS#
+                ////Returns: sDD* MM# or sDD*MM'SS#
                 ////Depending upon the current precision setting for the telescope.
 
                 //double targetDec = DmsToDouble(result);
 
                 //return targetDec;
-
-                LogMessage("TargetDeclination Get", $"{_targetDeclination}");
-                return _targetDeclination;
+                LogMessage("TargetDeclination Get", $"{targetDeclination}");
+                return targetDeclination;
             }
             set
             {
@@ -2496,23 +2495,23 @@ namespace ASCOM.Meade.net
                 //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
                 //Returns:
                 //1 - Dec Accepted
-                //0 – Dec invalid
+                //0 - Dec invalid
 
                 if (result == "0")
                 {
                     throw new InvalidOperationException("Target declination invalid");
                 }
 
-                _targetDeclination = _utilities.DMSToDegrees(dms);
+                SharedResourcesWrapper.TargetDeclination = _utilities.DMSToDegrees(dms);
             }
         }
 
-        private double _targetRightAscension = InvalidParameter;
         public double TargetRightAscension
         {
             get
             {
-                if (_targetRightAscension.Equals(InvalidParameter))
+                var targetRightAscension = SharedResourcesWrapper.TargetRightAscension ?? InvalidParameter;
+                if (targetRightAscension.Equals(InvalidParameter))
                     throw new InvalidOperationException("Target not set");
 
                 //var result = SerialPort.CommandTerminated(":Gr#", "#");
@@ -2523,8 +2522,8 @@ namespace ASCOM.Meade.net
                 //double targetRa = HmsToDouble(result);
                 //return targetRa;
 
-                LogMessage("TargetRightAscension Get", $"{_targetRightAscension}");
-                return _targetRightAscension;
+                LogMessage("TargetRightAscension Get", $"{targetRightAscension}");
+                return targetRightAscension;
             }
             set
             {
@@ -2549,13 +2548,13 @@ namespace ASCOM.Meade.net
                 //:SrHH:MM:SS#
                 //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
                 //    Returns:
-                //0 – Invalid
+                //0 - Invalid
                 //1 - Valid
 
                 if (response == "0")
                     throw new InvalidOperationException("Failed to set TargetRightAscension.");
 
-                _targetRightAscension = _utilities.HMSToHours(hms);
+                SharedResourcesWrapper.TargetRightAscension = _utilities.HMSToHours(hms);
             }
         }
 
@@ -2735,7 +2734,7 @@ namespace ASCOM.Meade.net
                     //:SLHH:MM:SS#
                     //Set the local Time
                     //Returns:
-                    //0 – Invalid
+                    //0 - Invalid
                     //1 - Valid
                     if (timeResult != "1")
                     {
@@ -2747,8 +2746,8 @@ namespace ASCOM.Meade.net
                     //:SCMM/DD/YY#
                     //Change Handbox Date to MM/DD/YY
                     //Returns: <D><string>
-                    //D = ‘0’ if the date is invalid.The string is the null string.
-                    //D = ‘1’ for valid dates and the string is “Updating Planetary Data#                       #”
+                    //D = '0' if the date is invalid. The string is the null string.
+                    //D = '1' for valid dates and the string is "Updating Planetary Data#                       #"
                     //Note: For Autostar II this is the UTC data!
                     if (dateResult != "1")
                     {
@@ -2796,7 +2795,7 @@ namespace ASCOM.Meade.net
             //Bypass handbox entry of daylight savings, date and time.Use the values supplied in this command.This feature is
             //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
             //metal domes. This command must be issued while the telescope is waiting at the initial daylight savings prompt.
-            //Returns: 1 – if command was accepted.
+            //Returns: 1 - if command was accepted.
             return result == "1";
         }
 

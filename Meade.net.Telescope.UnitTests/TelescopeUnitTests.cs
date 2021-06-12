@@ -100,9 +100,14 @@ namespace Meade.net.Telescope.UnitTests
                 SameDevice = 1
             };
 
-            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
+            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo);
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
+
+            _sharedResourcesWrapperMock
+                .SetupProperty(x => x.SideOfPier)
+                .SetupProperty(x => x.TargetRightAscension)
+                .SetupProperty(x => x.TargetDeclination);
 
             _astroMathsMock = new Mock<IAstroMaths>();
 
@@ -1230,6 +1235,10 @@ namespace Meade.net.Telescope.UnitTests
         public void DestinationSideOfPier_WhenHASiderealTimeDiffIsNotNull_ThenSideOfPierIsCalculated(double ra, double dec, double siderealTime, PierSide expectedDSOP)
         {
             // given
+
+            // deterministic start
+            _sharedResourcesWrapperMock.Object.SideOfPier = PierSide.pierUnknown;
+
             // SideralTime uses ConditionRA to normalize to [0..24h), so we use it to mock the property
             _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns(siderealTime);
 
