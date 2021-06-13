@@ -43,7 +43,7 @@ namespace ASCOM.Meade.net
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private readonly IUtil _utilities;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -304,7 +304,7 @@ namespace ASCOM.Meade.net
                 var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
 
                 var steps = Math.Abs(position) + backlashCompensationSteps;
-                
+
 
                 MoveFocuser(direction, steps);
 
@@ -343,11 +343,11 @@ namespace ASCOM.Meade.net
             //:FS# Set Focus speed to slowest setting
             //Returns: Nothing
 
-            //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+            //:F<n># Autostar, Autostar II - set focuser speed to <n> where <n> is an ASCII digit 1..4
             //Returns: Nothing
-            //All others – Not Supported
+            //All others - Not Supported
             _utilities.WaitForMilliseconds(100);
-            
+
             PerformFocuserMove(directionOut);
 
             _utilities.WaitForMilliseconds(steps);
@@ -418,7 +418,7 @@ namespace ASCOM.Meade.net
         #region ASCOM Registration
 
         // Register or unregister driver for ASCOM. This is harmless if already
-        // registered or unregistered. 
+        // registered or unregistered.
         //
         /// <summary>
         /// Register or unregister the driver with the ASCOM Platform.
@@ -488,7 +488,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-        
+
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
