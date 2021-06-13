@@ -1881,6 +1881,43 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.AccessorSet, Is.True);
         }
 
+        [TestCase(0, 34, PierSide.pierEast)]
+        [TestCase(12, 34, PierSide.pierEast)]
+        [TestCase(23.4, 34, PierSide.pierWest)]
+        public void SideOfPier_WhenSecondConnectionMade_ThenValueIsPreserved(double ra, double dec, PierSide expectedPierSide)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _utilMock.Setup(x => x.HMSToHours(null)).Returns(ra);
+            _utilMock.Setup(x => x.DMSToDegrees(null)).Returns(dec);
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
+            _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns<double>(pRA => pRA < 0 ? pRA + 24 : pRA >= 24 ? pRA - 24 : pRA);
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            _telescope.SlewToCoordinates(ra, dec);
+            var sideOfPierAfterSlew = _telescope.SideOfPier;
+
+            Assert.That(sideOfPierAfterSlew, Is.EqualTo(expectedPierSide));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(secondTelescopeInstance.SideOfPier, Is.EqualTo(sideOfPierAfterSlew));
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
+            _utilMock.Verify(x => x.HMSToHours(null), Times.Once);
+            _utilMock.Verify(x => x.DMSToDegrees(null), Times.AtLeast(2));
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
+            _astroUtilsMock.Verify(x => x.ConditionRA(It.IsAny<double>()), Times.Once);
+        }
+
         delegate void NovasSiderealTimeDelegate(double jdHigh, double jdLow, double jdDelta, GstType gstType, Method method, Accuracy accuracy, ref double sideralTime);
 
         /// <summary>
@@ -2399,7 +2436,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(0d)]
         [TestCase(45d)]
         [TestCase(90d)]
-        public void TargetDeclination_Set_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(double targetDeclination)
+        public void TargetDeclination_Set_WhenSecondConnectionMade_ThenValueIsPreserved(double targetDeclination)
         {
             var targetDeclinationDMS = targetDeclination + "DMS";
             var sign = targetDeclination >= 0 ? "+" : string.Empty;
@@ -2520,7 +2557,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(6d)]
         [TestCase(12d)]
         [TestCase(23.599d)]
-        public void TargetRightAscension_Set_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(double targetRightAscension)
+        public void TargetRightAscension_Set_WhenSecondConnectionMade_ThenValueIsPreserved(double targetRightAscension)
         {
             var targetRightAscensionHMS = targetRightAscension + "HMS";
             var command = $"Sr{targetRightAscensionHMS}";
