@@ -1020,6 +1020,40 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.Never);
         }
 
+        [Test]
+        public void IsLongFormat_WhenHighPrecisionNotSupportedAndSecondConnectionMade_ThenDigitPrecisionValuesArePreserved()
+        {
+            var ra = 12d;
+            var dec = 34d;
+
+            _utilMock.Setup(x => x.HoursToHM(ra, ":", "", 1)).Returns(ra + "HM");
+            _utilMock.Setup(x => x.DegreesToDM(dec, "*", "", 0)).Returns(dec + "DM");
+
+            ConnectTelescope(TelescopeList.LX200CLASSIC);
+
+            _telescope.TargetRightAscension = ra;
+            _telescope.TargetDeclination = dec;
+
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            secondTelescopeInstance.TargetRightAscension = ra;
+            secondTelescopeInstance.TargetDeclination = dec;
+
+            _utilMock.Verify(x => x.HoursToHM(ra, ":", "", 1), Times.Exactly(2));
+            _utilMock.Verify(x => x.DegreesToDM(dec, "*", "", 0), Times.Exactly(2));
+            _utilMock.Verify(x => x.HoursToHMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
+            _utilMock.Verify(x => x.DegreesToDMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
+        }
+
         [TestCase(0)]
         [TestCase(1)]
         [TestCase(2)]
