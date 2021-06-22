@@ -29,7 +29,7 @@ namespace Meade.net.UnitTests
         [Test]
         public void CheckThatSerialPortIsSetToUseMock()
         {
-            Assert.That(SharedResources.SharedSerial,Is.EqualTo(_serialMock.Object));
+            Assert.That(SharedResources.SharedSerial, Is.EqualTo(_serialMock.Object));
         }
 
         [TestCase(true, "Test")]
@@ -160,7 +160,7 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
-            
+
             string BacklashCompensationDefault = "3000";
             string ReverseFocuserDiectionDefault = "true";
 
@@ -239,15 +239,15 @@ namespace Meade.net.UnitTests
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
             var profileProperties = SharedResources.ReadProfile();
-            
+
             Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
 
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
 
             Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
-            
+
             Assert.That(profileProperties.GuideRateArcSecondsPerSecond,
-                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));           
+                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
 
@@ -423,7 +423,7 @@ namespace Meade.net.UnitTests
 
             string serialPortReturn = string.Empty;
 
-            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { 
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => {
                 serialPortReturn = string.Empty;
                 throw new Exception("Testerror");
             });

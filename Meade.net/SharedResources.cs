@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
+using System.Threading;
 using System.Windows.Forms;
 using ASCOM.DeviceInterface;
 using ASCOM.Meade.net.Wrapper;
@@ -245,7 +246,7 @@ namespace ASCOM.Meade.net
         private const string HandShakeDefault = "None";
         private const string ParityDefault = "None";
         private const string SendDateTimeDefault = "false";
-        private static string ParkedBehaviourDefault = "No Coordinates";
+        private const string ParkedBehaviourDefault = "No Coordinates";
         private const string ParkedAltDefault = "0";
         private const string ParkedAzimuthDefault = "180";
 
@@ -501,22 +502,78 @@ namespace ASCOM.Meade.net
             ParkedPosition = parkedPosition;
         }
 
-        public static bool IsParked { get; private set; }
+        private static readonly ThreadSafeBool _isParked = false;
+        public static bool IsParked
+        {
+            get => _isParked;
+            private set => _isParked.Set(value);
+        }
 
-        public static ParkedPosition ParkedPosition { get; private set; }
+        private static ParkedPosition _parkedPosition;
+        public static ParkedPosition ParkedPosition
+        {
+            get => _parkedPosition;
+            private set => Interlocked.Exchange(ref _parkedPosition, value);
+        }
 
+        private static readonly ThreadSafeEnum<PierSide> _sideOfPier = PierSide.pierUnknown;
         /// <summary>
         /// Start with <see cref="PierSide.pierUnknown"/>.
         /// As we do not know the physical declination axis position, we have to keep track manually.
         /// </summary>
-        public static PierSide SideOfPier { get; internal set; } = PierSide.pierUnknown;
+        public static PierSide SideOfPier
+        {
+            get => _sideOfPier;
+            internal set => _sideOfPier.Set(value);
+        }
 
-        public static double? TargetRightAscension { get; internal set; }
+        private static readonly ThreadSafeNullableDouble _targetRightAscension = null as double?;
+        public static double? TargetRightAscension
+        {
+            get => _targetRightAscension;
+            internal set => _targetRightAscension.Set(value);
+        }
 
-        public static double? TargetDeclination { get; internal set; }
+        private static readonly ThreadSafeNullableDouble _targetDeclination = null as double?;
+        public static double? TargetDeclination
+        {
+            get => _targetDeclination;
+            internal set => _targetDeclination.Set(value);
+        }
 
-        public static short SlewSettleTime { get; internal set; }
+        private static int _slewSettleTime;
+        public static short SlewSettleTime
+        {
+            get => Convert.ToInt16(_slewSettleTime);
+            internal set => Interlocked.Exchange(ref _slewSettleTime, value);
+        }
 
-        public static bool IsLongFormat { get; internal set; }
+        private static readonly ThreadSafeBool _isLongFormat = false;
+        public static bool IsLongFormat
+        {
+            get => _isLongFormat;
+            internal set => _isLongFormat.Set(value);
+        }
+
+        private static readonly ThreadSafeBool _movingPrimary = false;
+        public static bool MovingPrimary
+        {
+            get => _movingPrimary;
+            internal set => _movingPrimary.Set(value);
+        }
+
+        private static readonly ThreadSafeBool _movingSecondary = false;
+        public static bool MovingSecondary
+        {
+            get => _movingSecondary;
+            internal set => _movingSecondary.Set(value);
+        }
+
+        private static readonly ThreadSafeDateTime _earliestNonSlewingTime = DateTime.MinValue;
+        public static DateTime EarliestNonSlewingTime
+        {
+            get => _earliestNonSlewingTime;
+            internal set => _earliestNonSlewingTime.Set(value);
+        }
     }
 }

@@ -938,8 +938,8 @@ namespace ASCOM.Meade.net
             //:Q# Halt all current slewing
             //Returns:Nothing
 
-            _movingPrimary = false;
-            _movingSecondary = false;
+            SharedResourcesWrapper.MovingPrimary = false;
+            SharedResourcesWrapper.MovingSecondary = false;
             SetSlewingMinEndTime();
         }
 
@@ -1522,9 +1522,6 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private bool _movingPrimary;
-        private bool _movingSecondary;
-
         public void MoveAxis(TelescopeAxes axis, double rate)
         {
             LogMessage("MoveAxis", $"Axis={axis} rate={rate}");
@@ -1573,7 +1570,7 @@ namespace ASCOM.Meade.net
                                 SetSlewingMinEndTime();
                             }
 
-                            _movingPrimary = false;
+                            SharedResourcesWrapper.MovingPrimary = false;
                             SharedResourcesWrapper.SendBlind("Qe");
                             //:Qe# Halt eastward Slews
                             //Returns: Nothing
@@ -1585,17 +1582,13 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind("Me");
                             //:Me# Move Telescope East at current slew rate
                             //Returns: Nothing
-                            _movingPrimary = true;
-                            // in principle we could calculate the current side of pier, but unknown is the safer option.
-                            SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
+                            SharedResourcesWrapper.MovingPrimary = true;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind("Mw");
                             //:Mw# Move Telescope West at current slew rate
                             //Returns: Nothing
-                            _movingPrimary = true;
-                            // in principle we could calculate the current side of pier, but unknown is the safer option.
-                            SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
+                            SharedResourcesWrapper.MovingPrimary = true;
                             break;
                     }
                     break;
@@ -1607,7 +1600,7 @@ namespace ASCOM.Meade.net
                             {
                                 SetSlewingMinEndTime();
                             }
-                            _movingSecondary = false;
+                            SharedResourcesWrapper.MovingSecondary = false;
                             SharedResourcesWrapper.SendBlind("Qn");
                             //:Qn# Halt northward Slews
                             //Returns: Nothing
@@ -1619,13 +1612,13 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind("Mn");
                             //:Mn# Move Telescope North at current slew rate
                             //Returns: Nothing
-                            _movingSecondary = true;
+                            SharedResourcesWrapper.MovingSecondary = true;
                             break;
                         case ComparisonResult.Lower:
                             SharedResourcesWrapper.SendBlind("Ms");
                             //:Ms# Move Telescope South at current slew rate
                             //Returns: Nothing
-                            _movingSecondary = true;
+                            SharedResourcesWrapper.MovingSecondary = true;
                             break;
                     }
                     break;
@@ -1695,11 +1688,11 @@ namespace ASCOM.Meade.net
                 _isGuiding = true;
                 try
                 {
-                    if (_movingPrimary &&
+                    if (SharedResourcesWrapper.MovingPrimary &&
                         (direction == GuideDirections.guideEast || direction == GuideDirections.guideWest))
                         throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
 
-                    if (_movingSecondary &&
+                    if (SharedResourcesWrapper.MovingSecondary &&
                         (direction == GuideDirections.guideNorth || direction == GuideDirections.guideSouth))
                         throw new InvalidOperationException("Unable to PulseGuide while moving same axis.");
 
@@ -2279,10 +2272,8 @@ namespace ASCOM.Meade.net
             if (_isGuiding)
                 return false;
 
-            return _movingPrimary || _movingSecondary;
+            return SharedResourcesWrapper.MovingPrimary || SharedResourcesWrapper.MovingSecondary;
         }
-
-        private DateTime _earliestNonSlewingTime = DateTime.MinValue;
 
         public bool Slewing
         {
@@ -2292,7 +2283,7 @@ namespace ASCOM.Meade.net
 
                 if (isSlewing)
                     SetSlewingMinEndTime();
-                else if (_clock.UtcNow < _earliestNonSlewingTime)
+                else if (_clock.UtcNow < SharedResourcesWrapper.EarliestNonSlewingTime)
                     isSlewing = true;
 
                 LogMessage("Slewing", $"Result = {isSlewing}");
@@ -2302,7 +2293,7 @@ namespace ASCOM.Meade.net
 
         private void SetSlewingMinEndTime()
         {
-            _earliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
+            SharedResourcesWrapper.EarliestNonSlewingTime = _clock.UtcNow + GetTotalSlewingSettleTime();
         }
 
         private TimeSpan GetTotalSlewingSettleTime()

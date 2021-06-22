@@ -146,6 +146,10 @@
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TelescopeList.cs" />
+    <Compile Include="ThreadSafeBool.cs" />
+    <Compile Include="ThreadSafeDateTime.cs" />
+    <Compile Include="ThreadSafeEnum.cs" />
+    <Compile Include="ThreadSafeNullableDouble.cs" />
     <Compile Include="Win32Utilities.cs" />
     <Compile Include="Wrapper\IProfileWrapper.cs" />
     <Compile Include="Wrapper\SharedResourcesWrapper.cs" />

@@ -40,6 +40,12 @@ namespace ASCOM.Meade.net.Wrapper
         short SlewSettleTime { get; set; }
 
         bool IsLongFormat { get; set; }
+
+        bool MovingPrimary { get; set; }
+
+        bool MovingSecondary { get; set; }
+
+        DateTime EarliestNonSlewingTime { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -150,6 +156,24 @@ namespace ASCOM.Meade.net.Wrapper
         {
             get => SharedResources.IsLongFormat;
             set => SharedResources.IsLongFormat = value;
+        }
+
+        public bool MovingPrimary
+        {
+            get => SharedResources.MovingPrimary;
+            set => SharedResources.MovingPrimary = value;
+        }
+
+        public bool MovingSecondary
+        {
+            get => SharedResources.MovingSecondary;
+            set => SharedResources.MovingSecondary = value;
+        }
+
+        public DateTime EarliestNonSlewingTime
+        {
+            get => SharedResources.EarliestNonSlewingTime;
+            set => SharedResources.EarliestNonSlewingTime = value;
         }
     }
 }

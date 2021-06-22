@@ -1004,20 +1004,28 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.AtLeastOnce);
         }
 
-        [TestCase("High", false, true)]
-        [TestCase("High", true, true)]
-        [TestCase("Low", false, false)]
-        [TestCase("Low", true, false)]
-        public void Precision_Set_WhenSecondConnectionMade_ThenTelescopePrecisionNotChanged(string desiredPresision, bool telescopePrecision, bool finalPrecision)
+        [TestCase("High")]
+        [TestCase("Low")]
+        public void Precision_Set_WhenSecondConnectionMade_ThenTelescopePrecisionNotChanged(string desiredPresision)
         {
+            var isLongFormat = desiredPresision == "High"
+                || (desiredPresision == "Low"
+                        ? false
+                        : throw new ArgumentOutOfRangeException(nameof(desiredPresision), desiredPresision, "Should be High or Low"));
+            _sharedResourcesWrapperMock.SetupProperty(x => x.IsLongFormat, isLongFormat);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GR", false)).Returns(() => _testProperties.telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(_testProperties.telescopeRaResult)).Returns(() => _testProperties.rightAscension);
+
             _profileProperties.Precision = desiredPresision;
 
             _connectionInfo.SameDevice = 2;
             //_connectionInfo.Connections = 2;
 
+
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.IsLongFormat, Times.Once);
         }
 
         [Test]
@@ -1687,6 +1695,9 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth, TelescopeAxes.axisSecondary)]
         public void PulseGuide_WhenMovingAxisAndPulseGuideAttempted_ThenThrowsExpectedException(GuideDirections direction, TelescopeAxes axes)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns("");
 
             var duration = 0;
@@ -1697,6 +1708,8 @@ namespace Meade.net.Telescope.UnitTests
             var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
 
             Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide while moving same axis."));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingPrimary, Is.EqualTo(axes == TelescopeAxes.axisPrimary));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingSecondary, Is.EqualTo(axes == TelescopeAxes.axisSecondary));
         }
 
         [TestCase(GuideDirections.guideEast)]
@@ -2909,6 +2922,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(15, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:25", false)]
         public void Slewing_WhenTelescopeIsSlewing_ThenReturnsExpectedValueForSettleTime(short settleTime, short profileSettleTime, string startSlewing, string endSlewing, bool isSlewing)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
             _profileProperties.SettleTime = profileSettleTime;
 
             var timescalled = 0;
@@ -2979,6 +2993,10 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-1, TelescopeAxes.axisSecondary)]
         public void Slewing_WhenTelescopeIsMoving_ThenDoesNotSendCommandAndReturnsTrue(int rate, TelescopeAxes axis)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
+
             ConnectTelescope();
 
             _telescope.MoveAxis(axis, rate);
@@ -2986,6 +3004,9 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.Slewing;
 
             Assert.That(result, Is.True);
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingPrimary, Is.EqualTo(axis == TelescopeAxes.axisPrimary));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingSecondary, Is.EqualTo(axis == TelescopeAxes.axisSecondary));
+
             _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.Never);
         }
 
@@ -3005,6 +3026,11 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-1, TelescopeAxes.axisSecondary, 10, 20, true, true)]
         public void Slewing_WhenTelescopeStops_ThenWaitsForSettleTime(int rate, TelescopeAxes axis, short profileSettleTime, short driverSettleTime, bool expectedResultInWaitingPeriod, bool afterProfileSettleTimeUp)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.SlewSettleTime);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
+
             _profileProperties.SettleTime = profileSettleTime;
 
             DateTime currentTime = MakeTime("2021-01-23T22:02:10");
@@ -3022,17 +3048,17 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.MoveAxis(axis, 0);
 
-            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+            currentTime += TimeSpan.FromSeconds(profileSettleTime / 2);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.EqualTo(expectedResultInWaitingPeriod));
 
-            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+            currentTime += TimeSpan.FromSeconds(profileSettleTime / 2);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.EqualTo(afterProfileSettleTimeUp));
 
-            currentTime = currentTime + TimeSpan.FromSeconds(driverSettleTime);
+            currentTime += TimeSpan.FromSeconds(driverSettleTime);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.False);
