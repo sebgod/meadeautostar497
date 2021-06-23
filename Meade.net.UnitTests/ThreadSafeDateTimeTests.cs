@@ -3,16 +3,13 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Meade.net.UnitTests
 {
     public class ThreadSafeDateTimeTests
     {
         [TestCaseSource(nameof(DateTimeSource))]
-        public void WhenConvertedValueIsSame(DateTime value)
+        public void When_Assigned_ThenValueIsSame(DateTime value)
         {
             // given
             ThreadSafeDateTime sut = value;
@@ -25,10 +22,10 @@ namespace Meade.net.UnitTests
         }
 
         [TestCaseSource(nameof(DateTimeSetSource))]
-        public void WhenSetValueIsChanged(DateTime value, DateTime setValue)
+        public void When_SetValue_ThenValueIsUpdated(DateTime initialValue, DateTime setValue)
         {
             // given
-            ThreadSafeDateTime sut = value;
+            ThreadSafeDateTime sut = initialValue;
 
             // when
             sut.Set(setValue);

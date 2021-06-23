@@ -1,11 +1,6 @@
 ﻿using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Meade.net.UnitTests
 {
@@ -14,7 +9,7 @@ namespace Meade.net.UnitTests
         [TestCase(PierSide.pierUnknown)]
         [TestCase(PierSide.pierEast)]
         [TestCase(PierSide.pierWest)]
-        public void WhenConvertedValueIsSame(PierSide value)
+        public void When_Assigned_ThenValueIsSame(PierSide value)
         {
             // given
             ThreadSafeEnum<PierSide> sut = value;
@@ -27,18 +22,18 @@ namespace Meade.net.UnitTests
         }
 
         [TestCase(PierSide.pierUnknown, PierSide.pierUnknown)]
-        [TestCase(PierSide.pierUnknown, PierSide.pierUnknown)]
-        [TestCase(PierSide.pierUnknown, PierSide.pierUnknown)]
+        [TestCase(PierSide.pierUnknown, PierSide.pierEast)]
+        [TestCase(PierSide.pierUnknown, PierSide.pierWest)]
         [TestCase(PierSide.pierEast, PierSide.pierUnknown)]
-        [TestCase(PierSide.pierEast, PierSide.pierWest)]
         [TestCase(PierSide.pierEast, PierSide.pierEast)]
+        [TestCase(PierSide.pierEast, PierSide.pierWest)]
         [TestCase(PierSide.pierWest, PierSide.pierUnknown)]
-        [TestCase(PierSide.pierWest, PierSide.pierWest)]
         [TestCase(PierSide.pierWest, PierSide.pierEast)]
-        public void WhenSetValueIsChanged(PierSide value, PierSide setValue)
+        [TestCase(PierSide.pierWest, PierSide.pierWest)]
+        public void When_SetValue_ThenValueIsUpdated(PierSide initialValue, PierSide setValue)
         {
             // given
-            ThreadSafeEnum<PierSide> sut = value;
+            ThreadSafeEnum<PierSide> sut = initialValue;
 
             // when
             sut.Set(setValue);

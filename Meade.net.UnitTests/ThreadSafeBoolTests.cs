@@ -7,7 +7,7 @@ namespace Meade.net.UnitTests
     {
         [TestCase(false)]
         [TestCase(true)]
-        public void WhenConvertedValueIsSame(bool value)
+        public void When_Assigned_ThenValueIsSame(bool value)
         {
             // given
             ThreadSafeBool sut = value;
@@ -23,10 +23,10 @@ namespace Meade.net.UnitTests
         [TestCase(false, true)]
         [TestCase(true, false)]
         [TestCase(true, true)]
-        public void WhenSetValueIsChanged(bool value, bool setValue)
+        public void When_SetValue_ThenValueIsUpdated(bool initialValue, bool setValue)
         {
             // given
-            ThreadSafeBool sut = value;
+            ThreadSafeBool sut = initialValue;
 
             // when
             sut.Set(setValue);

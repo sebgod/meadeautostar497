@@ -9,7 +9,7 @@ namespace Meade.net.UnitTests
         [TestCase(-12.34d)]
         [TestCase(0d)]
         [TestCase(null)]
-        public void WhenConvertedValueIsSame(double? value)
+        public void When_Assigned_ThenValueIsSame(double? value)
         {
             // given
             ThreadSafeNullableDouble sut = value;
@@ -29,10 +29,10 @@ namespace Meade.net.UnitTests
         [TestCase(-12.34d, null)]
         [TestCase(0d, null)]
         [TestCase(null, null)]
-        public void WhenSetValueIsChanged(double? value, double? setValue)
+        public void When_SetValue_ThenValueIsUpdated(double? initialValue, double? setValue)
         {
             // given
-            ThreadSafeNullableDouble sut = value;
+            ThreadSafeNullableDouble sut = initialValue;
 
             // when
             sut.Set(setValue);
