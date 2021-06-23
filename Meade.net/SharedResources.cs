@@ -502,7 +502,7 @@ namespace ASCOM.Meade.net
             ParkedPosition = parkedPosition;
         }
 
-        private static readonly ThreadSafeBool _isParked = false;
+        private static readonly ThreadSafeValue<bool> _isParked = false;
         public static bool IsParked
         {
             get => _isParked;
@@ -516,7 +516,7 @@ namespace ASCOM.Meade.net
             private set => Interlocked.Exchange(ref _parkedPosition, value);
         }
 
-        private static readonly ThreadSafeEnum<PierSide> _sideOfPier = PierSide.pierUnknown;
+        private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;
         /// <summary>
         /// Start with <see cref="PierSide.pierUnknown"/>.
         /// As we do not know the physical declination axis position, we have to keep track manually.
@@ -527,14 +527,14 @@ namespace ASCOM.Meade.net
             internal set => _sideOfPier.Set(value);
         }
 
-        private static readonly ThreadSafeNullableDouble _targetRightAscension = null as double?;
+        private static readonly ThreadSafeValue<double?> _targetRightAscension = null as double?;
         public static double? TargetRightAscension
         {
             get => _targetRightAscension;
             internal set => _targetRightAscension.Set(value);
         }
 
-        private static readonly ThreadSafeNullableDouble _targetDeclination = null as double?;
+        private static readonly ThreadSafeValue<double?> _targetDeclination = null as double?;
         public static double? TargetDeclination
         {
             get => _targetDeclination;
@@ -548,28 +548,28 @@ namespace ASCOM.Meade.net
             internal set => Interlocked.Exchange(ref _slewSettleTime, value);
         }
 
-        private static readonly ThreadSafeBool _isLongFormat = false;
+        private static readonly ThreadSafeValue<bool> _isLongFormat = false;
         public static bool IsLongFormat
         {
             get => _isLongFormat;
             internal set => _isLongFormat.Set(value);
         }
 
-        private static readonly ThreadSafeBool _movingPrimary = false;
+        private static readonly ThreadSafeValue<bool> _movingPrimary = false;
         public static bool MovingPrimary
         {
             get => _movingPrimary;
             internal set => _movingPrimary.Set(value);
         }
 
-        private static readonly ThreadSafeBool _movingSecondary = false;
+        private static readonly ThreadSafeValue<bool> _movingSecondary = false;
         public static bool MovingSecondary
         {
             get => _movingSecondary;
             internal set => _movingSecondary.Set(value);
         }
 
-        private static readonly ThreadSafeDateTime _earliestNonSlewingTime = DateTime.MinValue;
+        private static readonly ThreadSafeValue<DateTime> _earliestNonSlewingTime = DateTime.MinValue;
         public static DateTime EarliestNonSlewingTime
         {
             get => _earliestNonSlewingTime;

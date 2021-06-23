@@ -12,7 +12,7 @@ namespace Meade.net.UnitTests
         public void When_Assigned_ThenValueIsSame(double? value)
         {
             // given
-            ThreadSafeNullableDouble sut = value;
+            ThreadSafeValue<double?> sut = value;
 
             // when
             double? actual = sut;
@@ -32,7 +32,7 @@ namespace Meade.net.UnitTests
         public void When_SetValue_ThenValueIsUpdated(double? initialValue, double? setValue)
         {
             // given
-            ThreadSafeNullableDouble sut = initialValue;
+            ThreadSafeValue<double?> sut = initialValue;
 
             // when
             sut.Set(setValue);

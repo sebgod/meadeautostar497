@@ -12,7 +12,7 @@ namespace Meade.net.UnitTests
         public void When_Assigned_ThenValueIsSame(DateTime value)
         {
             // given
-            ThreadSafeDateTime sut = value;
+            ThreadSafeValue<DateTime> sut = value;
 
             // when
             DateTime actual = sut;
@@ -25,7 +25,7 @@ namespace Meade.net.UnitTests
         public void When_SetValue_ThenValueIsUpdated(DateTime initialValue, DateTime setValue)
         {
             // given
-            ThreadSafeDateTime sut = initialValue;
+            ThreadSafeValue<DateTime> sut = initialValue;
 
             // when
             sut.Set(setValue);

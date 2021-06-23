@@ -12,7 +12,7 @@ namespace Meade.net.UnitTests
         public void When_Assigned_ThenValueIsSame(PierSide value)
         {
             // given
-            ThreadSafeEnum<PierSide> sut = value;
+            ThreadSafeValue<PierSide> sut = value;
 
             // when
             PierSide actual = sut;
@@ -33,7 +33,7 @@ namespace Meade.net.UnitTests
         public void When_SetValue_ThenValueIsUpdated(PierSide initialValue, PierSide setValue)
         {
             // given
-            ThreadSafeEnum<PierSide> sut = initialValue;
+            ThreadSafeValue<PierSide> sut = initialValue;
 
             // when
             sut.Set(setValue);
