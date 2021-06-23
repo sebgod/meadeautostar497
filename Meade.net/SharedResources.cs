@@ -4,7 +4,7 @@
 // ================
 //
 // This class is a container for all shared resources that may be needed
-// by the drivers served by the Local Server. 
+// by the drivers served by the Local Server.
 //
 // NOTES:
 //
@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
+using System.Threading;
 using System.Windows.Forms;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
 using ASCOM.Utilities.Interfaces;
@@ -49,7 +51,7 @@ namespace ASCOM.Meade.net
         #region single serial port connector
 
         //
-        // this region shows a way that a single serial port could be connected to by multiple 
+        // this region shows a way that a single serial port could be connected to by multiple
         // drivers.
         //
         // Connected is used to handle the connections to the port.
@@ -73,7 +75,7 @@ namespace ASCOM.Meade.net
 
         public static IProfileFactory ProfileFactory
         {
-            get => _profileFactory ?? ( _profileFactory = new ProfileFactory());
+            get => _profileFactory ?? (_profileFactory = new ProfileFactory());
             set => _profileFactory = value;
         }
 
@@ -122,7 +124,7 @@ namespace ASCOM.Meade.net
 
         public static bool SendBool(string command, bool raw = false)
         {
-        
+
             var result = SendChar(command, raw);
 
             return result == "1";
@@ -244,7 +246,7 @@ namespace ASCOM.Meade.net
         private const string HandShakeDefault = "None";
         private const string ParityDefault = "None";
         private const string SendDateTimeDefault = "false";
-        private static string ParkedBehaviourDefault = "No Coordinates";
+        private const string ParkedBehaviourDefault = "No Coordinates";
         private const string ParkedAltDefault = "0";
         private const string ParkedAzimuthDefault = "180";
 
@@ -273,7 +275,7 @@ namespace ASCOM.Meade.net
                     profileProperties.Speed = Convert.ToInt32(driverProfile.GetValue(DriverId, SpeedName, string.Empty, SpeedDefault));
                     profileProperties.Parity = driverProfile.GetValue(DriverId, ParityName, string.Empty, ParityDefault);
                     profileProperties.SendDateTime = Convert.ToBoolean(driverProfile.GetValue(DriverId, SendDateTimeName, string.Empty, SendDateTimeDefault));
-                    
+
                     profileProperties.ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(driverProfile.GetValue(DriverId, ParkedBehaviourName, string.Empty, ParkedBehaviourDefault));
                     profileProperties.ParkedAlt = double.Parse(driverProfile.GetValue(DriverId, ParkedAltName, string.Empty, ParkedAltDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.ParkedAz = double.Parse(driverProfile.GetValue(DriverId, ParkedAzimuthName, string.Empty, ParkedAzimuthDefault), NumberFormatInfo.InvariantInfo);
@@ -311,7 +313,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-        
+
         #region Multi Driver handling
 
         public static string ProductName { get; private set; } = string.Empty;
@@ -334,7 +336,7 @@ namespace ASCOM.Meade.net
         private static readonly Dictionary<string, DeviceHardware> ConnectedDevices = new Dictionary<string, DeviceHardware>();
 
         private static readonly Dictionary<string, DeviceHardware> ConnectedDeviceIds = new Dictionary<string, DeviceHardware>();
-        private static IProfileFactory _profileFactory ;
+        private static IProfileFactory _profileFactory;
 
 
         /// <summary>
@@ -350,7 +352,7 @@ namespace ASCOM.Meade.net
             {
                 if (!ConnectedDevices.ContainsKey(deviceId))
                     ConnectedDevices.Add(deviceId, new DeviceHardware());
-                
+
                 if (!ConnectedDeviceIds.ContainsKey(driverId))
                     ConnectedDeviceIds.Add(driverId, new DeviceHardware());
 
@@ -363,7 +365,7 @@ namespace ASCOM.Meade.net
                         SharedSerial.DTREnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.RTSEnable = profileProperties.RtsDtrEnabled;
                         SharedSerial.DataBits = profileProperties.DataBits;
-                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits );
+                        SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
                         SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
@@ -493,15 +495,85 @@ namespace ASCOM.Meade.net
                 Count = 0;
             }
         }
-        
+
         public static void SetParked(bool atPark, ParkedPosition parkedPosition)
         {
             IsParked = atPark;
             ParkedPosition = parkedPosition;
         }
 
-        public static bool IsParked { get; private set; }
+        private static readonly ThreadSafeValue<bool> _isParked = false;
+        public static bool IsParked
+        {
+            get => _isParked;
+            private set => _isParked.Set(value);
+        }
 
-        public static ParkedPosition ParkedPosition { get; private set; }
+        private static ParkedPosition _parkedPosition;
+        public static ParkedPosition ParkedPosition
+        {
+            get => _parkedPosition;
+            private set => Interlocked.Exchange(ref _parkedPosition, value);
+        }
+
+        private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;
+        /// <summary>
+        /// Start with <see cref="PierSide.pierUnknown"/>.
+        /// As we do not know the physical declination axis position, we have to keep track manually.
+        /// </summary>
+        public static PierSide SideOfPier
+        {
+            get => _sideOfPier;
+            internal set => _sideOfPier.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<double?> _targetRightAscension = null as double?;
+        public static double? TargetRightAscension
+        {
+            get => _targetRightAscension;
+            internal set => _targetRightAscension.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<double?> _targetDeclination = null as double?;
+        public static double? TargetDeclination
+        {
+            get => _targetDeclination;
+            internal set => _targetDeclination.Set(value);
+        }
+
+        private static int _slewSettleTime;
+        public static short SlewSettleTime
+        {
+            get => Convert.ToInt16(_slewSettleTime);
+            internal set => Interlocked.Exchange(ref _slewSettleTime, value);
+        }
+
+        private static readonly ThreadSafeValue<bool> _isLongFormat = false;
+        public static bool IsLongFormat
+        {
+            get => _isLongFormat;
+            internal set => _isLongFormat.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<bool> _movingPrimary = false;
+        public static bool MovingPrimary
+        {
+            get => _movingPrimary;
+            internal set => _movingPrimary.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<bool> _movingSecondary = false;
+        public static bool MovingSecondary
+        {
+            get => _movingSecondary;
+            internal set => _movingSecondary.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<DateTime> _earliestNonSlewingTime = DateTime.MinValue;
+        public static DateTime EarliestNonSlewingTime
+        {
+            get => _earliestNonSlewingTime;
+            internal set => _earliestNonSlewingTime.Set(value);
+        }
     }
 }

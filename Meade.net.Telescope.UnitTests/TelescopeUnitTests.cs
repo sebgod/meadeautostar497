@@ -100,9 +100,16 @@ namespace Meade.net.Telescope.UnitTests
                 SameDevice = 1
             };
 
-            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo );
+            _sharedResourcesWrapperMock.Setup(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>())).Returns( () => _connectionInfo);
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(_profileProperties);
+
+            _sharedResourcesWrapperMock
+                .SetupProperty(x => x.SideOfPier)
+                .SetupProperty(x => x.TargetRightAscension)
+                .SetupProperty(x => x.TargetDeclination)
+                .SetupProperty(x => x.SlewSettleTime)
+                .SetupProperty(x => x.IsLongFormat);
 
             _astroMathsMock = new Mock<IAstroMaths>();
 
@@ -997,20 +1004,85 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.AtLeastOnce);
         }
 
-        [TestCase("High", false, true)]
-        [TestCase("High", true, true)]
-        [TestCase("Low", false, false)]
-        [TestCase("Low", true, false)]
-        public void Precision_Set_WhenSecondConnectionMade_ThenTelescopePrecisionNotChanged(string desiredPresision, bool telescopePrecision, bool finalPrecision)
+        [TestCase("High")]
+        [TestCase("Low")]
+        public void Precision_Set_WhenSecondConnectionMade_ThenTelescopePrecisionNotChanged(string desiredPresision)
         {
+            var isLongFormat = desiredPresision == "High"
+                || (desiredPresision == "Low"
+                        ? false
+                        : throw new ArgumentOutOfRangeException(nameof(desiredPresision), desiredPresision, "Should be High or Low"));
+            _sharedResourcesWrapperMock.SetupProperty(x => x.IsLongFormat, isLongFormat);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GR", false)).Returns(() => _testProperties.telescopeRaResult);
+            _utilMock.Setup(x => x.HMSToHours(_testProperties.telescopeRaResult)).Returns(() => _testProperties.rightAscension);
+
             _profileProperties.Precision = desiredPresision;
 
             _connectionInfo.SameDevice = 2;
             //_connectionInfo.Connections = 2;
 
+
             _telescope.Connected = true;
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.Never);
+            _sharedResourcesWrapperMock.Verify(x => x.IsLongFormat, Times.Once);
+        }
+
+        [Test]
+        public void IsLongFormat_WhenHighPrecisionNotSupportedAndSecondConnectionMade_ThenDigitPrecisionValuesArePreserved()
+        {
+            var ra = 12d;
+            var dec = 34d;
+
+            _utilMock.Setup(x => x.HoursToHM(ra, ":", "", 1)).Returns(ra + "HM");
+            _utilMock.Setup(x => x.DegreesToDM(dec, "*", "", 0)).Returns(dec + "DM");
+
+            ConnectTelescope(TelescopeList.LX200CLASSIC);
+
+            _telescope.TargetRightAscension = ra;
+            _telescope.TargetDeclination = dec;
+
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            secondTelescopeInstance.TargetRightAscension = ra;
+            secondTelescopeInstance.TargetDeclination = dec;
+
+            _utilMock.Verify(x => x.HoursToHM(ra, ":", "", 1), Times.Exactly(2));
+            _utilMock.Verify(x => x.DegreesToDM(dec, "*", "", 0), Times.Exactly(2));
+            _utilMock.Verify(x => x.HoursToHMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
+            _utilMock.Verify(x => x.DegreesToDMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void SlewSettleTime_WhenSecondConnectionMade_ThenSlewSettleTimeIsPreserved(short slewSettleTime)
+        {
+            ConnectTelescope();
+
+            _telescope.SlewSettleTime = slewSettleTime;
+
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(secondTelescopeInstance.SlewSettleTime, Is.EqualTo(slewSettleTime));
         }
 
         [Test]
@@ -1230,6 +1302,10 @@ namespace Meade.net.Telescope.UnitTests
         public void DestinationSideOfPier_WhenHASiderealTimeDiffIsNotNull_ThenSideOfPierIsCalculated(double ra, double dec, double siderealTime, PierSide expectedDSOP)
         {
             // given
+
+            // deterministic start
+            _sharedResourcesWrapperMock.Object.SideOfPier = PierSide.pierUnknown;
+
             // SideralTime uses ConditionRA to normalize to [0..24h), so we use it to mock the property
             _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns(siderealTime);
 
@@ -1619,6 +1695,9 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(GuideDirections.guideSouth, TelescopeAxes.axisSecondary)]
         public void PulseGuide_WhenMovingAxisAndPulseGuideAttempted_ThenThrowsExpectedException(GuideDirections direction, TelescopeAxes axes)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns("");
 
             var duration = 0;
@@ -1629,6 +1708,8 @@ namespace Meade.net.Telescope.UnitTests
             var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
 
             Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide while moving same axis."));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingPrimary, Is.EqualTo(axes == TelescopeAxes.axisPrimary));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingSecondary, Is.EqualTo(axes == TelescopeAxes.axisSecondary));
         }
 
         [TestCase(GuideDirections.guideEast)]
@@ -1845,6 +1926,43 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
             Assert.That(excpetion.AccessorSet, Is.True);
+        }
+
+        [TestCase(0, 34, PierSide.pierEast)]
+        [TestCase(12, 34, PierSide.pierEast)]
+        [TestCase(23.4, 34, PierSide.pierWest)]
+        public void SideOfPier_WhenSecondConnectionMade_ThenValueIsPreserved(double ra, double dec, PierSide expectedPierSide)
+        {
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _utilMock.Setup(x => x.HMSToHours(null)).Returns(ra);
+            _utilMock.Setup(x => x.DMSToDegrees(null)).Returns(dec);
+            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
+            _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns<double>(pRA => pRA < 0 ? pRA + 24 : pRA >= 24 ? pRA - 24 : pRA);
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+
+            _telescope.SlewToCoordinates(ra, dec);
+            var sideOfPierAfterSlew = _telescope.SideOfPier;
+
+            Assert.That(sideOfPierAfterSlew, Is.EqualTo(expectedPierSide));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(secondTelescopeInstance.SideOfPier, Is.EqualTo(sideOfPierAfterSlew));
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
+            _utilMock.Verify(x => x.HMSToHours(null), Times.Once);
+            _utilMock.Verify(x => x.DMSToDegrees(null), Times.AtLeast(2));
+            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
+            _astroUtilsMock.Verify(x => x.ConditionRA(It.IsAny<double>()), Times.Once);
         }
 
         delegate void NovasSiderealTimeDelegate(double jdHigh, double jdLow, double jdDelta, GstType gstType, Method method, Accuracy accuracy, ref double sideralTime);
@@ -2360,6 +2478,46 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(declination));
         }
 
+        [TestCase(-90d)]
+        [TestCase(-45d)]
+        [TestCase(0d)]
+        [TestCase(45d)]
+        [TestCase(90d)]
+        public void TargetDeclination_Set_WhenSecondConnectionMade_ThenValueIsPreserved(double targetDeclination)
+        {
+            var targetDeclinationDMS = targetDeclination + "DMS";
+            var sign = targetDeclination >= 0 ? "+" : string.Empty;
+            var command = $"Sd{sign}{targetDeclinationDMS}";
+
+            _utilMock.Setup(x => x.DegreesToDMS(targetDeclination, "*", ":", ":", 2)).Returns(targetDeclinationDMS);
+            _utilMock.Setup(x => x.DMSToDegrees(targetDeclinationDMS)).Returns(targetDeclination);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(command, false)).Returns("1");
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+
+            _telescope.TargetDeclination = targetDeclination;
+
+            Assert.That(_telescope.TargetDeclination, Is.EqualTo(targetDeclination));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+            Assert.That(secondTelescopeInstance.TargetDeclination, Is.EqualTo(targetDeclination));
+
+            _utilMock.Verify(x => x.DegreesToDMS(targetDeclination, "*", ":", ":", 2), Times.Once);
+            _utilMock.Verify(x => x.DMSToDegrees(targetDeclinationDMS), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(command, false), Times.Once);
+        }
+
         [Test]
         public void TargetRightAscension_Set_WhenNotConnected_ThenThrowsException()
         {
@@ -2440,6 +2598,44 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.TargetRightAscension;
 
             Assert.That(result, Is.EqualTo(rightAscension));
+        }
+
+        [TestCase(0d)]
+        [TestCase(6d)]
+        [TestCase(12d)]
+        [TestCase(23.599d)]
+        public void TargetRightAscension_Set_WhenSecondConnectionMade_ThenValueIsPreserved(double targetRightAscension)
+        {
+            var targetRightAscensionHMS = targetRightAscension + "HMS";
+            var command = $"Sr{targetRightAscensionHMS}";
+
+            _utilMock.Setup(x => x.HoursToHMS(targetRightAscension, ":", ":", ":", 2)).Returns(targetRightAscensionHMS);
+            _utilMock.Setup(x => x.HMSToHours(targetRightAscensionHMS)).Returns(targetRightAscension);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(command, false)).Returns("1");
+
+            ConnectTelescope();
+            Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+
+            _telescope.TargetRightAscension = targetRightAscension;
+
+            Assert.That(_telescope.TargetRightAscension, Is.EqualTo(targetRightAscension));
+
+            var secondTelescopeInstance =
+                new ASCOM.Meade.net.Telescope(_utilMock.Object, _utilExtraMock.Object, _astroUtilsMock.Object,
+                    _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
+
+            Assert.That(secondTelescopeInstance.Connected, Is.False);
+
+            _connectionInfo.SameDevice = 2;
+            secondTelescopeInstance.Connected = true;
+
+            Assert.That(_sharedResourcesWrapperMock.Object.IsLongFormat, Is.True);
+            Assert.That(secondTelescopeInstance.TargetRightAscension, Is.EqualTo(targetRightAscension));
+
+            _utilMock.Verify(x => x.HoursToHMS(targetRightAscension, ":", ":", ":", 2), Times.Once);
+            _utilMock.Verify(x => x.HMSToHours(targetRightAscensionHMS), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendChar(command, false), Times.Once);
         }
 
         [Test]
@@ -2726,6 +2922,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(15, 10, "2021-10-03T20:36:00", "2021-10-03T20:36:25", false)]
         public void Slewing_WhenTelescopeIsSlewing_ThenReturnsExpectedValueForSettleTime(short settleTime, short profileSettleTime, string startSlewing, string endSlewing, bool isSlewing)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
             _profileProperties.SettleTime = profileSettleTime;
 
             var timescalled = 0;
@@ -2796,6 +2993,10 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-1, TelescopeAxes.axisSecondary)]
         public void Slewing_WhenTelescopeIsMoving_ThenDoesNotSendCommandAndReturnsTrue(int rate, TelescopeAxes axis)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
+
             ConnectTelescope();
 
             _telescope.MoveAxis(axis, rate);
@@ -2803,6 +3004,9 @@ namespace Meade.net.Telescope.UnitTests
             var result = _telescope.Slewing;
 
             Assert.That(result, Is.True);
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingPrimary, Is.EqualTo(axis == TelescopeAxes.axisPrimary));
+            Assert.That(_sharedResourcesWrapperMock.Object.MovingSecondary, Is.EqualTo(axis == TelescopeAxes.axisSecondary));
+
             _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.Never);
         }
 
@@ -2822,6 +3026,11 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(-1, TelescopeAxes.axisSecondary, 10, 20, true, true)]
         public void Slewing_WhenTelescopeStops_ThenWaitsForSettleTime(int rate, TelescopeAxes axis, short profileSettleTime, short driverSettleTime, bool expectedResultInWaitingPeriod, bool afterProfileSettleTimeUp)
         {
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingPrimary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.MovingSecondary);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.SlewSettleTime);
+            _sharedResourcesWrapperMock.SetupProperty(x => x.EarliestNonSlewingTime, DateTime.MinValue);
+
             _profileProperties.SettleTime = profileSettleTime;
 
             DateTime currentTime = MakeTime("2021-01-23T22:02:10");
@@ -2839,17 +3048,17 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.MoveAxis(axis, 0);
 
-            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+            currentTime += TimeSpan.FromSeconds(profileSettleTime / 2);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.EqualTo(expectedResultInWaitingPeriod));
 
-            currentTime = currentTime + TimeSpan.FromSeconds(profileSettleTime / 2);
+            currentTime += TimeSpan.FromSeconds(profileSettleTime / 2);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.EqualTo(afterProfileSettleTimeUp));
 
-            currentTime = currentTime + TimeSpan.FromSeconds(driverSettleTime);
+            currentTime += TimeSpan.FromSeconds(driverSettleTime);
 
             result = _telescope.Slewing;
             Assert.That(result, Is.False);
@@ -2973,9 +3182,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTarget_WhenSlewing_ThenWaitsForTheSlewToComplete()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
             var slewCounter = 0;
@@ -3057,9 +3263,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToCoordinates_WhenCalled_ThenSetsTargetAndSlews()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _testProperties.rightAscension = 1;
             var declination = 2;
 
@@ -3183,9 +3386,6 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToAltAz_WhenCalled_ThenSetsTargetAndSlews()
         {
-            // avoid calling SideOfPier because it will call Slewing
-            _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns(+1);
-
             _testProperties.rightAscension = 10.0;
             _testProperties.declination = 20;
             var azimuth = 30;

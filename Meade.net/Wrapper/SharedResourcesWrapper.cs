@@ -1,4 +1,5 @@
 ﻿using System;
+using ASCOM.DeviceInterface;
 using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net.Wrapper
@@ -31,6 +32,20 @@ namespace ASCOM.Meade.net.Wrapper
         void SetParked(bool atPark, ParkedPosition parkedPosition);
         bool IsParked { get; }
         ParkedPosition ParkedPosition { get; }
+
+        PierSide SideOfPier { get; set; }
+        double? TargetRightAscension { get; set; }
+        double? TargetDeclination { get; set; }
+
+        short SlewSettleTime { get; set; }
+
+        bool IsLongFormat { get; set; }
+
+        bool MovingPrimary { get; set; }
+
+        bool MovingSecondary { get; set; }
+
+        DateTime EarliestNonSlewingTime { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -74,7 +89,7 @@ namespace ASCOM.Meade.net.Wrapper
             return SharedResources.SendBool(command, raw);
         }
 
-        public string SendChar(string message,bool raw = false)
+        public string SendChar(string message, bool raw = false)
         {
             return SharedResources.SendChar(message, raw);
         }
@@ -112,5 +127,53 @@ namespace ASCOM.Meade.net.Wrapper
         public bool IsParked => SharedResources.IsParked;
 
         public ParkedPosition ParkedPosition => SharedResources.ParkedPosition;
+
+        public PierSide SideOfPier
+        {
+            get => SharedResources.SideOfPier;
+            set => SharedResources.SideOfPier = value;
+        }
+
+        public double? TargetRightAscension
+        {
+            get => SharedResources.TargetRightAscension;
+            set => SharedResources.TargetRightAscension = value;
+        }
+
+        public double? TargetDeclination
+        {
+            get => SharedResources.TargetDeclination;
+            set => SharedResources.TargetDeclination = value;
+        }
+
+        public short SlewSettleTime
+        {
+            get => SharedResources.SlewSettleTime;
+            set => SharedResources.SlewSettleTime = value;
+        }
+
+        public bool IsLongFormat
+        {
+            get => SharedResources.IsLongFormat;
+            set => SharedResources.IsLongFormat = value;
+        }
+
+        public bool MovingPrimary
+        {
+            get => SharedResources.MovingPrimary;
+            set => SharedResources.MovingPrimary = value;
+        }
+
+        public bool MovingSecondary
+        {
+            get => SharedResources.MovingSecondary;
+            set => SharedResources.MovingSecondary = value;
+        }
+
+        public DateTime EarliestNonSlewingTime
+        {
+            get => SharedResources.EarliestNonSlewingTime;
+            set => SharedResources.EarliestNonSlewingTime = value;
+        }
     }
 }
