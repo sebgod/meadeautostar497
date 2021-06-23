@@ -123,7 +123,8 @@ namespace AstroMath.UnitTests
 
             var altAz = _astroMath.ConvertEqToHoz(hourAngle, latitude, equatorialCoordinates);
 
-            Assert.That(altAz.Altitude, Is.EqualTo(20.958562421092779));
+            Assert.That(altAz.Altitude, Is.GreaterThan(20.958562421092770));
+            Assert.That(altAz.Altitude, Is.LessThanOrEqualTo(20.958562421092779));
             Assert.That(altAz.Azimuth, Is.EqualTo(281.2728706962269));
         }
 
