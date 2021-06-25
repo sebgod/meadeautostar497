@@ -141,10 +141,12 @@
     <Compile Include="LocalServer.cs" />
     <Compile Include="MeadeTelescopeBase.cs" />
     <Compile Include="ParkedBehaviour.cs" />
+    <Compile Include="ParkedPosition.cs" />
     <Compile Include="ProfileFactory.cs" />
     <Compile Include="ProfileProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TelescopeList.cs" />
+    <Compile Include="ThreadSafeValue.cs" />
     <Compile Include="Win32Utilities.cs" />
     <Compile Include="Wrapper\IProfileWrapper.cs" />
     <Compile Include="Wrapper\SharedResourcesWrapper.cs" />

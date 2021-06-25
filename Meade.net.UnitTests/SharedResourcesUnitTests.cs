@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Globalization;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
@@ -29,38 +30,39 @@ namespace Meade.net.UnitTests
         [Test]
         public void CheckThatSerialPortIsSetToUseMock()
         {
-            Assert.That(SharedResources.SharedSerial,Is.EqualTo(_serialMock.Object));
+            Assert.That(SharedResources.SharedSerial, Is.EqualTo(_serialMock.Object));
         }
 
-        [Test]
-        public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage()
+        [TestCase(true, "Test")]
+        [TestCase(false, "#:Test#")]
+        public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage(bool raw, string expectedMessage)
         {
-            var expectedMessage = "Test";
-
-            SharedResources.SendBlind(expectedMessage);
+            var sendMessage = "Test";
+            SharedResources.SendBlind(sendMessage, raw);
 
             _serialMock.Verify(x=> x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x=>x.Transmit(expectedMessage), Times.Once);
         }
 
-        [Test]
-        public void SendChar_WhenCalled_ThenSendsMessageAndReadsExpectedNumberOfCharacters()
+        [TestCase(false, "#:Test#")]
+        [TestCase(true, "Test")]
+        public void SendChar_WhenCalled_ThenSendsMessageAndReadsExpectedNumberOfCharacters(bool raw, string expectedCommand)
         {
-            var expectedMessage = "Test";
+            var command = "Test";
             var expectedResult = "A";
 
             _serialMock.Setup(x => x.ReceiveCounted(1)).Returns(expectedResult);
 
-            var result = SharedResources.SendChar(expectedMessage);
+            var result = SharedResources.SendChar(command, raw);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
-            _serialMock.Verify(x => x.Transmit(expectedMessage), Times.Once);
+            _serialMock.Verify(x => x.Transmit(expectedCommand), Times.Once);
             _serialMock.Verify(x => x.ReceiveCounted(1), Times.Once);
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
-        [TestCase(false, "Test")]
-        [TestCase(true, "#Test")]
+        [TestCase(true, "Test")]
+        [TestCase(false, "#:Test#")]
         public void SendString_WhenCalled_ThenSendsMessageAndReadsResultUntilTerminatorFound(bool includePrefix, string expectedMessage)
         {
             var transmitMessage = "Test";
@@ -159,7 +161,7 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
-            
+
             string BacklashCompensationDefault = "3000";
             string ReverseFocuserDiectionDefault = "true";
 
@@ -238,15 +240,15 @@ namespace Meade.net.UnitTests
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
             var profileProperties = SharedResources.ReadProfile();
-            
+
             Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
 
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
 
             Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
-            
+
             Assert.That(profileProperties.GuideRateArcSecondsPerSecond,
-                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));           
+                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
 
@@ -422,7 +424,7 @@ namespace Meade.net.UnitTests
 
             string serialPortReturn = string.Empty;
 
-            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { 
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => {
                 serialPortReturn = string.Empty;
                 throw new Exception("Testerror");
             });
@@ -617,5 +619,35 @@ namespace Meade.net.UnitTests
 
             _traceLoggerMock.Verify( x => x.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error."), Times.Once);
         }
+
+        [Test]
+        public void CheckIsParkedIsFalseByDefault() => Assert.That(SharedResources.IsParked, Is.False);
+
+        [Test]
+        public void CheckParkedPositionIsNullByDefault() => Assert.That(SharedResources.ParkedPosition, Is.Null);
+
+        [Test]
+        public void CheckIsLongFormatIsFalseByDefault() => Assert.That(SharedResources.IsLongFormat, Is.False);
+
+        [Test]
+        public void CheckMovingPrimaryIsFalseBydefault() => Assert.That(SharedResources.MovingPrimary, Is.False);
+
+        [Test]
+        public void CheckMovingSecondaryIsFalseBydefault() => Assert.That(SharedResources.MovingSecondary, Is.False);
+
+        [Test]
+        public void CheckSideOfPierIsUnknownByDefault() => Assert.That(SharedResources.SideOfPier, Is.EqualTo(PierSide.pierUnknown));
+
+        [Test]
+        public void CheckSlewSettleTimeIsZeroByDefault() => Assert.That(SharedResources.SlewSettleTime, Is.EqualTo((short)0));
+
+        [Test]
+        public void CheckEarliestNonNonSlewingTimeIsMinValueByDefault() => Assert.That(SharedResources.EarliestNonSlewingTime, Is.EqualTo(DateTime.MinValue));
+
+        [Test]
+        public void CheckTargetDeclinationIsNullByDefault() => Assert.That(SharedResources.TargetDeclination.HasValue, Is.False);
+
+        [Test]
+        public void CheckTargetRightAscensionIsNullByDefault() => Assert.That(SharedResources.TargetRightAscension.HasValue, Is.False);
     }
 }

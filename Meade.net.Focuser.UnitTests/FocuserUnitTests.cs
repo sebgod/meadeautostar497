@@ -109,16 +109,17 @@ namespace Meade.net.Focuser.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: CommandBlind"));
         }
 
-        [Test]
-        public void CommandBlind_WhenConnected_ThenSendsExpectedMessage()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CommandBlind_WhenConnected_ThenSendsExpectedMessage(bool raw)
         {
             string expectedMessage = "test blind Message";
 
             ConnectFocuser();
 
-            _focuser.CommandBlind(expectedMessage, true);
+            _focuser.CommandBlind(expectedMessage, raw);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedMessage), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedMessage, raw), Times.Once);
         }
 
         [Test]
@@ -130,16 +131,19 @@ namespace Meade.net.Focuser.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: CommandBool"));
         }
 
-        [Test]
-        public void CommandBool_WhenConnected_ThenSendsExpectedMessage()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CommandBool_WhenConnected_ThenSendsExpectedMessage(bool raw)
         {
             string expectedMessage = "test blind Message";
+            _sharedResourcesWrapperMock.Setup(x => x.SendBool(expectedMessage, raw)).Returns(true);
 
             ConnectFocuser();
 
-            var exception = Assert.Throws<MethodNotImplementedException>(() => { _focuser.CommandBool(expectedMessage, true); });
+            var result = _focuser.CommandBool(expectedMessage, raw);
 
-            Assert.That(exception.Message, Is.EqualTo("Method CommandBool is not implemented in this driver."));
+            _sharedResourcesWrapperMock.Verify(x => x.SendBool(expectedMessage, raw), Times.Once);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -319,7 +323,7 @@ namespace Meade.net.Focuser.UnitTests
 
             _focuser.Halt();
 
-            _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":FQ#"), Times.AtLeastOnce);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("FQ", false), Times.AtLeastOnce);
         }
 
         [Test]
@@ -334,13 +338,13 @@ namespace Meade.net.Focuser.UnitTests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void Link_Get_ReturnsSameValueAsConnected( bool connected)
+        public void Link_Get_ReturnsSameValueAsConnected(bool connected)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.Autostar497);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.Autostar497_31Ee);
             _focuser.Connected = connected;
 
-            Assert.That( _focuser.Link, Is.EqualTo(connected));
+            Assert.That(_focuser.Link, Is.EqualTo(connected));
         }
 
         [TestCase(false)]
@@ -394,12 +398,12 @@ namespace Meade.net.Focuser.UnitTests
 
             _focuser.Move(0);
 
-            _utilMock.Verify( x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Never);
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Never);
         }
 
         [TestCase(200)]
         [TestCase(-200)]
-        public void Move_WhenIncrementIsNot0_ThenMovesFocuserAndStopsFocuser( int position)
+        public void Move_WhenIncrementIsNot0_ThenMovesFocuserAndStopsFocuser(int position)
         {
             _profileProperties.BacklashCompensation = 0;
 
@@ -409,16 +413,16 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify( x => x.SendBlind(":F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Never);
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Once);
             }
 
-            _sharedResourcesWrapperMock.Verify( x => x.Lock(It.IsAny<Action>()), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.Lock(It.IsAny<Action>()), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
@@ -437,16 +441,16 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(1));
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F-#"), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(":F+#"), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position) + _profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(_profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(2));
@@ -503,7 +507,7 @@ namespace Meade.net.Focuser.UnitTests
         {
             var exception = Assert.Throws<PropertyNotImplementedException>(() =>
             {
-                var result = _focuser.Temperature; 
+                var result = _focuser.Temperature;
                 Assert.Fail($"{result} should not have a value");
             });
             Assert.That(exception.Message, Is.EqualTo("Property read Temperature is not implemented in this driver."));

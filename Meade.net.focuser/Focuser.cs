@@ -43,7 +43,7 @@ namespace ASCOM.Meade.net
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private readonly IUtil _utilities;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Meade.net"/> class.
         /// Must be public for COM registration.
@@ -101,32 +101,39 @@ namespace ASCOM.Meade.net
 
         public void CommandBlind(string command, bool raw)
         {
+            LogMessage("CommandBlind", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
-            SharedResourcesWrapper.SendBlind(command);
+            SharedResourcesWrapper.SendBlind(command, raw);
             // or
             //throw new ASCOM.MethodNotImplementedException("CommandBlind");
             // DO NOT have both these sections!  One or the other
+            LogMessage("CommandBlind", "Completed");
         }
 
         public bool CommandBool(string command, bool raw)
         {
+            LogMessage("CommandBool", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandBool");
-            //string ret = CommandString(command, raw);
-            // decode the return string and return true or false
+            var result = SharedResourcesWrapper.SendBool(command, raw);
+            LogMessage("CommandBool", "Completed: {0}", result);
+            return result;
             // or
-            throw new MethodNotImplementedException("CommandBool");
+            //throw new MethodNotImplementedException("CommandBool");
             // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
         {
+            LogMessage("CommandString", "raw: {0} command {0}", raw, command);
             CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            return SharedResourcesWrapper.SendString(command);
+            var result = SharedResourcesWrapper.SendString(command, raw);
+            LogMessage("CommandBool", "Completed: {0}", result);
+            return result;
             //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -225,7 +232,7 @@ namespace ASCOM.Meade.net
 
             //todo fix this issue: A single halt command is sometimes missed by the #909 apm, so let's do it a few times to be safe.
 
-            SharedResourcesWrapper.SendBlind(":FQ#");
+            SharedResourcesWrapper.SendBlind("FQ");
             //:FQ# Halt Focuser Motion
             //Returns: Nothing
         }
@@ -297,7 +304,7 @@ namespace ASCOM.Meade.net
                 var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
 
                 var steps = Math.Abs(position) + backlashCompensationSteps;
-                
+
 
                 MoveFocuser(direction, steps);
 
@@ -329,18 +336,18 @@ namespace ASCOM.Meade.net
 
         private void MoveFocuser(bool directionOut, int steps)
         {
-            //_sharedResourcesWrapper.SendBlind(":FF#");
+            //_sharedResourcesWrapper.SendBlind("FF");
             //:FF# Set Focus speed to fastest setting
             //Returns: Nothing
 
             //:FS# Set Focus speed to slowest setting
             //Returns: Nothing
 
-            //:F<n># Autostar, Autostar II – set focuser speed to <n> where <n> is an ASCII digit 1..4
+            //:F<n># Autostar, Autostar II - set focuser speed to <n> where <n> is an ASCII digit 1..4
             //Returns: Nothing
-            //All others – Not Supported
+            //All others - Not Supported
             _utilities.WaitForMilliseconds(100);
-            
+
             PerformFocuserMove(directionOut);
 
             _utilities.WaitForMilliseconds(steps);
@@ -350,7 +357,7 @@ namespace ASCOM.Meade.net
 
         private void PerformFocuserMove(bool directionOut)
         {
-            SharedResourcesWrapper.SendBlind(directionOut ? ":F+#" : ":F-#");
+            SharedResourcesWrapper.SendBlind(directionOut ? "F+" : "F-");
             //:F+# Start Focuser moving inward (toward objective)
             //Returns: None
 
@@ -411,7 +418,7 @@ namespace ASCOM.Meade.net
         #region ASCOM Registration
 
         // Register or unregister driver for ASCOM. This is harmless if already
-        // registered or unregistered. 
+        // registered or unregistered.
         //
         /// <summary>
         /// Register or unregister the driver with the ASCOM Platform.
@@ -481,7 +488,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-        
+
         /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
