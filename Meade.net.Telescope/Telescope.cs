@@ -1904,8 +1904,16 @@ namespace ASCOM.Meade.net
                 PierSide pierSide;
                 if (Slewing)
                 {
-                    // because we update SideOfPier after initiating the slew command we return unknown while still slewing
-                    pierSide = PierSide.pierUnknown;
+                    // TODO: While moving RA axis keep track of axis movement
+                    if (SharedResources.MovingPrimary)
+                    {
+                        pierSide = PierSide.pierUnknown;
+                    }
+                    else
+                    {
+                        // because we are not at target cooridantes yet, we use actual telescope position
+                        pierSide = DestinationSideOfPier(RightAscension, Declination);
+                    }
                 }
                 else
                 {
