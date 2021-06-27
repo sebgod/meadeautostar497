@@ -5,6 +5,8 @@ namespace ASCOM.Meade.net
         NeedsAlignment,
         OneStarAligned,
         TwoStarAligned,
-        ThreeStarAligned
+        ThreeStarAligned,
+        AlignedOnHome,
+        ScopeWasParked,
     }
 }

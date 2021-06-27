@@ -20,6 +20,7 @@ namespace ASCOM.Meade.net.Wrapper
         void SendBlind(string message, bool raw = false);
         bool SendBool(string command, bool raw = false);
         string SendChar(string message, bool raw = false);
+        string SendChars(string message, bool raw = false, int count = 1);
 
         string ReadTerminated();
 
@@ -92,6 +93,11 @@ namespace ASCOM.Meade.net.Wrapper
         public string SendChar(string message, bool raw = false)
         {
             return SharedResources.SendChar(message, raw);
+        }
+
+        public string SendChars(string message, bool raw = false, int count = 1)
+        {
+            return SharedResources.SendChars(message, raw, count);
         }
 
         public string ReadTerminated()

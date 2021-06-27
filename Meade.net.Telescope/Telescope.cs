@@ -360,9 +360,6 @@ namespace ASCOM.Meade.net
             var result = SharedResourcesWrapper.SendBool(command, raw);
             LogMessage("CommandBool", "Completed: {0}", result);
             return result;
-            // or
-            //throw new MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
@@ -372,10 +369,19 @@ namespace ASCOM.Meade.net
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-            var result = SharedResourcesWrapper.SendString(command, raw);
-            LogMessage("CommandBool", "Completed: {0}", result);
+            string result;
+            // :GW# is not terminated with a # for some reason, see reported comment
+            // https://bitbucket.org/cjdskunkworks/meadeautostar497/issues/24/get-set-tracking#comment-60586901
+            if (command == (raw ? ":GW#" : "GW"))
+            {
+                result = SharedResourcesWrapper.SendChars(command, raw, count: 3);
+            }
+            else
+            {
+                result = SharedResourcesWrapper.SendString(command, raw);
+            }
+            LogMessage("CommandString", "Completed: {0}", result);
             return result;
-            //throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -416,7 +422,6 @@ namespace ASCOM.Meade.net
                                 $"Connected to port {ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
 
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
-                            _tracking = true;
 
                             LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
                             IsConnected = true;
@@ -620,17 +625,13 @@ namespace ASCOM.Meade.net
             return false;
         }
 
-        // true iff the mount will perform a meridian flip when required
-        // TODO: Needs checking what mounts actually support this
-        private bool IsMeridianFlipOnSlewSupported()
-        {
-            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
-            {
-                return false;
-            }
+        private bool IsGWCommandSupported() => FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
 
-            return true;
-        }
+        // true iff the mount will perform a meridian flip when required
+        // According to "A User's Guide to the Meade LXD55 and LXD75 Telescopes" Autostar supports meridian flip so
+        // we assume that for any telescope that supports the GW command and is not in Alt-Az mode then
+        // meridian flip on slew is supported
+        private bool IsMeridianFlipOnSlewSupported() => IsGWCommandSupported() && AlignmentMode != AlignmentModes.algAltAz;
 
         private bool FirmwareIsGreaterThan(string minVersion)
         {
@@ -957,7 +958,7 @@ namespace ASCOM.Meade.net
 
                 CheckConnected("AlignmentMode Get");
 
-                if (FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                if (IsGWCommandSupported())
                 {
                     var alignmentStatus = GetScopeAlignmentStatus();
                     return alignmentStatus.AlignmentMode;
@@ -998,7 +999,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                if (!IsGWCommandSupported())
                     throw new PropertyNotImplementedException("AlignmentMode", true);
 
                 switch (value)
@@ -1025,13 +1026,14 @@ namespace ASCOM.Meade.net
 
         private AlignmentStatus GetScopeAlignmentStatus()
         {
-            var alignmentString = SharedResourcesWrapper.SendString("GW");
+            var alignmentString = CommandString("GW", false);
             //:GW# Get Scope Alignment Status
             //Returns: <mount><tracking><alignment>#
             //    where:
             //mount: A - AzEl mounted, P - Equatorially mounted, G - german mounted equatorial
-            //tracking: T - tracking, N - not tracking
-            //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned.
+            //tracking: T - tracking, N - not tracking, S - sleeping
+            //alignment: 0 - needs alignment, 1 - one star aligned, 2 - two star aligned, 3 - three star aligned., H - Aligned on Home, P - Scope was parked
+            // https://www.cloudynights.com/topic/72166-lx-200-gps-serial-commands/
 
             var alignmentStatus = new AlignmentStatus();
             switch (alignmentString[0])
@@ -1046,8 +1048,8 @@ namespace ASCOM.Meade.net
                     alignmentStatus.AlignmentMode = AlignmentModes.algGermanPolar;
                     break;
             }
-            alignmentStatus.Tracking = alignmentString[0] == 'T';
-            switch (alignmentString[1])
+            alignmentStatus.Tracking = alignmentString[1] == 'T';
+            switch (alignmentString[2])
             {
                 case '0':
                     alignmentStatus.Status = Alignment.NeedsAlignment;
@@ -1061,8 +1063,13 @@ namespace ASCOM.Meade.net
                 case '3':
                     alignmentStatus.Status = Alignment.ThreeStarAligned;
                     break;
+                case 'H':
+                    alignmentStatus.Status = Alignment.AlignedOnHome;
+                    break;
+                case 'P':
+                    alignmentStatus.Status = Alignment.ScopeWasParked;
+                    break;
             }
-
 
             return alignmentStatus;
         }
@@ -1228,7 +1235,7 @@ namespace ASCOM.Meade.net
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary: return true; //RA or AZ
-                case TelescopeAxes.axisSecondary: return true; //Dev or Alt
+                case TelescopeAxes.axisSecondary: return true; //DEC or Alt
                 case TelescopeAxes.axisTertiary: return false; //rotator / derotator
                 default: throw new InvalidValueException("CanMoveAxis", axis.ToString(), "0 to 2");
             }
@@ -1890,24 +1897,25 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                if (!FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                if (!IsMeridianFlipOnSlewSupported())
                 {
                     LogMessage("SideOfPier Get", "Not implemented");
                     throw new PropertyNotImplementedException("SideOfPier", false);
                 }
+
+                PierSide pierSide;
+                if (Slewing)
+                {
+                    // because we update SideOfPier after initiating the slew command we return unknown while still slewing
+                    pierSide = PierSide.pierUnknown;
+                }
                 else
                 {
-                    var alignmentStatus = GetScopeAlignmentStatus();
-                    if (alignmentStatus.AlignmentMode != AlignmentModes.algPolar)
-                        throw new PropertyNotImplementedException("SideOfPier", false);
-
-                    // while mount is slewing return unknown, this is required since
-                    // DoSlewAsync updates _pierSide before slew is finished
-                    var pierSide = Slewing ? PierSide.pierUnknown : SharedResourcesWrapper.SideOfPier;
-
-                    LogMessage("SideOfPier", "Get - " + pierSide);
-                    return pierSide;
+                    pierSide = SharedResourcesWrapper.SideOfPier;
                 }
+
+                LogMessage("SideOfPier", "Get - " + pierSide);
+                return pierSide;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
@@ -2594,19 +2602,18 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private bool _tracking = true;
         public bool Tracking
         {
             get
             {
-                LogMessage("Tracking", $"Get - {_tracking}");
-                if (FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg))
+                LogMessage("Tracking", "Get");
+                if (IsGWCommandSupported())
                 {
                     var alignmentStatus = GetScopeAlignmentStatus();
-                    _tracking = alignmentStatus.Tracking;
+                    return alignmentStatus.Tracking;
                 }
 
-                return _tracking;
+                return true;
             }
             set
             {
