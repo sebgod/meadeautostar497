@@ -1383,7 +1383,6 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private double _lastGoodDeclination;
 
         public double Declination
         {
@@ -1402,7 +1401,6 @@ namespace ASCOM.Meade.net
                     double declination = _utilities.DMSToDegrees(result);
 
                     LogMessage("Declination", $"Get - {result} convert to {declination} {_utilitiesExtra.DegreesToDMS(declination, ":", ":")}");
-                    _lastGoodDeclination = declination;
                     return declination;
                 }
                 catch (ParkedException)
@@ -1689,7 +1687,9 @@ namespace ASCOM.Meade.net
                         Altitude = Altitude,
                         Azimuth = Azimuth,
                         RightAscension = RightAscension,
-                        Declination = Declination
+                        Declination = Declination,
+                        SiteLatitude = SiteLatitude,
+                        SiteLongitude = SiteLongitude
                     };
                     break;
                 case ParkedBehaviour.ReportCoordinates:
@@ -1703,7 +1703,9 @@ namespace ASCOM.Meade.net
                         Altitude = ParkedAltAz.Altitude,
                         Azimuth = ParkedAltAz.Azimuth,
                         RightAscension = raDec.RightAscension,
-                        Declination = raDec.Declination
+                        Declination = raDec.Declination,
+                        SiteLatitude = latitude,
+                        SiteLongitude = longitude
                     };
                     break;
                 default:
@@ -1837,7 +1839,6 @@ namespace ASCOM.Meade.net
             return _utilities.HMSToHours(hms);
         }
 
-        double _lastGoodRightAsension;
 
         public double RightAscension
         {
@@ -1856,7 +1857,6 @@ namespace ASCOM.Meade.net
                     double rightAscension = HmToHours(result);
 
                     LogMessage("RightAscension", $"Get - {result} convert to {rightAscension} {_utilitiesExtra.HoursToHMS(rightAscension)}");
-                    _lastGoodRightAsension = rightAscension;
                     return rightAscension;
                 }
                 catch (ParkedException)
@@ -1983,7 +1983,6 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private double? _lastGoodSiteLatitude;
         public double SiteLatitude
         {
             get
@@ -2002,19 +2001,14 @@ namespace ASCOM.Meade.net
                     {
                         var siteLatitude = _utilities.DMSToDegrees(latitude);
                         LogMessage("SiteLatitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLatitude)}");
-
-                        _lastGoodSiteLatitude = siteLatitude;
                         return siteLatitude;
                     }
 
                     throw new InvalidOperationException("unable to get site latitude from telescope.");
                 }
-                catch (ParkedException)
+                catch (ParkedException) when (ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
                 {
-                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
-                        throw;
-
-                    return _lastGoodSiteLatitude.Value;
+                    return parkedPosition.SiteLatitude;
                 }
             }
             set
@@ -2044,12 +2038,9 @@ namespace ASCOM.Meade.net
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site latitude.");
-
-                _lastGoodSiteLatitude = value;
             }
         }
 
-        private double _lastGoodSiteLongitude;
 
         public double SiteLongitude
         {
@@ -2067,18 +2058,15 @@ namespace ASCOM.Meade.net
                     double siteLongitude = -_utilities.DMSToDegrees(longitude);
 
                     if (siteLongitude < -180)
-                        siteLongitude = siteLongitude + 360;
+                        siteLongitude += 360;
 
                     LogMessage("SiteLongitude Get", $"{_utilitiesExtra.DegreesToDMS(siteLongitude)}");
-                    _lastGoodSiteLongitude = siteLongitude;
+
                     return siteLongitude;
                 }
-                catch (ParkedException)
+                catch (ParkedException) when (ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
                 {
-                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
-                        throw;
-
-                    return _lastGoodSiteLongitude;
+                    return parkedPosition.SiteLongitude;
                 }
             }
             set
@@ -2113,8 +2101,6 @@ namespace ASCOM.Meade.net
                 //1 - Valid
                 if (result != "1")
                     throw new InvalidOperationException("Failed to set site longitude.");
-
-                _lastGoodSiteLongitude = value;
             }
         }
 
