@@ -1309,8 +1309,9 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanSetTracking", "Get - " + false);
-                return false;
+                var canSetTracking = IsGWCommandSupported();
+                LogMessage("CanSetTracking", "Get - " + canSetTracking);
+                return canSetTracking;
             }
         }
 
@@ -2600,9 +2601,13 @@ namespace ASCOM.Meade.net
             }
             set
             {
-                throw new ASCOM.NotImplementedException("Tracking Set");
-                //LogMessage("Tracking Set", $"{value}");
-                //_tracking = value;
+                if (!CanSetTracking)
+                {
+                    throw new ASCOM.NotImplementedException("Tracking Set");
+                }
+
+                LogMessage("Tracking Set", $"{value}");
+                SharedResourcesWrapper.SendBlind(value ? "AP" : "AL");
             }
         }
 
