@@ -49,6 +49,8 @@ namespace ASCOM.Meade.net.Wrapper
         DateTime EarliestNonSlewingTime { get; set; }
 
         bool IsTargetCoordinateInitRequired { get; set; }
+
+        bool IsGuiding { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -188,6 +190,12 @@ namespace ASCOM.Meade.net.Wrapper
         {
             get => SharedResources.IsTargetCoordinateInitRequired;
             set => SharedResources.IsTargetCoordinateInitRequired = value;
+        }
+
+        public bool IsGuiding
+        {
+            get => SharedResources.IsGuiding;
+            set => SharedResources.IsGuiding = value;
         }
     }
 }

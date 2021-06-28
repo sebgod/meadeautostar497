@@ -140,8 +140,6 @@ namespace ASCOM.Meade.net
             Initialise(nameof(Telescope));
         }
 
-        private bool _isGuiding;
-
         //
         // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
         //
@@ -1607,7 +1605,7 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
-                            if (!_isGuiding)
+                            if (!SharedResourcesWrapper.IsGuiding)
                             {
                                 SetSlewingMinEndTime();
                             }
@@ -1638,7 +1636,7 @@ namespace ASCOM.Meade.net
                     switch (rate.Compare(0))
                     {
                         case ComparisonResult.Equals:
-                            if (!_isGuiding)
+                            if (!SharedResourcesWrapper.IsGuiding)
                             {
                                 SetSlewingMinEndTime();
                             }
@@ -1731,7 +1729,7 @@ namespace ASCOM.Meade.net
                 if (IsSlewingToTarget())
                     throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
 
-                _isGuiding = true;
+                SharedResourcesWrapper.IsGuiding = true;
                 try
                 {
                     if (SharedResourcesWrapper.MovingPrimary &&
@@ -1814,7 +1812,7 @@ namespace ASCOM.Meade.net
                 }
                 finally
                 {
-                    _isGuiding = false;
+                    SharedResourcesWrapper.IsGuiding = false;
                 }
             }
             catch (Exception ex)
@@ -2306,7 +2304,7 @@ namespace ASCOM.Meade.net
 
         private bool MovingAxis()
         {
-            if (_isGuiding)
+            if (SharedResourcesWrapper.IsGuiding)
                 return false;
 
             return SharedResourcesWrapper.MovingPrimary || SharedResourcesWrapper.MovingSecondary;
@@ -2358,7 +2356,7 @@ namespace ASCOM.Meade.net
         {
             CheckConnected("IsSlewingToTarget");
 
-            if (_isGuiding)
+            if (SharedResourcesWrapper.IsGuiding)
                 return false;
 
             string result;

@@ -583,5 +583,12 @@ namespace ASCOM.Meade.net
             get => _isTargetCoordinateInitRequired;
             internal set => _isTargetCoordinateInitRequired.Set(value);
         }
+
+        private static readonly ThreadSafeValue<bool> _isGuiding = false;
+        public static bool IsGuiding
+        {
+            get => _isGuiding;
+            internal set => _isGuiding.Set(value);
+        }
     }
 }

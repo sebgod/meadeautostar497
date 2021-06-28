@@ -145,6 +145,8 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.SetupGet(x => x.IsParked).Returns(() => _isParked);
             _sharedResourcesWrapperMock.SetupGet(x => x.ParkedPosition).Returns(() => _parkedPosition);
 
+            _sharedResourcesWrapperMock.SetupProperty(x => x.IsGuiding);
+
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
                     It.IsAny<HorizonCoordinates>())).Returns(() => new EquatorialCoordinates { Declination = _testProperties.declination, RightAscension = _testProperties.rightAscension });
