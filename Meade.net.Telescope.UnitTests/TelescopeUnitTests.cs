@@ -53,6 +53,7 @@ namespace Meade.net.Telescope.UnitTests
 
         private bool _isParked;
         private ParkedPosition _parkedPosition;
+        private string _trackingRate;
 
         [SetUp]
         public void Setup()
@@ -133,6 +134,12 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns(() => _testProperties.telescopeDate);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(() => _testProperties.telescopeTime);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(() => _testProperties.telescopeUtcCorrection);
+
+            const string siderealTrackingRate = "+60.1";
+            _trackingRate = siderealTrackingRate;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GT", false)).Returns(() => _trackingRate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _trackingRate = "lunar");
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TQ", false)).Callback(() => _trackingRate = siderealTrackingRate);
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
@@ -2672,7 +2679,10 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.TrackingRate = rate;
 
+            Assert.That(_telescope.TrackingRate, Is.EqualTo(rate));
+
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(commandString, false), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("GT", false), Times.Once);
         }
 
         [Test]

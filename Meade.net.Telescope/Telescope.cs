@@ -2606,26 +2606,17 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private DriveRates _trackingRate = DriveRates.driveSidereal;
-
         public DriveRates TrackingRate
         {
             get
             {
-                //todo implement this with the GW command
-                //var result = SerialPort.CommandTerminated(":GT#", "#");
+                var rate = CommandString("GT", false);
 
-                //double rate = double.Parse(result);
+                if (rate == "+60.1")
+                    return DriveRates.driveSidereal;
 
-
-                //if (rate == 60.1)
-                //    return DriveRates.driveLunar;
-                //else if (rate == 60.1)
-                //    return DriveRates.driveSidereal;
-
-                //return DriveRates.driveKing;
-                LogMessage("TrackingRate Get", $"{_trackingRate}");
-                return _trackingRate;
+                // we only support two rates ATM so return lunar tracking rate
+                return DriveRates.driveLunar;
             }
             set
             {
@@ -2657,8 +2648,6 @@ namespace ASCOM.Meade.net
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
-
-                _trackingRate = value;
             }
         }
 
