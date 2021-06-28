@@ -142,7 +142,6 @@ namespace ASCOM.Meade.net
 
         private bool _isGuiding;
 
-        private bool _isTargetCoordinateInitRequired = true;
         //
         // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
         //
@@ -648,16 +647,16 @@ namespace ASCOM.Meade.net
             if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
                 return false;
 
-            if (!_isTargetCoordinateInitRequired)
-                return _isTargetCoordinateInitRequired;
+            if (!SharedResourcesWrapper.IsTargetCoordinateInitRequired)
+                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
 
             if (!IsConnected)
                 return true;
 
             if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
             {
-                _isTargetCoordinateInitRequired = false;
-                return _isTargetCoordinateInitRequired;
+                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
+                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
             }
 
             const double eps = 0.00001d;
@@ -666,16 +665,16 @@ namespace ASCOM.Meade.net
             //target RA == 0
             if (Math.Abs(rightTargetAscension) > eps)
             {
-                _isTargetCoordinateInitRequired = false;
-                return _isTargetCoordinateInitRequired;
+                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
+                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
             }
 
             double targetDeclination = Declination;
             //target DE == 0
             if (Math.Abs(targetDeclination) > eps)
             {
-                _isTargetCoordinateInitRequired = false;
-                return _isTargetCoordinateInitRequired;
+                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
+                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
             }
 
             //target coordinates are equal current coordinates
@@ -683,12 +682,12 @@ namespace ASCOM.Meade.net
                 (Math.Abs(Declination - targetDeclination) <= eps))
             {
                 LogMessage("IsTargetCoordinateInitRequired", "0 diff -> false");
-                _isTargetCoordinateInitRequired = false;
-                return _isTargetCoordinateInitRequired;
+                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
+                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
             }
 
-            LogMessage("IsTargetCoordinateInitRequired", $"{_isTargetCoordinateInitRequired}");
-            return _isTargetCoordinateInitRequired;
+            LogMessage("IsTargetCoordinateInitRequired", $"{SharedResourcesWrapper.IsTargetCoordinateInitRequired}");
+            return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
         }
 
         private void InitTargetCoordinates()
@@ -702,7 +701,7 @@ namespace ASCOM.Meade.net
                 SyncToCoordinates(raAndDec.RightAscension, raAndDec.Declination);
 
                 //do it only once
-                _isTargetCoordinateInitRequired = false;
+                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
             }
             catch (Exception ex)
             {

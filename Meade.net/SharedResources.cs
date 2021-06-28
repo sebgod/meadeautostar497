@@ -576,5 +576,12 @@ namespace ASCOM.Meade.net
             get => _earliestNonSlewingTime;
             internal set => _earliestNonSlewingTime.Set(value);
         }
+
+        private static readonly ThreadSafeValue<bool> _isTargetCoordinateInitRequired = true;
+        public static bool IsTargetCoordinateInitRequired
+        {
+            get => _isTargetCoordinateInitRequired;
+            internal set => _isTargetCoordinateInitRequired.Set(value);
+        }
     }
 }
