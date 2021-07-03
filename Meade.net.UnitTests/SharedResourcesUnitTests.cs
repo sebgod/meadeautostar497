@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Globalization;
+using ASCOM.DeviceInterface;
 using ASCOM.Meade.net;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities.Interfaces;
@@ -29,7 +30,7 @@ namespace Meade.net.UnitTests
         [Test]
         public void CheckThatSerialPortIsSetToUseMock()
         {
-            Assert.That(SharedResources.SharedSerial,Is.EqualTo(_serialMock.Object));
+            Assert.That(SharedResources.SharedSerial, Is.EqualTo(_serialMock.Object));
         }
 
         [TestCase(true, "Test")]
@@ -160,7 +161,7 @@ namespace Meade.net.UnitTests
             string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
             string PrecisionDefault = "Unchanged";
             string GuidingStyleDefault = "Auto";
-            
+
             string BacklashCompensationDefault = "3000";
             string ReverseFocuserDiectionDefault = "true";
 
@@ -239,15 +240,15 @@ namespace Meade.net.UnitTests
             SharedResources.ProfileFactory = profileFactoryMock.Object;
 
             var profileProperties = SharedResources.ReadProfile();
-            
+
             Assert.That(profeWrapper.DeviceType, Is.EqualTo("Telescope"));
 
             Assert.That(profileProperties.TraceLogger, Is.EqualTo(bool.Parse(TraceStateDefault)));
 
             Assert.That(profileProperties.ComPort, Is.EqualTo(ComPortDefault));
-            
+
             Assert.That(profileProperties.GuideRateArcSecondsPerSecond,
-                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));           
+                Is.EqualTo(double.Parse(GuideRateProfileNameDefault)));
             Assert.That(profileProperties.Precision, Is.EqualTo(PrecisionDefault));
             Assert.That(profileProperties.GuidingStyle, Is.EqualTo(GuidingStyleDefault));
 
@@ -423,7 +424,7 @@ namespace Meade.net.UnitTests
 
             string serialPortReturn = string.Empty;
 
-            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { 
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => {
                 serialPortReturn = string.Empty;
                 throw new Exception("Testerror");
             });
@@ -618,5 +619,41 @@ namespace Meade.net.UnitTests
 
             _traceLoggerMock.Verify( x => x.LogIssue("Connect", "Unable to decode response from the telescope, This is likely a hardware serial communications error."), Times.Once);
         }
+
+        [Test]
+        public void CheckIsParkedIsFalseByDefault() => Assert.That(SharedResources.IsParked, Is.False);
+
+        [Test]
+        public void CheckParkedPositionIsNullByDefault() => Assert.That(SharedResources.ParkedPosition, Is.Null);
+
+        [Test]
+        public void CheckIsLongFormatIsFalseByDefault() => Assert.That(SharedResources.IsLongFormat, Is.False);
+
+        [Test]
+        public void CheckMovingPrimaryIsFalseBydefault() => Assert.That(SharedResources.MovingPrimary, Is.False);
+
+        [Test]
+        public void CheckMovingSecondaryIsFalseBydefault() => Assert.That(SharedResources.MovingSecondary, Is.False);
+
+        [Test]
+        public void CheckSideOfPierIsUnknownByDefault() => Assert.That(SharedResources.SideOfPier, Is.EqualTo(PierSide.pierUnknown));
+
+        [Test]
+        public void CheckSlewSettleTimeIsZeroByDefault() => Assert.That(SharedResources.SlewSettleTime, Is.EqualTo((short)0));
+
+        [Test]
+        public void CheckEarliestNonNonSlewingTimeIsMinValueByDefault() => Assert.That(SharedResources.EarliestNonSlewingTime, Is.EqualTo(DateTime.MinValue));
+
+        [Test]
+        public void CheckTargetDeclinationIsNullByDefault() => Assert.That(SharedResources.TargetDeclination.HasValue, Is.False);
+
+        [Test]
+        public void CheckTargetRightAscensionIsNullByDefault() => Assert.That(SharedResources.TargetRightAscension.HasValue, Is.False);
+
+        [Test]
+        public void CheckIsTargetCoordinateInitRequired() => Assert.That(SharedResources.IsTargetCoordinateInitRequired, Is.True);
+
+        [Test]
+        public void CheckIsGuiding() => Assert.That(SharedResources.IsGuiding, Is.False);
     }
 }
