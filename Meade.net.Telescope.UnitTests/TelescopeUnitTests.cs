@@ -18,20 +18,23 @@ namespace Meade.net.Telescope.UnitTests
 {
     public class TestProperties
     {
-        internal string telescopeRaResult = "HH:MM:SS";
-        internal double rightAscension = 1.2; //todo rename to declination;
-        internal double declination = 45;
+        internal string telescopeRaResult { get; set; } = "HH:MM:SS";
+        internal double rightAscension { get; set; } = 1.2; //todo rename to declination;
+        internal double declination { get; set; } = 45;
 
-        internal string SiteLatitudeString = "testLatString";
-        internal double SiteLatitudeValue = 123.45;
+        internal string SiteLatitudeString { get; set; } = "testLatString";
+        internal double SiteLatitudeValue { get; set; } = 123.45;
 
-        internal string telescopeDate = "10/15/20";
-        internal string telescopeTime = "20:15:10";
-        internal string telescopeUtcCorrection = "-1.0";
+        internal string telescopeDate { get; set; } = "10/15/20";
+        internal string telescopeTime { get; set; } = "20:15:10";
+        internal string telescopeUtcCorrection { get; set; } = "-1.0";
 
-        internal double hourAngle;
-        internal int telescopeAltitude = 45;
-        internal int telescopeAzimuth = 200;
+        internal double hourAngle { get; set; }
+        internal int telescopeAltitude { get; set; } = 45;
+        internal int telescopeAzimuth { get; set; } = 200;
+
+        internal char[] AlignmentStatus { get; set; }
+        internal string TrackingRate { get; set; }
     }
 
     [TestFixture]
@@ -121,8 +124,14 @@ namespace Meade.net.Telescope.UnitTests
                 _sharedResourcesWrapperMock.Object, _astroMathsMock.Object, _clockMock.Object, _novasMock.Object);
         }
 
-        private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee)
+        private void ConnectTelescope(string productName = TelescopeList.Autostar497, string firmwareVersion = TelescopeList.Autostar497_31Ee, string alignmentStatus = "GT0")
         {
+            _testProperties.AlignmentStatus = alignmentStatus.ToCharArray();
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendChars("GW", false, 3)).Returns(() => new string(_testProperties.AlignmentStatus));
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("AP", false)).Callback(() => _testProperties.AlignmentStatus[1] = 'T');
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("AL", false)).Callback(() => _testProperties.AlignmentStatus[1] = 'N');
+
             _sharedResourcesWrapperMock.Setup(x => x.SendString("Gt", false)).Returns( () => _testProperties.SiteLatitudeString);
             _utilMock.Setup(x => x.DMSToDegrees(_testProperties.SiteLatitudeString)).Returns( () => _testProperties.SiteLatitudeValue);
 
@@ -132,6 +141,12 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GC", false)).Returns(() => _testProperties.telescopeDate);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(() => _testProperties.telescopeTime);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(() => _testProperties.telescopeUtcCorrection);
+
+            const string siderealTrackingRate = "+60.1";
+            _testProperties.TrackingRate = siderealTrackingRate;
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GT", false)).Returns(() => _testProperties.TrackingRate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _testProperties.TrackingRate = "lunar");
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TQ", false)).Callback(() => _testProperties.TrackingRate = siderealTrackingRate);
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
@@ -143,6 +158,8 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.SetupGet(x => x.IsParked).Returns(() => _isParked);
             _sharedResourcesWrapperMock.SetupGet(x => x.ParkedPosition).Returns(() => _parkedPosition);
+
+            _sharedResourcesWrapperMock.SetupProperty(x => x.IsGuiding);
 
             _astroMathsMock
                 .Setup(x => x.ConvertHozToEq(It.IsAny<DateTime>(), It.IsAny<double>(), It.IsAny<double>(),
@@ -769,15 +786,17 @@ namespace Meade.net.Telescope.UnitTests
         }
 
 
-        [TestCase("A", AlignmentModes.algAltAz)]
-        [TestCase("P", AlignmentModes.algPolar)]
-        [TestCase("G", AlignmentModes.algGermanPolar)]
-        public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode)
+        [TestCase("A", AlignmentModes.algAltAz, TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee)]
+        [TestCase("P", AlignmentModes.algPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee)]
+        [TestCase("A", AlignmentModes.algAltAz, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        [TestCase("P", AlignmentModes.algPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        [TestCase("G", AlignmentModes.algGermanPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode, string productName, string firmware)
         {
             const char ack = (char)6;
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString(), true)).Returns(telescopeMode);
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString(), false)).Returns(telescopeMode);
 
-            ConnectTelescope();
+            ConnectTelescope(productName, firmware, $"{telescopeMode}N0");
 
             var actualResult = _telescope.AlignmentMode;
 
@@ -1109,12 +1128,15 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.False);
         }
 
-        [Test]
-        public void CanSetTracking_Get_ReturnsTrue()
+        [TestCase(TelescopeList.Autostar497_30Ee, false)]
+        [TestCase(TelescopeList.Autostar497_43Eg, true)]
+        public void CanSetTracking_Get_ReturnsTrueIffGWCommandIsSupported(string firmware, bool supported)
         {
+            ConnectTelescope(firmwareVersion: firmware);
+
             var result = _telescope.CanSetTracking;
 
-            Assert.That(result, Is.True);
+            Assert.That(result, Is.EqualTo(supported));
         }
 
         [Test]
@@ -1939,7 +1961,7 @@ namespace Meade.net.Telescope.UnitTests
             _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
             _astroUtilsMock.Setup(x => x.ConditionRA(It.IsAny<double>())).Returns<double>(pRA => pRA < 0 ? pRA + 24 : pRA >= 24 ? pRA - 24 : pRA);
 
-            ConnectTelescope();
+            ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
             Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
 
             _telescope.SlewToCoordinates(ra, dec);
@@ -2053,7 +2075,8 @@ namespace Meade.net.Telescope.UnitTests
             // Setup DestinationSideOfPier
             _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
 
-            ConnectTelescope();
+            // Use firmware that supports GW
+            ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
 
             // when
             _telescope.SlewToCoordinatesAsync(ra, dec);
@@ -2646,11 +2669,26 @@ namespace Meade.net.Telescope.UnitTests
 
         [TestCase(true)]
         [TestCase(false)]
-        public void Tracking_SetAndGet_WhenValueSet_ThenCanGetNewValue(bool tracking)
+        public void Tracking_Set_WhenCanSetTrackingIsFalse_ThenThrowsNotImplementedException(bool tracking)
         {
+            // GW is not supported, so CanSetTracking is false
+            ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_30Ee);
+
+            Assert.Throws<ASCOM.NotImplementedException>( () => { _telescope.Tracking = tracking; } );
+        }
+
+        [TestCase(true, "AP")]
+        [TestCase(false, "AL")]
+        public void Tracking_Set_WhenCanSetTrackingIsTrue_ThenValueIsUpdated(bool tracking, string alignmentCommand)
+        {
+            // GW is supported, so CanSetTracking is true
+            ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
+
             _telescope.Tracking = tracking;
 
             Assert.That(_telescope.Tracking, Is.EqualTo(tracking));
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(alignmentCommand, false), Times.Once);
         }
 
         [Test]
@@ -2668,7 +2706,10 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.TrackingRate = rate;
 
+            Assert.That(_telescope.TrackingRate, Is.EqualTo(rate));
+
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(commandString, false), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("GT", false), Times.Once);
         }
 
         [Test]
@@ -2972,7 +3013,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(TelescopeList.LX200CLASSIC, "", "[FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF][FF]  [FF][FF][FF][FF][FF][FF]", false)]   //The test case below is this same string encoded to return exactly what the telescope will return.
         [TestCase(TelescopeList.LX200CLASSIC, "", "\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff\x00ff  \x00ff\x00ff\x00ff\x00ff\x00ff\x00ff", false)]
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "|", true)]
-        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "\u007f", true)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "\x007f", true)]
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, "", false)]
         public void Slewing_WhenTelescopeNotSlewing_ThenReturnsFalse(string productName, string firmwareVersion, string response, bool isSlewing)
         {
@@ -3202,7 +3243,6 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.SlewToTarget();
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
-            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]
@@ -3297,7 +3337,6 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
 
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
-            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]
@@ -3418,7 +3457,6 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(_testProperties.declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
-            _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
         }
 
         [Test]

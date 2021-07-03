@@ -20,6 +20,7 @@ namespace ASCOM.Meade.net.Wrapper
         void SendBlind(string message, bool raw = false);
         bool SendBool(string command, bool raw = false);
         string SendChar(string message, bool raw = false);
+        string SendChars(string message, bool raw = false, int count = 1);
 
         string ReadTerminated();
 
@@ -46,6 +47,10 @@ namespace ASCOM.Meade.net.Wrapper
         bool MovingSecondary { get; set; }
 
         DateTime EarliestNonSlewingTime { get; set; }
+
+        bool IsTargetCoordinateInitRequired { get; set; }
+
+        bool IsGuiding { get; set; }
     }
 
     public class SharedResourcesWrapper : ISharedResourcesWrapper
@@ -92,6 +97,11 @@ namespace ASCOM.Meade.net.Wrapper
         public string SendChar(string message, bool raw = false)
         {
             return SharedResources.SendChar(message, raw);
+        }
+
+        public string SendChars(string message, bool raw = false, int count = 1)
+        {
+            return SharedResources.SendChars(message, raw, count);
         }
 
         public string ReadTerminated()
@@ -174,6 +184,18 @@ namespace ASCOM.Meade.net.Wrapper
         {
             get => SharedResources.EarliestNonSlewingTime;
             set => SharedResources.EarliestNonSlewingTime = value;
+        }
+
+        public bool IsTargetCoordinateInitRequired
+        {
+            get => SharedResources.IsTargetCoordinateInitRequired;
+            set => SharedResources.IsTargetCoordinateInitRequired = value;
+        }
+
+        public bool IsGuiding
+        {
+            get => SharedResources.IsGuiding;
+            set => SharedResources.IsGuiding = value;
         }
     }
 }

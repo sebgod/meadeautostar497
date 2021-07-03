@@ -649,5 +649,11 @@ namespace Meade.net.UnitTests
 
         [Test]
         public void CheckTargetRightAscensionIsNullByDefault() => Assert.That(SharedResources.TargetRightAscension.HasValue, Is.False);
+
+        [Test]
+        public void CheckIsTargetCoordinateInitRequired() => Assert.That(SharedResources.IsTargetCoordinateInitRequired, Is.True);
+
+        [Test]
+        public void CheckIsGuiding() => Assert.That(SharedResources.IsGuiding, Is.False);
     }
 }

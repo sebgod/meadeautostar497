@@ -124,13 +124,17 @@ namespace ASCOM.Meade.net
 
         public static bool SendBool(string command, bool raw = false)
         {
-
             var result = SendChar(command, raw);
 
             return result == "1";
         }
 
         public static string SendChar(string command, bool raw = false)
+        {
+            return SendChars(command, raw, count: 1);
+        }
+
+        public static string SendChars(string command, bool raw = false, int count = 1)
         {
             lock (LockObject)
             {
@@ -141,14 +145,11 @@ namespace ASCOM.Meade.net
 
                 try
                 {
-                    return SharedSerial.ReceiveCounted(1);
+                    return SharedSerial.ReceiveCounted(count);
                 }
-                catch (COMException ex)
+                catch (COMException ex) when (ex.Message.Contains("Timed out waiting for received data"))
                 {
-                    if (ex.Message.Contains("Timed out waiting for received data"))
-                        throw new TimeoutException(ex.Message, ex);
-
-                    throw;
+                    throw new TimeoutException(ex.Message, ex);
                 }
             }
         }
@@ -574,6 +575,20 @@ namespace ASCOM.Meade.net
         {
             get => _earliestNonSlewingTime;
             internal set => _earliestNonSlewingTime.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<bool> _isTargetCoordinateInitRequired = true;
+        public static bool IsTargetCoordinateInitRequired
+        {
+            get => _isTargetCoordinateInitRequired;
+            internal set => _isTargetCoordinateInitRequired.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<bool> _isGuiding = false;
+        public static bool IsGuiding
+        {
+            get => _isGuiding;
+            internal set => _isGuiding.Set(value);
         }
     }
 }
