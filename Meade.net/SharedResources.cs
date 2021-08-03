@@ -292,24 +292,33 @@ namespace ASCOM.Meade.net
 
         public static void SetupDialog()
         {
-            var profileProperties = ReadProfile();
-
-            using (SetupDialogForm f = new SetupDialogForm())
+            try
             {
-                f.SetProfile(profileProperties);
+                var profileProperties = ReadProfile();
 
-                if (IsConnected())
+                using (SetupDialogForm f = new SetupDialogForm())
                 {
-                    f.SetReadOnlyMode();
-                }
+                    f.SetProfile(profileProperties);
 
-                var result = f.ShowDialog();
-                if (result == DialogResult.OK)
-                {
-                    profileProperties = f.GetProfile();
+                    if (IsConnected())
+                    {
+                        f.SetReadOnlyMode();
+                    }
 
-                    WriteProfile(profileProperties); // Persist device configuration values to the ASCOM Profile store
+                    var result = f.ShowDialog();
+                    if (result == DialogResult.OK)
+                    {
+                        profileProperties = f.GetProfile();
+
+                        WriteProfile(
+                            profileProperties); // Persist device configuration values to the ASCOM Profile store
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 

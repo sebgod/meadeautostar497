@@ -822,9 +822,9 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: AlignmentMode Set"));
         }
 
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algAltAz, "AA")]
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algPolar, "AP")]
-        [TestCase("AUTOSTAR", "43Eg", AlignmentModes.algGermanPolar, "AP")]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algAltAz, "AA")]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algPolar, "AP")]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algGermanPolar, "AP")]
         public void AlignmentMode_Set_WhenConnected_ThenSendsExpectedCommand(string productName, string firmware, AlignmentModes alignmentMode, string expectedCommand)
         {
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
