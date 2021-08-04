@@ -2649,6 +2649,11 @@ namespace ASCOM.Meade.net
                 CheckConnected("TrackingRate Set");
                 CheckParked();
 
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+                {
+                    throw new ASCOM.NotImplementedException("TrackingRate Set");
+                }
+
                 switch (value)
                 {
                     case DriveRates.driveSidereal:

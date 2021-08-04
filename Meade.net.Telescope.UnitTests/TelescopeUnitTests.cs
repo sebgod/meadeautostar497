@@ -2702,7 +2702,10 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(DriveRates.driveLunar, "TL")]
         public void TrackingRate_Set_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string commandString)
         {
-            ConnectTelescope();
+            string productName = TelescopeList.Autostar497;
+            string firmwareVersion = TelescopeList.Autostar497_43Eg;
+
+            ConnectTelescope(productName, firmwareVersion);
 
             _telescope.TrackingRate = rate;
 
@@ -2715,7 +2718,10 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void TrackingRate_Set_WhenUnSupportedRateSet_ThenThrowsException()
         {
-            ConnectTelescope();
+            string productName = TelescopeList.Autostar497;
+            string firmwareVersion = TelescopeList.Autostar497_43Eg;
+
+            ConnectTelescope(productName, firmwareVersion);
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => _telescope.TrackingRate = DriveRates.driveKing);
 
@@ -2736,13 +2742,30 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(DriveRates.driveLunar)]
         public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate)
         {
-            ConnectTelescope();
+            string productName = TelescopeList.Autostar497;
+            string firmwareVersion = TelescopeList.Autostar497_43Eg;
+
+            ConnectTelescope(productName, firmwareVersion);
 
             _telescope.TrackingRate = rate;
 
             var result = _telescope.TrackingRate;
 
             Assert.That(result, Is.EqualTo(rate));
+        }
+
+        [TestCase(DriveRates.driveSidereal)]
+        [TestCase(DriveRates.driveLunar)]
+        public void TrackingRate_Set_WhenConnectedToLX200_ThenThrowsException(DriveRates rate)
+        {
+            string productName = TelescopeList.LX200CLASSIC;
+            string firmwareVersion = string.Empty;
+
+            ConnectTelescope(productName, firmwareVersion);
+
+            var result = Assert.Throws<ASCOM.NotImplementedException>( () =>  _telescope.TrackingRate = rate );
+
+            Assert.That(result.Message, Is.EqualTo("TrackingRate Set is not implemented in this driver."));
         }
 
         [Test]
