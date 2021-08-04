@@ -2768,13 +2768,25 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result.Message, Is.EqualTo("TrackingRate Set is not implemented in this driver."));
         }
 
-        [Test]
-        public void TrackingRates_Get_ReturnsExpectedType()
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, true )]
+        [TestCase(TelescopeList.LX200CLASSIC, "", false)]
+        public void TrackingRates_Get_ReturnsExpectedType(string productName, string firmwareVersion, bool supportsLunar)
         {
+            ConnectTelescope(productName, firmwareVersion);
+
             var result = _telescope.TrackingRates;
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.AssignableTo<TrackingRates>());
+
+            if (supportsLunar)
+            {
+                Assert.That(result.Count, Is.EqualTo(2));
+            }
+            else
+            {
+                Assert.That(result.Count, Is.EqualTo(1));
+            }
         }
 
         [Test]

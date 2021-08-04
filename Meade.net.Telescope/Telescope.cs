@@ -2685,7 +2685,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                ITrackingRates trackingRates = new TrackingRates();
+                ITrackingRates trackingRates = new TrackingRates(SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC);
                 LogMessage("TrackingRates", "Get - ");
                 foreach (DriveRates driveRate in trackingRates)
                 {
