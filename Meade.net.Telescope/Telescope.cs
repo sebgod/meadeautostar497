@@ -339,7 +339,7 @@ namespace ASCOM.Meade.net
 
         public void CommandBlind(string command, bool raw)
         {
-            LogMessage("CommandBlind", "raw: {0} command {0}", raw, command);
+            LogMessage("CommandBlind", $"raw: {raw} command {command}");
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
             //this.CommandString(command, raw);
@@ -352,16 +352,16 @@ namespace ASCOM.Meade.net
 
         public bool CommandBool(string command, bool raw)
         {
-            LogMessage("CommandBool", "raw: {0} command {0}", raw, command);
+            LogMessage("CommandBool", $"raw: {raw} command {command}");
             CheckConnected("CommandBool");
             var result = SharedResourcesWrapper.SendBool(command, raw);
-            LogMessage("CommandBool", "Completed: {0}", result);
+            LogMessage("CommandBool", $"Completed: {result}");
             return result;
         }
 
         public string CommandString(string command, bool raw)
         {
-            LogMessage("CommandString", "raw: {0} command {0}", raw, command);
+            LogMessage("CommandString", $"raw: {raw} command {command}");
             CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
@@ -377,7 +377,7 @@ namespace ASCOM.Meade.net
             {
                 result = SharedResourcesWrapper.SendString(command, raw);
             }
-            LogMessage("CommandString", "Completed: {0}", result);
+            LogMessage("CommandString", $"Completed: {result}");
             return result;
         }
 
@@ -622,13 +622,26 @@ namespace ASCOM.Meade.net
             return false;
         }
 
-        private bool IsGWCommandSupported() => FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
+        private bool IsGwCommandSupported()
+        {
+            switch (SharedResourcesWrapper.ProductName)
+            {
+                case TelescopeList.LX200CLASSIC:
+                    return false;
+                case TelescopeList.Autostar497:
+                    return FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
+                case TelescopeList.LX200GPS:
+                    return FirmwareIsGreaterThan(TelescopeList.LX200GPS_42G);
+                default:
+                    return false;
+            }
+        }
 
         // true iff the mount will perform a meridian flip when required
         // According to "A User's Guide to the Meade LXD55 and LXD75 Telescopes" Autostar supports meridian flip so
         // we assume that for any telescope that supports the GW command and is not in Alt-Az mode then
         // meridian flip on slew is supported
-        private bool IsMeridianFlipOnSlewSupported() => IsGWCommandSupported() && AlignmentMode != AlignmentModes.algAltAz;
+        private bool IsMeridianFlipOnSlewSupported() => IsGwCommandSupported() && AlignmentMode != AlignmentModes.algAltAz;
 
         private bool FirmwareIsGreaterThan(string minVersion)
         {
@@ -955,7 +968,7 @@ namespace ASCOM.Meade.net
 
                 CheckConnected("AlignmentMode Get");
 
-                if (IsGWCommandSupported())
+                if (IsGwCommandSupported())
                 {
                     var alignmentStatus = GetScopeAlignmentStatus();
                     return alignmentStatus.AlignmentMode;
@@ -996,7 +1009,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!IsGWCommandSupported())
+                if (!IsGwCommandSupported())
                     throw new PropertyNotImplementedException("AlignmentMode", true);
 
                 switch (value)
@@ -1023,6 +1036,7 @@ namespace ASCOM.Meade.net
 
         private AlignmentStatus GetScopeAlignmentStatus()
         {
+            LogMessage("GetScopeAlignmentStatus", "Started");
             var alignmentString = CommandString("GW", false);
             //:GW# Get Scope Alignment Status
             //Returns: <mount><tracking><alignment>#
@@ -1045,6 +1059,7 @@ namespace ASCOM.Meade.net
                     alignmentStatus.AlignmentMode = AlignmentModes.algGermanPolar;
                     break;
             }
+
             alignmentStatus.Tracking = alignmentString[1] == 'T';
             switch (alignmentString[2])
             {
@@ -1068,6 +1083,7 @@ namespace ASCOM.Meade.net
                     break;
             }
 
+            LogMessage("GetScopeAlignmentStatus", $"Result {alignmentStatus}");
             return alignmentStatus;
         }
 
@@ -1309,7 +1325,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var canSetTracking = IsGWCommandSupported();
+                var canSetTracking = IsGwCommandSupported();
                 LogMessage("CanSetTracking", "Get - " + canSetTracking);
                 return canSetTracking;
             }
@@ -2591,7 +2607,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("Tracking", "Get");
-                if (IsGWCommandSupported())
+                if (IsGwCommandSupported())
                 {
                     var alignmentStatus = GetScopeAlignmentStatus();
                     return alignmentStatus.Tracking;
@@ -2607,7 +2623,7 @@ namespace ASCOM.Meade.net
                 }
 
                 LogMessage("Tracking Set", $"{value}");
-                SharedResourcesWrapper.SendBlind(value ? "AP" : "AL");
+                SharedResourcesWrapper.SendBlind(value ? "AP" : "AL"); //todo need to route this to the real commands.
             }
         }
 
@@ -2615,19 +2631,28 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var rate = CommandString("GT", false);
+                var rate = CommandString("GT", false); 
+                //:GT# Get tracking rate
+                //Returns: TT.T#
+                //Current Track Frequency expressed in hertz assuming a synchonous motor design where a 60.0 Hz motor clock
+                //    would produce 1 revolution of the telescope in 24 hours.
 
-                if (rate == "+60.1")
-                    return DriveRates.driveSidereal;
+                DriveRates result = rate == "60.1" ? DriveRates.driveSidereal : DriveRates.driveLunar;
 
-                // we only support two rates ATM so return lunar tracking rate
-                return DriveRates.driveLunar;
+                LogMessage("TrackingRate Get", $"{rate} {result}");
+
+                return result;
             }
             set
             {
                 LogMessage("TrackingRate Set", $"{value}");
                 CheckConnected("TrackingRate Set");
                 CheckParked();
+
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+                {
+                    throw new ASCOM.NotImplementedException("TrackingRate Set");
+                }
 
                 switch (value)
                 {
@@ -2660,7 +2685,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                ITrackingRates trackingRates = new TrackingRates();
+                ITrackingRates trackingRates = new TrackingRates(SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC);
                 LogMessage("TrackingRates", "Get - ");
                 foreach (DriveRates driveRate in trackingRates)
                 {
@@ -2737,7 +2762,7 @@ namespace ASCOM.Meade.net
 
                     return utcDate;
                 }
-                catch (ParkedException e)
+                catch (ParkedException)
                 {
                     if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
                         throw;
