@@ -246,6 +246,10 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("down", "EK118")]
         [TestCase("back", "EK87")]
         [TestCase("forward", "EK69")]
+        [TestCase("left", "EK87")]
+        [TestCase("right", "EK69")]
+        [TestCase("scrollup", "EK85")]
+        [TestCase("scrolldown", "EK68")]
         [TestCase("?", "EK63")]
         public void Action_Handbox_WhenCalling_ThenSendsAppropriateBlindCommands(string action, string expectedString)
         {

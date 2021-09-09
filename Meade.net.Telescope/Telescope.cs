@@ -249,10 +249,18 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind("EK118");
                             break;
                         case "back":
+                        case "left":
                             SharedResourcesWrapper.SendBlind("EK87");
                             break;
                         case "forward":
+                        case "right":
                             SharedResourcesWrapper.SendBlind("EK69");
+                            break;
+                        case "scrollup":
+                            SharedResourcesWrapper.SendBlind("EK85");
+                            break;
+                        case "scrolldown":
+                            SharedResourcesWrapper.SendBlind("EK68");
                             break;
                         case "?":
                             SharedResourcesWrapper.SendBlind("EK63");
