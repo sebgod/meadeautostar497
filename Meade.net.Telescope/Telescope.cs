@@ -2645,7 +2645,7 @@ namespace ASCOM.Meade.net
                 //Current Track Frequency expressed in hertz assuming a synchonous motor design where a 60.0 Hz motor clock
                 //    would produce 1 revolution of the telescope in 24 hours.
 
-                DriveRates result = rate == "60.1" ? DriveRates.driveSidereal : DriveRates.driveLunar;
+                DriveRates result = rate == "+60.1" ? DriveRates.driveSidereal : DriveRates.driveLunar;
 
                 LogMessage("TrackingRate Get", $"{rate} {result}");
 

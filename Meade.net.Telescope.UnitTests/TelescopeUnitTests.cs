@@ -142,7 +142,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(() => _testProperties.telescopeTime);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(() => _testProperties.telescopeUtcCorrection);
 
-            const string siderealTrackingRate = "60.1";
+            const string siderealTrackingRate = "+60.1";
             _testProperties.TrackingRate = siderealTrackingRate;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GT", false)).Returns(() => _testProperties.TrackingRate);
             _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _testProperties.TrackingRate = "lunar");
