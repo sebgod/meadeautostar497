@@ -56,12 +56,14 @@ namespace Meade.net.Telescope.UnitTests
 
         private bool _isParked;
         private ParkedPosition _parkedPosition;
+        private string _siderealTrackingRate;
 
         [SetUp]
         public void Setup()
         {
             _isParked = false;
             _parkedPosition = null;
+            _siderealTrackingRate = "+60.1";
 
             _testProperties = new TestProperties();
 
@@ -142,11 +144,10 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GL", false)).Returns(() => _testProperties.telescopeTime);
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GG", false)).Returns(() => _testProperties.telescopeUtcCorrection);
 
-            const string siderealTrackingRate = "+60.1";
-            _testProperties.TrackingRate = siderealTrackingRate;
+            _testProperties.TrackingRate = _siderealTrackingRate;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GT", false)).Returns(() => _testProperties.TrackingRate);
             _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _testProperties.TrackingRate = "lunar");
-            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TQ", false)).Callback(() => _testProperties.TrackingRate = siderealTrackingRate);
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TQ", false)).Callback(() => _testProperties.TrackingRate = _siderealTrackingRate);
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
             _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => firmwareVersion);
@@ -2732,8 +2733,9 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Exception of type 'System.ArgumentOutOfRangeException' was thrown.\r\nParameter name: value\r\nActual value was driveKing."));
         }
 
-        [Test]
-        public void TrackingRage_Get_WhenReadongDefaultValue_ThenAssumesSidereal()
+        [TestCase("60.1")]
+        [TestCase("+60.1")]
+        public void TrackingRage_Get_WhenReadingDefaultValue_ThenAssumesSidereal(string trackingRate)
         {
             ConnectTelescope();
 
@@ -2742,10 +2744,14 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(DriveRates.driveSidereal));
         }
 
-        [TestCase(DriveRates.driveSidereal)]
-        [TestCase(DriveRates.driveLunar)]
-        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate)
+        [TestCase(DriveRates.driveSidereal, "60.1")]
+        [TestCase(DriveRates.driveLunar, "60.1")]
+        [TestCase(DriveRates.driveSidereal, "+60.1")]
+        [TestCase(DriveRates.driveLunar, "+60.1")]
+        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate)
         {
+            _siderealTrackingRate = trackingRate;
+
             string productName = TelescopeList.Autostar497;
             string firmwareVersion = TelescopeList.Autostar497_43Eg;
 
@@ -2758,9 +2764,11 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(rate));
         }
 
-        [TestCase(DriveRates.driveSidereal)]
-        [TestCase(DriveRates.driveLunar)]
-        public void TrackingRate_Set_WhenConnectedToLX200_ThenThrowsException(DriveRates rate)
+        [TestCase(DriveRates.driveSidereal, "60.1")]
+        [TestCase(DriveRates.driveLunar, "60.1")]
+        [TestCase(DriveRates.driveSidereal, "+60.1")]
+        [TestCase(DriveRates.driveLunar, "+60.1")]
+        public void TrackingRate_Set_WhenConnectedToLX200_ThenThrowsException(DriveRates rate, string trackingRate)
         {
             string productName = TelescopeList.LX200CLASSIC;
             string firmwareVersion = string.Empty;
