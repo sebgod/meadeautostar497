@@ -249,10 +249,18 @@ namespace ASCOM.Meade.net
                             SharedResourcesWrapper.SendBlind("EK118");
                             break;
                         case "back":
+                        case "left":
                             SharedResourcesWrapper.SendBlind("EK87");
                             break;
                         case "forward":
+                        case "right":
                             SharedResourcesWrapper.SendBlind("EK69");
+                            break;
+                        case "scrollup":
+                            SharedResourcesWrapper.SendBlind("EK85");
+                            break;
+                        case "scrolldown":
+                            SharedResourcesWrapper.SendBlind("EK68");
                             break;
                         case "?":
                             SharedResourcesWrapper.SendBlind("EK63");
@@ -2631,11 +2639,13 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var rate = CommandString("GT", false); 
+                var rate = CommandString("GT", false);
                 //:GT# Get tracking rate
                 //Returns: TT.T#
                 //Current Track Frequency expressed in hertz assuming a synchonous motor design where a 60.0 Hz motor clock
                 //    would produce 1 revolution of the telescope in 24 hours.
+
+                rate = rate.Replace("+",  string.Empty);
 
                 DriveRates result = rate == "60.1" ? DriveRates.driveSidereal : DriveRates.driveLunar;
 
