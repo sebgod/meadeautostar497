@@ -2291,14 +2291,11 @@ namespace ASCOM.Meade.net
             CheckConnected("SlewToCoordinatesAsync");
             CheckParked();
 
-            SharedResourcesWrapper.Lock(() =>
-                {
-                    TargetRightAscension = rightAscension;
-                    TargetDeclination = declination;
+            TargetRightAscension = rightAscension;
+            TargetDeclination = declination;
+            DoSlewAsync(true);
 
-                    DoSlewAsync(true);
-                }
-            );
+            LogMessage("SlewToCoordinatesAsync", $"Completed Ra={rightAscension}, Dec={declination}");
         }
 
         public void SlewToTarget()
