@@ -95,9 +95,6 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GZ", false)).Returns("DDD*MM’SS");
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() =>_profileProperties);
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>())).Returns<Func<ASCOM.Meade.net.Telescope.TelescopeDateDetails>>( func => func());
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Func<AltitudeData>>())).Returns<Func<AltitudeData>>(func => func());
 
             _connectionInfo = new ConnectionInfo
             {
@@ -1930,11 +1927,12 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(excpetion.Method, Is.EqualTo("SetPark"));
         }
 
-        [Test]
-        public void SideOfPier_Get_WhenMeridianFlipNotSupported_ThenThrowsException()
+        [TestCase(TelescopeList.LX200CLASSIC, null)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee)]
+        [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42F)]
+        public void SideOfPier_Get_WhenMeridianFlipNotSupported_ThenThrowsException(string model, string firmware)
         {
-            // LX200 classic is a fork mounted scope so it does not support meridian flips
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(TelescopeList.LX200CLASSIC);
+            ConnectTelescope(model, firmware);
 
             var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
             {
@@ -1944,6 +1942,41 @@ namespace Meade.net.Telescope.UnitTests
 
             Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
             Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
+        [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G)]
+        public void SideOfPier_Get_WhenMeridianFlipSupported_ThenReturnsResult(string model, string firmware)
+        {
+            ConnectTelescope(model, firmware);
+
+            Assert.DoesNotThrow(() => { var result = _telescope.SideOfPier; });
+        }
+
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algAltAz, 'A')]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algPolar, 'P')]
+        public void SideOfPier_Get_WhenMeridianFlipNotSupportedByAlignementMode_ThenThrowsException(string model, string firmware, AlignmentModes alignmode, char alignmentStatus)
+        {            
+            ConnectTelescope(model, firmware);
+            _testProperties.AlignmentStatus = new[] { alignmentStatus, 'T', '1' };
+
+            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
+            {
+                var result = _telescope.SideOfPier;
+                Assert.Fail($"{result} should not have returned");
+            });
+
+            Assert.That(excpetion.Property, Is.EqualTo("SideOfPier"));
+            Assert.That(excpetion.AccessorSet, Is.False);
+        }
+
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algGermanPolar, 'G')]
+        public void SideOfPier_Get_WhenMeridianFlipSupportedByAlignementMode_ThenDoesNotThrow(string model, string firmware, AlignmentModes alignmode, char alignmentStatus)
+        {
+            ConnectTelescope(model, firmware);
+            _testProperties.AlignmentStatus = new[] { alignmentStatus, 'T', '1' };
+
+            Assert.DoesNotThrow(() => { var result = _telescope.SideOfPier; });
         }
 
         [Test]
@@ -2119,7 +2152,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString("Gg", false), Times.Exactly(3));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Exactly(2));
-            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.Exactly(3));
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.AtLeast(3));
         }
 
         [Test]
@@ -3272,12 +3305,15 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
+            var preTestItterations = 1;
             var slewCounter = 0;
             var iterations = 10;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() =>
             {
                 slewCounter++;
-                if (slewCounter <= iterations)
+                if (slewCounter <= preTestItterations)
+                    return "";
+                else if (slewCounter <= iterations)
                     return "|";
                 return "";
             });
@@ -3289,7 +3325,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _telescope.SlewToTarget();
 
-            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations - preTestItterations));
         }
 
         [Test]
@@ -3366,12 +3402,15 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
+            var preTestItterations = 1;
             var slewCounter = 0;
             var iterations = 10;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() =>
             {
                 slewCounter++;
-                if (slewCounter <= iterations)
+                if (slewCounter <= preTestItterations)
+                    return "";
+                else if (slewCounter <= iterations)
                     return "|";
                 return "";
             });
@@ -3383,7 +3422,7 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(dmsResult));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
 
-            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations - preTestItterations));
         }
 
         [Test]
@@ -3486,12 +3525,15 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
 
+            var preTestItterations = 1;
             var slewCounter = 0;
             var iterations = 10;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() =>
             {
                 slewCounter++;
-                if (slewCounter <= iterations)
+                if (slewCounter <= preTestItterations)
+                    return "";
+                else if (slewCounter <= iterations)
                     return "|";
                 return "";
             });
@@ -3503,7 +3545,7 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.TargetRightAscension, Is.EqualTo(_testProperties.rightAscension));
             Assert.That(_telescope.TargetDeclination, Is.EqualTo(_testProperties.declination));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
-            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations));
+            _utilMock.Verify(x => x.WaitForMilliseconds(It.IsAny<int>()), Times.Exactly(iterations - preTestItterations));
         }
 
         [Test]
