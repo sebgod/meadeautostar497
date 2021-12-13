@@ -2320,9 +2320,15 @@ namespace ASCOM.Meade.net
         private bool MovingAxis()
         {
             if (SharedResourcesWrapper.IsGuiding)
+            {
+                LogMessage("MovingAxis", $"Result = false (guiding is true)");
                 return false;
+            }
 
-            return SharedResourcesWrapper.MovingPrimary || SharedResourcesWrapper.MovingSecondary;
+            var movingAxis = SharedResourcesWrapper.MovingPrimary || SharedResourcesWrapper.MovingSecondary;
+
+            LogMessage("MovingAxis", $"Result = {movingAxis} Primary={SharedResourcesWrapper.MovingPrimary} Secondary={SharedResourcesWrapper.MovingSecondary}");
+            return movingAxis;
         }
 
         public bool Slewing
