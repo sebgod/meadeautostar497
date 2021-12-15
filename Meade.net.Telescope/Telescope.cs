@@ -2643,7 +2643,25 @@ namespace ASCOM.Meade.net
 
                 rate = rate.Replace("+",  string.Empty);
 
-                DriveRates result = rate == "60.1" ? DriveRates.driveSidereal : DriveRates.driveLunar;
+                DriveRates result;
+
+                switch (rate)
+                {
+                    case "60.1":
+                        result = DriveRates.driveSidereal;
+                        break;
+                    case "60.0":
+                        result = DriveRates.driveSolar;
+                        break;
+                    case "57.9":
+                        result = DriveRates.driveLunar;
+                        break;
+                    default:
+                        result = DriveRates.driveKing;
+                        //If this is ever returned it is representing a fail condition.
+                        break;
+                }
+                
 
                 LogMessage("TrackingRate Get", $"{rate} {result}");
 
@@ -2672,14 +2690,15 @@ namespace ASCOM.Meade.net
                         //:TL# Set Lunar Tracking Rage
                         //Returns: Nothing
                         break;
-                    //case DriveRates.driveSolar:
-                    //    SerialPort.Command(":TS#");
+                    case DriveRates.driveSolar:
+                        SharedResourcesWrapper.SendBlind("TS");
                     //    //:TS# Select Solar tracking rate. [LS Only]
                     //    //Returns: Nothing
-                    //    break;
+                        break;
                     //case DriveRates.driveKing:
-                        //:TM# Select custom tracking rate [ no-op in Autostar II]
-                        //Returns: Nothing
+                    //    SharedResourcesWrapper.SendBlind("TM");
+                    //    //:TM# Select custom tracking rate [ no-op in Autostar II]
+                    //    //Returns: Nothing
                     //    break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, null);

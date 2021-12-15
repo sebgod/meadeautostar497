@@ -143,7 +143,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _testProperties.TrackingRate = _siderealTrackingRate;
             _sharedResourcesWrapperMock.Setup(x => x.SendString("GT", false)).Returns(() => _testProperties.TrackingRate);
-            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _testProperties.TrackingRate = "lunar");
+            _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TL", false)).Callback(() => _testProperties.TrackingRate = "57.9");
             _sharedResourcesWrapperMock.Setup(x => x.SendBlind("TQ", false)).Callback(() => _testProperties.TrackingRate = _siderealTrackingRate);
 
             _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => productName);
@@ -2778,9 +2778,11 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [TestCase(DriveRates.driveSidereal, "60.1")]
-        [TestCase(DriveRates.driveLunar, "60.1")]
+        [TestCase(DriveRates.driveSolar, "60.0")]
+        [TestCase(DriveRates.driveLunar, "57.9")]
         [TestCase(DriveRates.driveSidereal, "+60.1")]
-        [TestCase(DriveRates.driveLunar, "+60.1")]
+        [TestCase(DriveRates.driveSolar, "+60.0")]
+        [TestCase(DriveRates.driveLunar, "+57.9")]
         public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate)
         {
             _siderealTrackingRate = trackingRate;
