@@ -2643,25 +2643,20 @@ namespace ASCOM.Meade.net
 
                 rate = rate.Replace("+",  string.Empty);
 
+                var rateDouble = double.Parse(rate);
+
                 DriveRates result;
 
-                switch (rate)
-                {
-                    case "60.1":
-                        result = DriveRates.driveSidereal;
-                        break;
-                    case "60.0":
-                        result = DriveRates.driveSolar;
-                        break;
-                    case "57.9":
-                        result = DriveRates.driveLunar;
-                        break;
-                    default:
-                        result = DriveRates.driveKing;
-                        //If this is ever returned it is representing a fail condition.
-                        break;
-                }
-                
+                if (rateDouble.Equals(60.1))
+                    result = DriveRates.driveSidereal;
+                else if (rateDouble.Equals(60.0))
+                    result = DriveRates.driveSolar;
+                else if (rateDouble.Between(57.3, 58.9))
+                    result = DriveRates.driveLunar;
+                else
+                    //If this is ever returned it is representing a fail condition.
+                    //result = DriveRates.driveKing;
+                    throw new ASCOM.InvalidValueException($"{rate} is not a supported tracking rate for meade mounts");
 
                 LogMessage("TrackingRate Get", $"{rate} {result}");
 

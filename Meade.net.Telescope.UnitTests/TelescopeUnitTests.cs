@@ -2783,6 +2783,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(DriveRates.driveSidereal, "+60.1")]
         [TestCase(DriveRates.driveSolar, "+60.0")]
         [TestCase(DriveRates.driveLunar, "+57.9")]
+        [TestCase(DriveRates.driveLunar, "57.3")]
+        [TestCase(DriveRates.driveLunar, "58.9")]
         public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate)
         {
             _siderealTrackingRate = trackingRate;
