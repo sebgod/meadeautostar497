@@ -19,7 +19,7 @@ namespace Meade.net.Telescope.UnitTests
     public class TestProperties
     {
         internal string telescopeRaResult { get; set; } = "HH:MM:SS";
-        internal double rightAscension { get; set; } = 1.2; //todo rename to declination;
+        internal double rightAscension { get; set; } = 1.2;
         internal double declination { get; set; } = 45;
 
         internal string SiteLatitudeString { get; set; } = "testLatString";
@@ -90,7 +90,7 @@ namespace Meade.net.Telescope.UnitTests
             _astroUtilsMock = new Mock<IAstroUtils>();
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
-            _sharedResourcesWrapperMock.Setup(x => x.SendString("GZ", false)).Returns("DDD*MM’SS");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GZ", false)).Returns("DDD*MM'SS");
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() =>_profileProperties);
             _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
@@ -1955,7 +1955,9 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(23.4, 34, PierSide.pierWest)]
         public void SideOfPier_WhenSecondConnectionMade_ThenValueIsPreserved(double ra, double dec, PierSide expectedPierSide)
         {
+            var isSlewing = new[] { false };
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() => isSlewing[0] ? "|" : "");
             _utilMock.Setup(x => x.HMSToHours(null)).Returns(ra);
             _utilMock.Setup(x => x.DMSToDegrees(null)).Returns(dec);
             _astroUtilsMock.Setup(x => x.ConditionHA(It.IsAny<double>())).Returns<double>(pHA => pHA < -12 ? pHA + 12 : pHA > 12 ? pHA - 12 : pHA);
@@ -1964,7 +1966,11 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
             Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
 
-            _telescope.SlewToCoordinates(ra, dec);
+            isSlewing[0] = true;
+            _testProperties.rightAscension = ra;
+            _testProperties.declination = dec;
+            _telescope.SlewToCoordinatesAsync(ra, dec);
+            isSlewing[0] = false;
             var sideOfPierAfterSlew = _telescope.SideOfPier;
 
             Assert.That(sideOfPierAfterSlew, Is.EqualTo(expectedPierSide));
@@ -1981,6 +1987,7 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(secondTelescopeInstance.SideOfPier, Is.EqualTo(sideOfPierAfterSlew));
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.AtLeast(2));
             _utilMock.Verify(x => x.HMSToHours(null), Times.Once);
             _utilMock.Verify(x => x.DMSToDegrees(null), Times.AtLeast(2));
             _astroUtilsMock.Verify(x => x.ConditionHA(It.IsAny<double>()), Times.Once);
@@ -2016,10 +2023,14 @@ namespace Meade.net.Telescope.UnitTests
             var raAsHMS = ra + "HMS";
             var decAsDMS = dec + "DMS";
             var currentTime = jnowTime;
+            var isSlewing = new[] { false };
 
             _clockMock.Setup(x => x.UtcNow).Returns(() => currentTime);
 
+            // setup slewing
             _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() => isSlewing[0] ? "|" : "");
+            void SetSlewing(bool slewing) => isSlewing[0] = slewing;
 
             // setup for RA
             _utilMock.Setup(x => x.HoursToHMS(ra, ":", ":", ":", 2)).Returns(raAsHMS);
@@ -2040,12 +2051,12 @@ namespace Meade.net.Telescope.UnitTests
             var jnowSiderealTimeWithoutLongAdj = jnowSiderealTime - siteLongitudeAdj;
             var afterTrackingSiderealTimeWithoutLongAdj = jnowSiderealTimeWithoutLongAdj + trackingTimeHours;
 
-            _utilMock.Setup(x => x.DateUTCToJulian(It.IsAny<DateTime>())).Returns<DateTime>(pDateTime => pDateTime.Ticks);
+            _utilMock.Setup(x => x.DateUTCToJulian(It.IsAny<DateTime>())).Returns<DateTime>(ExpectedJD);
 
             _novasMock
                 .Setup(x => x.SiderealTime(
-                    It.IsAny<double>(),
-                    0d,
+                    It.Is<double>(v => v == Math.Floor(v)),
+                    It.Is<double>(v => v > 0 && v < 1),
                     0d,
                     GstType.GreenwichApparentSiderealTime,
                     Method.EquinoxBased,
@@ -2058,11 +2069,11 @@ namespace Meade.net.Telescope.UnitTests
 
             void NovasSiderealTime(double pJDHigh, double pJDLow, double pJDDelta, GstType pGSTType, Method pMethod, Accuracy pAccuracy, ref double pSideralTime)
             {
-                if (pJDHigh == jnowTime.Ticks)
+                if (IsExpectedJD(pJDHigh, pJDLow, jnowTime))
                 {
                     pSideralTime = jnowSiderealTimeWithoutLongAdj;
                 }
-                else if (pJDHigh == timeAfterTracking.Ticks)
+                else if (IsExpectedJD(pJDHigh, pJDLow, timeAfterTracking))
                 {
                     pSideralTime = afterTrackingSiderealTimeWithoutLongAdj;
                 }
@@ -2079,12 +2090,18 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
 
             // when
+            SetSlewing(true);
+            _testProperties.rightAscension = ra;
+            _testProperties.declination = dec;
             _telescope.SlewToCoordinatesAsync(ra, dec);
+            SetSlewing(false);
             var actualSideOfPierAfterSlew = _telescope.SideOfPier;
             // simulate tracking time
             currentTime += trackingTimeDiff;
             var actualSideOfPierAfterTracking = _telescope.SideOfPier;
+            SetSlewing(true);
             _telescope.SlewToTargetAsync();
+            SetSlewing(false);
             var actualSideOfPierAfterRetargeting = _telescope.SideOfPier;
 
             // then
@@ -2100,10 +2117,11 @@ namespace Meade.net.Telescope.UnitTests
             {
                 _utilMock.Verify(x => x.DateUTCToJulian(time));
 
+                var (high, low) = ExpectedHighAndLowJD(time);
                 _novasMock
                     .Verify(x => x.SiderealTime(
-                        time.Ticks,
-                        0d,
+                        high,
+                        low,
                         0d,
                         GstType.GreenwichApparentSiderealTime,
                         Method.EquinoxBased,
@@ -2114,7 +2132,22 @@ namespace Meade.net.Telescope.UnitTests
 
             _sharedResourcesWrapperMock.Verify(x => x.SendString("Gg", false), Times.Exactly(3));
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("MS", false), Times.Exactly(2));
-            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.Exactly(3));
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("D", false), Times.AtLeast(5));
+
+            double ExpectedJD(DateTime pExpectedTime) => pExpectedTime.Ticks * 0.0000001;
+            (double High, double Low) ExpectedHighAndLowJD(DateTime pExpectedTime)
+            {
+                var expectedJD = ExpectedJD(pExpectedTime);
+                var high = Math.Floor(expectedJD);
+                return (high, expectedJD - high);
+            }
+
+            bool IsExpectedJD(double pJDHigh, double pJDLow, DateTime pExpectedTime)
+            {
+                var (high, low) = ExpectedHighAndLowJD(pExpectedTime);
+
+                return pJDHigh == high && pJDLow == low;
+            }
         }
 
         [Test]
@@ -2985,14 +3018,14 @@ namespace Meade.net.Telescope.UnitTests
             var notSlewingText = String.Empty;
 
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() =>
-           {
-               if (timescalled == 0)
-               {
-                   return slewingText;
-               }
+            {
+                if (timescalled == 0)
+                {
+                    return slewingText;
+                }
 
-               return notSlewingText;
-           });
+                return notSlewingText;
+            });
 
             ConnectTelescope();
 

@@ -1436,7 +1436,7 @@ namespace ASCOM.Meade.net
 
             var destinationSOP = hourAngle > 0
                 ? PierSide.pierEast :
-                (hourAngle < 0 ? PierSide.pierWest : SharedResourcesWrapper.SideOfPier); // avoid pierUnknown while Slewing
+                (hourAngle < 0 ? PierSide.pierWest : SharedResourcesWrapper.SideOfPier); // prefer existing SOP
 
             LogMessage("DestinationSideOfPier",
                 $"Destination SOP of RA {rightAscension.ToString(CultureInfo.InvariantCulture)} is {destinationSOP}");
@@ -1901,23 +1901,34 @@ namespace ASCOM.Meade.net
                     throw new PropertyNotImplementedException("SideOfPier", false);
                 }
 
+                PierSide previousSOP = SharedResourcesWrapper.SideOfPier;
                 PierSide pierSide;
                 if (Slewing)
                 {
                     // TODO: While moving RA axis keep track of axis movement
+                    // On LX85 using A4S2 RA value is not updated while moving
                     if (SharedResources.MovingPrimary)
                     {
                         pierSide = PierSide.pierUnknown;
                     }
                     else
                     {
-                        // because we are not at target cooridantes yet, we use actual telescope position
+                        // because we are not at target cooridantes yet, we use actual telescope position,
+                        // this works because for a meridian flip the RA axis has to slew threw the pole
                         pierSide = DestinationSideOfPier(RightAscension, Declination);
+                    }
+
+
+                    if (pierSide != previousSOP)
+                    {
+                        SharedResourcesWrapper.SideOfPier = pierSide;
+
+                        LogMessage("SideOfPier", $"Changed from {previousSOP} to {pierSide}");
                     }
                 }
                 else
                 {
-                    pierSide = SharedResourcesWrapper.SideOfPier;
+                    pierSide = previousSOP;
                 }
 
                 LogMessage("SideOfPier", "Get - " + pierSide);
@@ -1941,7 +1952,9 @@ namespace ASCOM.Meade.net
                 double siderealTime = 0.0;
 
                 var jd = _utilities.DateUTCToJulian(_clock.UtcNow);
-                var siderealTimeResult = _novas.SiderealTime(jd, 0, _novas.DeltaT(jd),
+                var intPart = Math.Floor(jd);
+                var fraction = jd - intPart;
+                var siderealTimeResult = _novas.SiderealTime(intPart, fraction, _novas.DeltaT(jd),
                     GstType.GreenwichApparentSiderealTime,
                     Method.EquinoxBased,
                     Accuracy.Reduced, ref siderealTime);
@@ -2206,9 +2219,8 @@ namespace ASCOM.Meade.net
 
                                 if (IsMeridianFlipOnSlewSupported())
                                 {
-                                    // Update side of pier to destination side of pier
-                                    // Assumption: Mount will do meridian flip if required
-                                    SharedResourcesWrapper.SideOfPier = DestinationSideOfPier(TargetRightAscension, TargetDeclination);
+                                    // query side of pier to actual (using current RA)
+                                    _ = SideOfPier;
                                 }
 
                                 SetSlewingMinEndTime();
