@@ -297,30 +297,27 @@ namespace ASCOM.Meade.net
             var direction = position > 0;
             if (ReverseFocusDirection)
                 direction = !direction;
+            
+            //backlash compensation.
+            var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
 
-            SharedResourcesWrapper.Lock(() =>
+            var steps = Math.Abs(position) + backlashCompensationSteps;
+
+
+            MoveFocuser(direction, steps);
+
+
+            //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
+            //ApplyBacklashCompensation(direction);
+            if (direction & backlashCompensationSteps != 0)
             {
-                //backlash compensation.
-                var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
+                Tl.LogMessage("Move", "Applying backlash compensation");
+                MoveFocuser(!direction, backlashCompensationSteps);
+            }
 
-                var steps = Math.Abs(position) + backlashCompensationSteps;
-
-
-                MoveFocuser(direction, steps);
-
-
-                //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
-                //ApplyBacklashCompensation(direction);
-                if (direction & backlashCompensationSteps != 0)
-                {
-                    Tl.LogMessage("Move", "Applying backlash compensation");
-                    MoveFocuser(!direction, backlashCompensationSteps);
-                }
-
-                DynamicBreaking(direction);
-                //todo implement dynamic braking
-                //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
-            });
+            DynamicBreaking(direction);
+            //todo implement dynamic braking
+            //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
         }
 
         private void DynamicBreaking(bool directionOut)

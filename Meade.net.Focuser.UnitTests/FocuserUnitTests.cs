@@ -42,8 +42,6 @@ namespace Meade.net.Focuser.UnitTests
 
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
 
-            _sharedResourcesWrapperMock.Setup(x => x.Lock(It.IsAny<Action>())).Callback<Action>(action => { action(); });
-
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() => _profileProperties);
 
             _focuser = new ASCOM.Meade.net.Focuser(_utilMock.Object, _sharedResourcesWrapperMock.Object);
@@ -422,8 +420,6 @@ namespace Meade.net.Focuser.UnitTests
                 _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Once);
             }
 
-            _sharedResourcesWrapperMock.Verify(x => x.Lock(It.IsAny<Action>()), Times.Once);
-
             _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
             _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
             _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Once());
@@ -455,8 +451,6 @@ namespace Meade.net.Focuser.UnitTests
                 _utilMock.Verify(x => x.WaitForMilliseconds(_profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(2));
             }
-
-            _sharedResourcesWrapperMock.Verify(x => x.Lock(It.IsAny<Action>()), Times.Once);
         }
 
         [Test]

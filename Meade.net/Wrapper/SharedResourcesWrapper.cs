@@ -12,10 +12,7 @@ namespace ASCOM.Meade.net.Wrapper
         string ProductName { get; }
 
         string FirmwareVersion { get; }
-
-        void Lock(Action action);
-        T Lock<T>(Func<T> func);
-
+        
         string SendString(string message, bool raw = false);
         void SendBlind(string message, bool raw = false);
         bool SendBool(string command, bool raw = false);
@@ -68,16 +65,6 @@ namespace ASCOM.Meade.net.Wrapper
         public string ProductName => SharedResources.ProductName;
 
         public string FirmwareVersion => SharedResources.FirmwareVersion;
-
-        public void Lock(Action action)
-        {
-            SharedResources.Lock(action);
-        }
-
-        public T Lock<T>(Func<T> func)
-        {
-            return SharedResources.Lock(func);
-        }
 
         public string SendString(string message, bool raw = false)
         {

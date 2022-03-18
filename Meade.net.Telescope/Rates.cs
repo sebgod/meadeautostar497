@@ -149,15 +149,19 @@ namespace ASCOM.Meade.net
         // Default constructor - Internal prevents public creation
         // of instances. Returned by Telescope.AxisRates.
         //
-        internal TrackingRates()
+        internal TrackingRates(bool supportsLunar)
         {
             //
             // This array must hold ONE or more DriveRates values, indicating
             // the tracking rates supported by your telescope. The one value
             // (tracking rate) that MUST be supported is driveSidereal!
             //
-            _trackingRates = new[] { DriveRates.driveSidereal, DriveRates.driveLunar };
-            // TODO Initialize this array with any additional tracking rates that your driver may provide
+            if (supportsLunar)
+            {
+                _trackingRates = new[] {DriveRates.driveSidereal, DriveRates.driveLunar};
+            }
+            else
+                _trackingRates = new[] { DriveRates.driveSidereal };
         }
 
         #region ITrackingRates Members

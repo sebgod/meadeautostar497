@@ -7,5 +7,10 @@ namespace ASCOM.Meade.net
         public AlignmentModes AlignmentMode { get; set; }
         public bool Tracking { get; set; }
         public Alignment Status { get; set; }
+
+        public override string ToString()
+        {
+            return $"AlignmentStatus AlignmentMode={AlignmentMode};Tracking={Tracking};Status={Status}";
+        }
     }
 }

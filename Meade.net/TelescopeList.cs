@@ -23,6 +23,7 @@
         // ReSharper disable once InconsistentNaming
         public const string LX200GPS = "LX2001";
 
+        public const string LX200GPS_42F = "4.2F";
         // ReSharper disable once InconsistentNaming
         public const string LX200GPS_42G = "4.2G";
         #endregion
