@@ -1956,7 +1956,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algAltAz, 'A')]
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algPolar, 'P')]
         public void SideOfPier_Get_WhenMeridianFlipNotSupportedByAlignementMode_ThenThrowsException(string model, string firmware, AlignmentModes alignmode, char alignmentStatus)
-        {            
+        {
             ConnectTelescope(model, firmware);
             _testProperties.AlignmentStatus = new[] { alignmentStatus, 'T', '1' };
 
@@ -1994,7 +1994,7 @@ namespace Meade.net.Telescope.UnitTests
         public void SideOfPier_WhenSecondConnectionMade_ThenValueIsPreserved(double ra, double dec, PierSide expectedPierSide)
         {
             var isSlewing = new[] { false };
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0").Callback(() => { isSlewing[0] = true; });
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() => isSlewing[0] ? "|" : "");
             _utilMock.Setup(x => x.HMSToHours(null)).Returns(ra);
             _utilMock.Setup(x => x.DMSToDegrees(null)).Returns(dec);
@@ -2004,7 +2004,6 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
             Assert.That(_connectionInfo.SameDevice, Is.EqualTo(1));
 
-            isSlewing[0] = true;
             _testProperties.rightAscension = ra;
             _testProperties.declination = dec;
             _telescope.SlewToCoordinatesAsync(ra, dec);
@@ -2066,7 +2065,7 @@ namespace Meade.net.Telescope.UnitTests
             _clockMock.Setup(x => x.UtcNow).Returns(() => currentTime);
 
             // setup slewing
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0");
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar("MS", false)).Returns("0").Callback(() => { SetSlewing(true); });
             _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns(() => isSlewing[0] ? "|" : "");
             void SetSlewing(bool slewing) => isSlewing[0] = slewing;
 
@@ -2128,7 +2127,6 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_43Eg);
 
             // when
-            SetSlewing(true);
             _testProperties.rightAscension = ra;
             _testProperties.declination = dec;
             _telescope.SlewToCoordinatesAsync(ra, dec);
@@ -2137,7 +2135,6 @@ namespace Meade.net.Telescope.UnitTests
             // simulate tracking time
             currentTime += trackingTimeDiff;
             var actualSideOfPierAfterTracking = _telescope.SideOfPier;
-            SetSlewing(true);
             _telescope.SlewToTargetAsync();
             SetSlewing(false);
             var actualSideOfPierAfterRetargeting = _telescope.SideOfPier;
