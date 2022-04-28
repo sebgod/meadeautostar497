@@ -188,6 +188,15 @@ namespace ASCOM.Meade.net
                 txtParkedAz.Text = "180";
             }
 
+            try
+            {
+                txtFocalLength.Text = profileProperties.FocalLength.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtFocalLength.Text = "2000";
+            }
+
             UpdateParkedItemsEnabled();
         }
 
@@ -214,7 +223,8 @@ namespace ASCOM.Meade.net
                 SendDateTime = cbxSendDateTime.Checked,
                 ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(cboParkedBehaviour.SelectedItem.ToString()),
                 ParkedAlt = double.Parse(txtParkedAlt.Text),
-                ParkedAz = double.Parse(txtParkedAz.Text)
+                ParkedAz = double.Parse(txtParkedAz.Text),
+                FocalLength = double.Parse(txtFocalLength.Text)
             };
 
             return profileProperties;
@@ -318,6 +328,15 @@ namespace ASCOM.Meade.net
             {
                 MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtParkedAz.Text = txtParkedAz.Text.Remove(txtParkedAz.Text.Length - 1);
+            }
+        }
+
+        private void txt_FocalLength_TextChanged_1(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtFocalLength.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtFocalLength_TextChanged_1_Please_enter_only_numbers_);
+                txtFocalLength.Text = txtFocalLength.Text.Remove(txtFocalLength.Text.Length - 1);
             }
         }
     }

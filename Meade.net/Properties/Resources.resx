@@ -147,4 +147,7 @@ Valid are : -register, -unregister and -embedding</value>
   <data name="SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_" xml:space="preserve">
     <value>Please enter only numbers.</value>
   </data>
+  <data name="SetupDialogForm_txtFocalLength_TextChanged_1_Please_enter_only_numbers_" xml:space="preserve">
+    <value>Please enter only numbers.</value>
+  </data>
 </root>

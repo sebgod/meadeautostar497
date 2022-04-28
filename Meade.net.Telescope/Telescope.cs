@@ -419,12 +419,12 @@ namespace ASCOM.Meade.net
                     {
                         ReadProfile();
 
-                        LogMessage("Connected Set", "Connecting to port {0}", ComPort);
+                        LogMessage("Connected Set", "Connecting to port {0}", _ComPort);
                         var connectionInfo = SharedResourcesWrapper.Connect("Serial", DriverId, Tl);
                         try
                         {
                             LogMessage("Connected Set",
-                                $"Connected to port {ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
+                                $"Connected to port {_ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
 
                             _userNewerPulseGuiding = IsNewPulseGuidingSupported();
 
@@ -444,7 +444,7 @@ namespace ASCOM.Meade.net
 
                                 if (CanSetGuideRates)
                                 {
-                                    SetNewGuideRate(GuideRate, "Connect");
+                                    SetNewGuideRate(_GuideRate, "Connect");
                                 }
 
                                 SetTelescopePrecision("Connect");
@@ -454,28 +454,28 @@ namespace ASCOM.Meade.net
                                 SharedResourcesWrapper.TargetDeclination = InvalidParameter;
                                 SharedResourcesWrapper.TargetRightAscension = InvalidParameter;
 
-                                LogMessage("Connected Set", $"SendDateTime: {SendDateTime}");
-                                if (SendDateTime)
+                                LogMessage("Connected Set", $"SendDateTime: {_SendDateTime}");
+                                if (_SendDateTime)
                                 {
                                     if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                                     {
                                         LogMessage("Connected Set",
-                                            $"LX200GPS Detecting if daylight savings message on screen: {SendDateTime}");
+                                            $"LX200GPS Detecting if daylight savings message on screen: {_SendDateTime}");
                                         var displayText = Action("Handbox", "readdisplay");
                                         LogMessage("Connected Set", $"Current Handset display: {displayText}");
                                         if (displayText.Contains("Daylight"))
                                         {
                                             LogMessage("Connected Set",
-                                                $"LX200GPS Setting Date time and bypassing settings screens: {SendDateTime}");
+                                                $"LX200GPS Setting Date time and bypassing settings screens: {_SendDateTime}");
                                             BypassHandboxEntryForAutostarII();
                                         }
                                         else
                                         {
                                             LogMessage("Connected Set",
-                                                $"LX200GPS Sending current date and time: {SendDateTime}");
+                                                $"LX200GPS Sending current date and time: {_SendDateTime}");
                                             SendCurrentDateTime("Connect");
                                             LogMessage("Connected Set",
-                                                $"LX200GPS Attempting manual bypass of prompts: {SendDateTime}");
+                                                $"LX200GPS Attempting manual bypass of prompts: {_SendDateTime}");
                                             ApplySkipAutoStarPrompts("Connect");
                                         }
 
@@ -514,12 +514,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", _ComPort);
                     SharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
@@ -528,7 +528,7 @@ namespace ASCOM.Meade.net
 
         private void SendCurrentDateTime(string connect)
         {
-            if (SendDateTime)
+            if (_SendDateTime)
             {
                 UTCDate = _clock.UtcNow;
             }
@@ -570,7 +570,7 @@ namespace ASCOM.Meade.net
 
         private void SetTelescopePrecision(string propertyName)
         {
-            switch (Precision.ToLower())
+            switch (_Precision.ToLower())
             {
                 case "high":
                     TelescopePointingPrecision(true);
@@ -588,7 +588,7 @@ namespace ASCOM.Meade.net
 
         public bool IsNewPulseGuidingSupported()
         {
-            switch (GuidingStyle)
+            switch (_GuidingStyle)
             {
                 case "guide rate slew":
                     return false;
@@ -1501,7 +1501,7 @@ namespace ASCOM.Meade.net
             get
             {
                 LogMessage("FocalLength Get", "Not implemented");
-                throw new PropertyNotImplementedException("FocalLength", false);
+                return _focalLength;
             }
         }
 
@@ -1528,7 +1528,7 @@ namespace ASCOM.Meade.net
 
             //info from RickB says that 15.04107 is a better value for
 
-            GuideRate = value;
+            _GuideRate = value;
 
             WriteProfile();
         }
@@ -1547,8 +1547,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(GuideRate);
-                LogMessage("GuideRateDeclination Get", $"{GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_GuideRate);
+                LogMessage("GuideRateDeclination Get", $"{_GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
@@ -1562,8 +1562,8 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(GuideRate);
-                LogMessage("GuideRateRightAscension Get", $"{GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
+                double degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(_GuideRate);
+                LogMessage("GuideRateRightAscension Get", $"{_GuideRate} arc seconds / second = {degreesPerSecond} degrees per second");
                 return degreesPerSecond;
             }
             set
@@ -1698,7 +1698,7 @@ namespace ASCOM.Meade.net
                 return;
 
             ParkedPosition parkedPosition;
-            switch (ParkedBehaviour)
+            switch (_ParkedBehaviour)
             {
                 case ParkedBehaviour.LastGoodPosition:
                     parkedPosition = new ParkedPosition
@@ -1715,12 +1715,12 @@ namespace ASCOM.Meade.net
                     var utcDateTime = UTCDate;
                     var latitude = SiteLatitude;
                     var longitude = SiteLongitude;
-                    var raDec = _astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, ParkedAltAz);
+                    var raDec = _astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, _ParkedAltAz);
 
                     parkedPosition = new ParkedPosition
                     {
-                        Altitude = ParkedAltAz.Altitude,
-                        Azimuth = ParkedAltAz.Azimuth,
+                        Altitude = _ParkedAltAz.Altitude,
+                        Azimuth = _ParkedAltAz.Azimuth,
                         RightAscension = raDec.RightAscension,
                         Declination = raDec.Declination,
                         SiteLatitude = latitude,
@@ -1975,14 +1975,14 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public new double SiteElevation
+        public double SiteElevation
         {
             get
             {
                 CheckConnected("SiteElevation Get");
 
-                LogMessage("SiteElevation",  $"Get {base.SiteElevation}");
-                return base.SiteElevation;
+                LogMessage("SiteElevation",  $"Get {_SiteElevation}");
+                return _SiteElevation;
             }
             // ReSharper disable once ValueParameterNotUsed
             set
@@ -1990,14 +1990,14 @@ namespace ASCOM.Meade.net
                 CheckConnected("SiteElevation Set");
 
                 LogMessage("SiteElevation", $"Set: {value}");
-                if (Math.Abs(value - base.SiteElevation) < 0.1)
+                if (Math.Abs(value - _SiteElevation) < 0.1)
                 {
                     LogMessage("SiteElevation", "Set: no change detected");
                     return;
                 }
 
-                LogMessage("SiteElevation", $"Set: {value} was {base.SiteElevation}");
-                base.SiteElevation = value;
+                LogMessage("SiteElevation", $"Set: {value} was {_SiteElevation}");
+                _SiteElevation = value;
                 UpdateSiteElevation();
             }
         }
@@ -2025,7 +2025,7 @@ namespace ASCOM.Meade.net
 
                     throw new InvalidOperationException("unable to get site latitude from telescope.");
                 }
-                catch (ParkedException) when (ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
+                catch (ParkedException) when (_ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
                 {
                     return parkedPosition.SiteLatitude;
                 }
@@ -2083,7 +2083,7 @@ namespace ASCOM.Meade.net
 
                     return siteLongitude;
                 }
-                catch (ParkedException) when (ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
+                catch (ParkedException) when (_ParkedBehaviour != ParkedBehaviour.NoCoordinates && SharedResourcesWrapper.ParkedPosition is var parkedPosition)
                 {
                     return parkedPosition.SiteLongitude;
                 }
@@ -2354,7 +2354,7 @@ namespace ASCOM.Meade.net
 
         private TimeSpan GetTotalSlewingSettleTime()
         {
-            return TimeSpan.FromSeconds( SlewSettleTime + ProfileSettleTime );
+            return TimeSpan.FromSeconds( SlewSettleTime + _ProfileSettleTime );
         }
 
         private bool GetSlewing()
@@ -2779,7 +2779,7 @@ namespace ASCOM.Meade.net
                 }
                 catch (ParkedException)
                 {
-                    if (ParkedBehaviour == ParkedBehaviour.NoCoordinates)
+                    if (_ParkedBehaviour == ParkedBehaviour.NoCoordinates)
                         throw;
 
                     return _clock.UtcNow;
@@ -2962,10 +2962,10 @@ namespace ASCOM.Meade.net
             var profileProperties = SharedResourcesWrapper.ReadProfile();
 
 
-            if (Math.Abs(profileProperties.GuideRateArcSecondsPerSecond - GuideRate) > 0.0000001)
+            if (Math.Abs(profileProperties.GuideRateArcSecondsPerSecond - _GuideRate) > 0.0000001)
             {
                 changed = true;
-                profileProperties.GuideRateArcSecondsPerSecond = GuideRate;
+                profileProperties.GuideRateArcSecondsPerSecond = _GuideRate;
             }
 
             if (changed)

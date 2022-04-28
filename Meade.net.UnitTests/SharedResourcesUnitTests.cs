@@ -171,6 +171,7 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -221,6 +222,10 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
                 .Returns(() => ParkedAzimuthDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
 
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Send Date and time on connect", string.Empty, "false"))
@@ -295,6 +300,7 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";            
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -337,6 +343,9 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
                 .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -375,6 +384,7 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -416,6 +426,9 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
                 .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -468,6 +481,7 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -509,6 +523,9 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
                 .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -558,6 +575,7 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -598,6 +616,9 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
                 .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);

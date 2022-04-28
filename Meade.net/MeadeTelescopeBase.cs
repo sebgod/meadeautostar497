@@ -20,18 +20,19 @@ namespace ASCOM.Meade.net
         /// </summary>
         protected static readonly string DriverDescription = "Meade Generic";
 
-        protected static string ComPort; // Variables to hold the currrent device configuration
-        protected static int BacklashCompensation;
-        protected static bool ReverseFocusDirection;
-        protected static bool UseDynamicBreaking;
-        protected double GuideRate;
-        protected string Precision;
-        protected string GuidingStyle;
-        protected double SiteElevation;
-        protected short ProfileSettleTime;
-        protected bool SendDateTime;
-        protected ParkedBehaviour ParkedBehaviour;
-        protected HorizonCoordinates ParkedAltAz;
+        protected static string _ComPort; // Variables to hold the currrent device configuration
+        protected static int _BacklashCompensation;
+        protected static bool _ReverseFocusDirection;
+        protected static bool _UseDynamicBreaking;
+        protected double _GuideRate;
+        protected string _Precision;
+        protected string _GuidingStyle;
+        protected double _SiteElevation;
+        protected short _ProfileSettleTime;
+        protected bool _SendDateTime;
+        protected ParkedBehaviour _ParkedBehaviour;
+        protected HorizonCoordinates _ParkedAltAz;
+        protected double _focalLength;
 
         protected readonly ISharedResourcesWrapper SharedResourcesWrapper;
 
@@ -64,37 +65,41 @@ namespace ASCOM.Meade.net
         {
             var profileProperties = SharedResourcesWrapper.ReadProfile();
             Tl.Enabled = profileProperties.TraceLogger;
-            ComPort = profileProperties.ComPort;
-            BacklashCompensation = profileProperties.BacklashCompensation;
-            ReverseFocusDirection = profileProperties.ReverseFocusDirection;
-            UseDynamicBreaking = profileProperties.DynamicBreaking;
-            GuideRate = profileProperties.GuideRateArcSecondsPerSecond;
-            Precision = profileProperties.Precision;
-            GuidingStyle = profileProperties.GuidingStyle.ToLower();
-            SiteElevation = profileProperties.SiteElevation;
-            ProfileSettleTime = profileProperties.SettleTime;
-            SendDateTime = profileProperties.SendDateTime;
-            ParkedBehaviour = profileProperties.ParkedBehaviour;
+            _ComPort = profileProperties.ComPort;
+            _BacklashCompensation = profileProperties.BacklashCompensation;
+            _ReverseFocusDirection = profileProperties.ReverseFocusDirection;
+            _UseDynamicBreaking = profileProperties.DynamicBreaking;
+            _GuideRate = profileProperties.GuideRateArcSecondsPerSecond;
+            _Precision = profileProperties.Precision;
+            _GuidingStyle = profileProperties.GuidingStyle.ToLower();
+            _SiteElevation = profileProperties.SiteElevation;
+            _ProfileSettleTime = profileProperties.SettleTime;
+            _SendDateTime = profileProperties.SendDateTime;
+            _ParkedBehaviour = profileProperties.ParkedBehaviour;
 
-            ParkedAltAz = new HorizonCoordinates
+            _ParkedAltAz = new HorizonCoordinates
             {
                 Altitude = profileProperties.ParkedAlt,
                 Azimuth = profileProperties.ParkedAz
             };
 
+            _focalLength = profileProperties.FocalLength;
+
             LogMessage("ReadProfile", $"Trace logger enabled: {Tl.Enabled}");
-            LogMessage("ReadProfile", $"Com Port: {ComPort}");
-            LogMessage("ReadProfile", $"Backlash Steps: {BacklashCompensation}");
-            LogMessage("ReadProfile", $"Dynamic breaking: {UseDynamicBreaking}");
-            LogMessage("ReadProfile", $"Guide Rate: {GuideRate}");
-            LogMessage("ReadProfile", $"Precision: {Precision}");
-            LogMessage("ReadProfile", $"Guiding Style: {GuidingStyle}");
-            LogMessage("ReadProfile", $"Site Elevation: {SiteElevation}");
-            LogMessage("ReadProfile", $"Settle Time after slew: {ProfileSettleTime}");
-            LogMessage("ReadProfile", $"Send date and time on connect: {SendDateTime}");
-            LogMessage("ReadProfile", $"Parked Behaviour: {ParkedBehaviour}");
-            LogMessage("ReadProfile", $"Parked Alt: {ParkedAltAz.Altitude}");
-            LogMessage("ReadProfile", $"Parked Az: {ParkedAltAz.Azimuth}");
+            LogMessage("ReadProfile", $"Com Port: {_ComPort}");
+            LogMessage("ReadProfile", $"Backlash Steps: {_BacklashCompensation}");
+            LogMessage("ReadProfile", $"Dynamic breaking: {_UseDynamicBreaking}");
+            LogMessage("ReadProfile", $"Guide Rate: {_GuideRate}");
+            LogMessage("ReadProfile", $"Precision: {_Precision}");
+            LogMessage("ReadProfile", $"Guiding Style: {_GuidingStyle}");
+            LogMessage("ReadProfile", $"Site Elevation: {_SiteElevation}");
+            LogMessage("ReadProfile", $"Settle Time after slew: {_ProfileSettleTime}");
+            LogMessage("ReadProfile", $"Send date and time on connect: {_SendDateTime}");
+            LogMessage("ReadProfile", $"Parked Behaviour: {_ParkedBehaviour}");
+            LogMessage("ReadProfile", $"Parked Alt: {_ParkedAltAz.Altitude}");
+            LogMessage("ReadProfile", $"Parked Az: {_ParkedAltAz.Azimuth}");
+            LogMessage("ReadProfile", $"Focal Length: {_focalLength}");
+            
         }
 
         /// <summary>
@@ -159,7 +164,7 @@ namespace ASCOM.Meade.net
         protected void UpdateSiteElevation()
         {
             var profileProperties = SharedResourcesWrapper.ReadProfile();
-            profileProperties.SiteElevation = SiteElevation;
+            profileProperties.SiteElevation = _SiteElevation;
             SharedResourcesWrapper.WriteProfile(profileProperties);
         }
     }

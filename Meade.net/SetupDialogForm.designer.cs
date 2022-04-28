@@ -82,6 +82,9 @@ namespace ASCOM.Meade.net
             this.label24 = new System.Windows.Forms.Label();
             this.txtParkedAlt = new System.Windows.Forms.TextBox();
             this.txtParkedAz = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.txtFocalLength = new System.Windows.Forms.TextBox();
+            this.label26 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
@@ -389,10 +392,29 @@ namespace ASCOM.Meade.net
             this.txtParkedAz.Name = "txtParkedAz";
             this.txtParkedAz.TextChanged += new System.EventHandler(this.txtParkedAz_TextChanged);
             // 
+            // label25
+            // 
+            resources.ApplyResources(this.label25, "label25");
+            this.label25.Name = "label25";
+            // 
+            // txtFocalLength
+            // 
+            resources.ApplyResources(this.txtFocalLength, "txtFocalLength");
+            this.txtFocalLength.Name = "txtFocalLength";
+            this.txtFocalLength.TextChanged += new System.EventHandler(this.txt_FocalLength_TextChanged_1);
+            // 
+            // label26
+            // 
+            resources.ApplyResources(this.label26, "label26");
+            this.label26.Name = "label26";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label26);
+            this.Controls.Add(this.txtFocalLength);
+            this.Controls.Add(this.label25);
             this.Controls.Add(this.txtParkedAz);
             this.Controls.Add(this.txtParkedAlt);
             this.Controls.Add(this.label24);
@@ -507,5 +529,8 @@ namespace ASCOM.Meade.net
         private Label label24;
         private TextBox txtParkedAlt;
         private TextBox txtParkedAz;
+        private Label label25;
+        private TextBox txtFocalLength;
+        private Label label26;
     }
 }

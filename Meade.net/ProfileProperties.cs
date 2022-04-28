@@ -23,5 +23,6 @@ namespace ASCOM.Meade.net
         public ParkedBehaviour ParkedBehaviour { get; set; }
         public double ParkedAlt { get; set; }
         public double ParkedAz { get; set; }
+        public double FocalLength { get; set; }
     }
 }

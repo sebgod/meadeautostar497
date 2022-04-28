@@ -84,7 +84,8 @@ namespace Meade.net.Telescope.UnitTests
                 SendDateTime = false,
                 ParkedBehaviour = ParkedBehaviour.NoCoordinates,
                 ParkedAlt = 0,
-                ParkedAz = 180
+                ParkedAz = 180,
+                FocalLength = 2000
             };
 
             _utilMock = new Mock<IUtil>();
@@ -1429,16 +1430,11 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void FocalLength_Get_ThenThrowsException()
+        public void FocalLength_Get_ThenReturnsValue()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
-            {
-                var result = _telescope.FocalLength;
-                Assert.Fail($"{result} should not have returned");
-            });
+            var result = _telescope.FocalLength;
 
-            Assert.That(excpetion.Property, Is.EqualTo("FocalLength"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(_profileProperties.FocalLength));
         }
 
         [Test]
