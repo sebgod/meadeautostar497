@@ -1577,10 +1577,10 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                //Todo implement this if I can make the new pulse guiding async
-                LogMessage("IsPulseGuiding Get", "pulse guiding is synchronous for this driver");
+                var isGuiding = SharedResourcesWrapper.IsGuiding;
+                LogMessage("IsPulseGuiding Get", $"result = {isGuiding}");
+                return isGuiding;
                 //throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
-                return false;
             }
         }
 
@@ -1764,7 +1764,7 @@ namespace ASCOM.Meade.net
 
                     var coordinatesBeforeMove = GetTelescopeRaAndDec();
 
-                    if (_userNewerPulseGuiding && duration < 10000)
+                    if (_userNewerPulseGuiding)
                     {
                         string d = string.Empty;
                         switch (direction)
