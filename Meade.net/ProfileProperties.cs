@@ -24,5 +24,7 @@ namespace ASCOM.Meade.net
         public double ParkedAlt { get; set; }
         public double ParkedAz { get; set; }
         public double FocalLength { get; set; }
+        public double ApertureArea { get; set; }
+        public double ApertureDiameter { get; set; }
     }
 }

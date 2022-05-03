@@ -176,12 +176,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _ComPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _profileProperties.ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", _ComPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", _profileProperties.ComPort);
                     SharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
@@ -295,11 +295,11 @@ namespace ASCOM.Meade.net
                 return;
 
             var direction = position > 0;
-            if (_ReverseFocusDirection)
+            if (_profileProperties.ReverseFocusDirection)
                 direction = !direction;
             
             //backlash compensation.
-            var backlashCompensationSteps = direction ? Math.Abs(_BacklashCompensation) : 0;
+            var backlashCompensationSteps = direction ? Math.Abs(_profileProperties.BacklashCompensation) : 0;
 
             var steps = Math.Abs(position) + backlashCompensationSteps;
 
@@ -322,7 +322,7 @@ namespace ASCOM.Meade.net
 
         private void DynamicBreaking(bool directionOut)
         {
-            if (!_UseDynamicBreaking)
+            if (!_profileProperties.DynamicBreaking)
                 return;
 
             Tl.LogMessage("Move", "Applying dynamic breaking");

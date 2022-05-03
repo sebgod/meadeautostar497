@@ -199,6 +199,8 @@ namespace ASCOM.Meade.net
         private const string ParkedAltName = "Parked Altitude";
         private const string ParkedAzimuthName = "Parked Azimuth";
         private const string FocalLengthName = "Focal Length (mm)";
+        private const string ApertureAreaName = "Aperture Area (mm²)";
+        private const string ApertureDiameterName = "Aperture Diameter (mm)";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -228,6 +230,8 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, ParkedAltName, profileProperties.ParkedAlt.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, ParkedAzimuthName, profileProperties.ParkedAz.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, FocalLengthName, profileProperties.FocalLength.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, ApertureAreaName, profileProperties.ApertureArea.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, ApertureDiameterName, profileProperties.ApertureDiameter.ToString(CultureInfo.InvariantCulture));
                 }
             }
         }
@@ -253,6 +257,8 @@ namespace ASCOM.Meade.net
         private const string ParkedAltDefault = "0";
         private const string ParkedAzimuthDefault = "180";
         private const string FocalLengthDefault = "2000";
+        private const string ApertureAreaDefault = "32685";
+        private const string ApertureDiameterDefault = "203";
 
         public static ProfileProperties ReadProfile()
         {
@@ -284,6 +290,8 @@ namespace ASCOM.Meade.net
                     profileProperties.ParkedAlt = double.Parse(driverProfile.GetValue(DriverId, ParkedAltName, string.Empty, ParkedAltDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.ParkedAz = double.Parse(driverProfile.GetValue(DriverId, ParkedAzimuthName, string.Empty, ParkedAzimuthDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.FocalLength = double.Parse(driverProfile.GetValue(DriverId, FocalLengthName, string.Empty, FocalLengthDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.ApertureArea = double.Parse(driverProfile.GetValue(DriverId, ApertureAreaName, string.Empty, ApertureAreaDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.ApertureDiameter = double.Parse(driverProfile.GetValue(DriverId, ApertureDiameterName, string.Empty, ApertureDiameterDefault), NumberFormatInfo.InvariantInfo);
                 }
 
                 return profileProperties;

@@ -636,12 +636,9 @@ namespace Meade.net.Telescope.UnitTests
 
         public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string guidingStyle, string productName, string firmware, bool isSupported)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
-
             _profileProperties.GuidingStyle = guidingStyle;
 
-            _telescope.Connected = true;
+            ConnectTelescope(productName, firmware);
 
             var result = _telescope.IsNewPulseGuidingSupported();
 
@@ -853,29 +850,19 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void ApertureArea_Get_ThrowsNotImplementedException()
+        public void ApertureArea_Get_ReturnsExpectedResult()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
-            {
-                var result = _telescope.ApertureArea;
-                Assert.Fail($"{result} should not have returned");
-            });
+            var result = _telescope.ApertureArea;
 
-            Assert.That(excpetion.Property, Is.EqualTo("ApertureArea"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(_profileProperties.ApertureArea / 1000));
         }
 
         [Test]
         public void ApertureDiameter_Get_ThrowsNotImplementedException()
         {
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() =>
-            {
-                var result = _telescope.ApertureDiameter;
-                Assert.Fail($"{result} should not have returned");
-            });
+            var result = _telescope.ApertureDiameter;
 
-            Assert.That(excpetion.Property, Is.EqualTo("ApertureDiameter"));
-            Assert.That(excpetion.AccessorSet, Is.False);
+            Assert.That(result, Is.EqualTo(_profileProperties.ApertureDiameter / 1000));
         }
 
         [Test]
@@ -1434,7 +1421,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             var result = _telescope.FocalLength;
 
-            Assert.That(result, Is.EqualTo(_profileProperties.FocalLength));
+            Assert.That(result, Is.EqualTo(_profileProperties.FocalLength/1000));
         }
 
         [Test]

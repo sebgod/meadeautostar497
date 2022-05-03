@@ -172,6 +172,8 @@ namespace Meade.net.UnitTests
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
             string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -226,6 +228,15 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
                 .Returns(() => FocalLengthDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
+            
 
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Send Date and time on connect", string.Empty, "false"))
@@ -300,7 +311,9 @@ namespace Meade.net.UnitTests
             string ParkedBehaviourDefault = "No Coordinates";
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
-            string FocalLengthDefault = "2000";            
+            string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -347,6 +360,15 @@ namespace Meade.net.UnitTests
                     x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
                 .Returns(() => FocalLengthDefault);
 
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
+
+
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
 
@@ -356,7 +378,7 @@ namespace Meade.net.UnitTests
 
             _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = ":GVP#"; });
             _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = "0"; });
-            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns( () => serialPortReturn);
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
 
             var result = Assert.Throws<Exception>(() => { SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object); });
             Assert.That(result.Message, Is.EqualTo("Serial port is looping back data, something is wrong with the hardware."));
@@ -385,6 +407,8 @@ namespace Meade.net.UnitTests
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
             string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -429,6 +453,12 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
                 .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -482,6 +512,8 @@ namespace Meade.net.UnitTests
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
             string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -526,6 +558,12 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
                 .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
@@ -576,6 +614,8 @@ namespace Meade.net.UnitTests
             string ParkedAltDefault = "0";
             string ParkedAzimuthDefault = "180";
             string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
 
             Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
             profileWrapperMock.SetupAllProperties();
@@ -619,6 +659,12 @@ namespace Meade.net.UnitTests
             profileWrapperMock.Setup(x =>
                     x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
                 .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
 
             Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
             profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);

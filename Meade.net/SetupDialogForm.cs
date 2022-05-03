@@ -197,6 +197,24 @@ namespace ASCOM.Meade.net
                 txtFocalLength.Text = "2000";
             }
 
+            try
+            {
+                txtApertureArea.Text = profileProperties.ApertureArea.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtApertureArea.Text = "32685";
+            }
+
+            try
+            {
+                txtApertureDiameter.Text = profileProperties.ApertureDiameter.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtApertureDiameter.Text = "203";
+            }
+
             UpdateParkedItemsEnabled();
         }
 
@@ -224,7 +242,9 @@ namespace ASCOM.Meade.net
                 ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(cboParkedBehaviour.SelectedItem.ToString()),
                 ParkedAlt = double.Parse(txtParkedAlt.Text),
                 ParkedAz = double.Parse(txtParkedAz.Text),
-                FocalLength = double.Parse(txtFocalLength.Text)
+                FocalLength = double.Parse(txtFocalLength.Text),
+                ApertureArea = double.Parse(txtApertureArea.Text),
+                ApertureDiameter = double.Parse(txtApertureDiameter.Text)
             };
 
             return profileProperties;
