@@ -1663,13 +1663,16 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: PulseGuide"));
         }
 
-        [TestCase(GuideDirections.guideEast)]
-        [TestCase(GuideDirections.guideWest)]
-        [TestCase(GuideDirections.guideNorth)]
-        [TestCase(GuideDirections.guideSouth)]
-        public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailable_ThenSendsNewCommandsAndWaits(GuideDirections direction)
+        [TestCase(GuideDirections.guideEast, 0)]
+        [TestCase(GuideDirections.guideWest, 0)]
+        [TestCase(GuideDirections.guideNorth, 0)]
+        [TestCase(GuideDirections.guideSouth, 0)]
+        [TestCase(GuideDirections.guideEast, 22161)]
+        [TestCase(GuideDirections.guideWest, 22161)]
+        [TestCase(GuideDirections.guideNorth, 22161)]
+        [TestCase(GuideDirections.guideSouth, 22161)]
+        public void PulseGuide_WhenConnectedAndNewerPulseGuidingAvailable_ThenSendsNewCommandsAndWaits(GuideDirections direction, int duration)
         {
-            var duration = 0;
             ConnectTelescope();
 
             _telescope.PulseGuide(direction, duration);
