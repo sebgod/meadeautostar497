@@ -1274,8 +1274,10 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("CanPulseGuide", "Get - " + true);
-                return true;
+                CheckConnected("CanPulseGuide");
+                var canPulseGuide = AlignmentMode != AlignmentModes.algAltAz;
+                LogMessage("CanPulseGuide", $"Get - {canPulseGuide}");
+                return canPulseGuide;
             }
         }
 
@@ -1758,6 +1760,9 @@ namespace ASCOM.Meade.net
                 CheckParked();
                 if (IsSlewingToTarget())
                     throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
+
+                if (AlignmentMode == AlignmentModes.algAltAz)
+                    throw new InvalidOperationException("Unable to PulseGuide whilst in AltAz mode.");
 
                 SharedResourcesWrapper.IsGuiding = true;
                 try

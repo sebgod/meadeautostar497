@@ -18,6 +18,7 @@ namespace Meade.net.Telescope.UnitTests
 {
     public class TestProperties
     {
+        public string AlignmentMode { get; internal set; } = "P";
         internal string telescopeRaResult { get; set; } = "HH:MM:SS";
         internal double rightAscension { get; set; } = 1.2; //todo rename to declination;
         internal double declination { get; set; } = 45;
@@ -154,6 +155,9 @@ namespace Meade.net.Telescope.UnitTests
                 _isParked = isParked;
                 _parkedPosition = parkedPostion;
             });
+
+            const char ack = (char)6;
+            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString(), false)).Returns( () => _testProperties.AlignmentMode);
 
             _sharedResourcesWrapperMock.SetupGet(x => x.IsParked).Returns(() => _isParked);
             _sharedResourcesWrapperMock.SetupGet(x => x.ParkedPosition).Returns(() => _parkedPosition);
@@ -793,9 +797,7 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("G", AlignmentModes.algGermanPolar, TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg)]
         public void AlignmentMode_Get_WhenScopeInAltAz_ReturnsAltAz(string telescopeMode, AlignmentModes alignmentMode, string productName, string firmware)
         {
-            const char ack = (char)6;
-            _sharedResourcesWrapperMock.Setup(x => x.SendChar(ack.ToString(), false)).Returns(telescopeMode);
-
+            _testProperties.AlignmentMode = telescopeMode;
             ConnectTelescope(productName, firmware, $"{telescopeMode}N0");
 
             var actualResult = _telescope.AlignmentMode;
@@ -806,6 +808,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Get_WhenUnknownAlignmentMode_ThrowsException()
         {
+            _testProperties.AlignmentMode = "";
             ConnectTelescope();
 
             Assert.Throws<InvalidValueException>(() =>
@@ -929,11 +932,23 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [Test]
-        public void CanPulseGuide_Get_ReturnsTrue()
+        public void CanPulseGuide_GetInPolarMode_ReturnsTrue()
         {
+            _testProperties.AlignmentMode = "P";
+            ConnectTelescope();
             var result = _telescope.CanPulseGuide;
 
             Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void CanPulseGuide_GetInAltAzMode_ReturnsFalse()
+        {
+            _testProperties.AlignmentMode = "A";
+            ConnectTelescope();
+            var result = _telescope.CanPulseGuide;
+
+            Assert.That(result, Is.False);
         }
 
         [Test]
@@ -1694,6 +1709,23 @@ namespace Meade.net.Telescope.UnitTests
             var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
 
             Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide whilst slewing to target."));
+        }
+
+        [TestCase(GuideDirections.guideEast)]
+        [TestCase(GuideDirections.guideWest)]
+        [TestCase(GuideDirections.guideNorth)]
+        [TestCase(GuideDirections.guideSouth)]
+        public void PulseGuide_WhenAltAzPulseGuideAttempted_ThenThrowsExpectedException(GuideDirections direction)
+        {
+            _testProperties.AlignmentMode = "A";
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("D", false)).Returns("");
+
+            var duration = 1;
+            ConnectTelescope();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => _telescope.PulseGuide(direction, duration));
+
+            Assert.That(exception.Message, Is.EqualTo("Unable to PulseGuide whilst in AltAz mode."));
         }
 
         [TestCase(GuideDirections.guideEast, TelescopeAxes.axisPrimary)]
