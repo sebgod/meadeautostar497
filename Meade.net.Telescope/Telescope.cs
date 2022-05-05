@@ -1400,7 +1400,6 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("CanUnpark");
 
-                //todo make this return false for non LX-200 GPS telescopes
                 LogMessage("CanUnpark", "Get - " + true);
                 return SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
             }
@@ -1742,11 +1741,20 @@ namespace ASCOM.Meade.net
                     break;
             }
 
+            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
+            {
+                SharedResourcesWrapper.SendBlind("hP");
+                //:hP# Autostar, Autostar II and LX 16" Slew to Park Position
+                //Returns: Nothing
+            }
+            else
+            {
+                Tracking = false;
+                SlewToCoordinates(parkedPosition.RightAscension, parkedPosition.Declination);
+            }
+
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
             SharedResourcesWrapper.SetParked(true, parkedPosition);
-            SharedResourcesWrapper.SendBlind("hP");
-            //:hP# Autostar, Autostar II and LX 16" Slew to Park Position
-            //Returns: Nothing
         }
 
         private bool _userNewerPulseGuiding = true;
