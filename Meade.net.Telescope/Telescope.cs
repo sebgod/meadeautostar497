@@ -1749,16 +1749,27 @@ namespace ASCOM.Meade.net
             }
             else
             {
+                LogMessage("Park", $"Parking LX200 Classic");
                 if (CanSetTracking)
+                {
+                    LogMessage("Park", $"Parking LX200 Classic - Setting Tracking False");
                     Tracking = false;
+                }
                 else
+                {
+                    LogMessage("Park", $"Setting Telescope to land targets.");
                     SharedResourcesWrapper.SendBlind("AL"); //todo need to route this to the real commands.
+                }
 
+                
                 var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
+                LogMessage("Park", $"Slewing to park position az:0 alt:{parkAlt}");
                 SlewToAltAz(0, parkAlt, false);
+                LogMessage("Park", $"Arrived at park position");
             }
 
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
+            LogMessage("Park", $"Setting driver to parked");
             SharedResourcesWrapper.SetParked(true, parkedPosition);
         }
 
@@ -1768,7 +1779,7 @@ namespace ASCOM.Meade.net
         {
             LogMessage("PulseGuide", $"pulse guide direction {direction} duration {duration}");
             try
-            {
+            { 
                 CheckConnected("PulseGuide");
                 CheckParked();
                 if (IsSlewingToTarget())
