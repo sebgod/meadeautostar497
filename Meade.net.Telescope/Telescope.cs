@@ -1750,18 +1750,17 @@ namespace ASCOM.Meade.net
             else
             {
                 LogMessage("Park", $"Parking LX200 Classic");
-                if (CanSetTracking)
+                LogMessage("Park", $"Setting Telescope to land targets.");
+                try
                 {
-                    LogMessage("Park", $"Parking LX200 Classic - Setting Tracking False");
-                    Tracking = false;
-                }
-                else
-                {
-                    LogMessage("Park", $"Setting Telescope to land targets.");
                     SharedResourcesWrapper.SendBlind("AL"); //todo need to route this to the real commands.
+                    _utilities.WaitForMilliseconds(1000); //Need to wait 1 second according to old driver.
+                }
+                catch (Exception ex)
+                {
+                    LogMessage("Park", $"AL command failed: {ex.Message}");
                 }
 
-                
                 var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
                 LogMessage("Park", $"Slewing to park position az:0 alt:{parkAlt}");
                 SlewToAltAz(0, parkAlt, false);
