@@ -1750,7 +1750,8 @@ namespace ASCOM.Meade.net
             else
             {
                 Tracking = false;
-                SlewToCoordinates(parkedPosition.RightAscension, parkedPosition.Declination);
+                var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
+                SlewToAltAz(0, parkAlt, false);
             }
 
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
@@ -2162,11 +2163,16 @@ namespace ASCOM.Meade.net
 
         public void SlewToAltAz(double azimuth, double altitude)
         {
+            SlewToAltAz(azimuth, altitude, true);
+        }
+
+        public void SlewToAltAz(double azimuth, double altitude, bool polar)
+        {
             LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude}");
             CheckConnected("SlewToAltAz");
             CheckParked();
 
-            SlewToAltAzAsync(azimuth, altitude);
+            SlewToAltAzAsync(azimuth, altitude, polar);
 
             while (Slewing) //wait for slew to complete
             {
@@ -2175,6 +2181,11 @@ namespace ASCOM.Meade.net
         }
 
         public void SlewToAltAzAsync(double azimuth, double altitude)
+        {
+            SlewToAltAzAsync(azimuth, altitude, true);
+        }
+
+        public void SlewToAltAzAsync(double azimuth, double altitude, bool polar)
         {
             CheckConnected("SlewToAltAzAsync");
             CheckParked();
@@ -2193,18 +2204,87 @@ namespace ASCOM.Meade.net
 
             LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
 
-            HorizonCoordinates altAz = new HorizonCoordinates { Azimuth = azimuth, Altitude = altitude };
+            if (polar)
+            {
+                HorizonCoordinates altAz = new HorizonCoordinates { Azimuth = azimuth, Altitude = altitude };
 
-            var utcDateTime = UTCDate;
-            var latitude = SiteLatitude;
-            var longitude = SiteLongitude;
+                var utcDateTime = UTCDate;
+                var latitude = SiteLatitude;
+                var longitude = SiteLongitude;
+                var raDec = _astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, altAz);
 
-            var raDec = _astroMaths.ConvertHozToEq(utcDateTime, latitude, longitude, altAz);
+                TargetRightAscension = raDec.RightAscension;
+                TargetDeclination = raDec.Declination;
+            }
+            else
+            { 
+                TargetAltitude = altitude;
+                TargetAzimuth = azimuth;
+            }
 
-            TargetRightAscension = raDec.RightAscension;
-            TargetDeclination = raDec.Declination;
+            DoSlewAsync(polar);
+        }
 
-            DoSlewAsync(true);
+        private double TargetAltitude
+        {
+            set
+            {
+                CheckConnected("TargetAltitude");
+                CheckParked();
+
+                if (value < -90)
+                    throw new ArgumentOutOfRangeException($"Target Altitude cannot be below -90.");
+
+                if (value > 90)
+                    throw new ArgumentOutOfRangeException($"Target Altitude cannot be above 90.");
+
+                var dms = SharedResourcesWrapper.IsLongFormat ?
+                    _utilities.DegreesToDMS(value, "*", "'", "", _digitsDe) :
+                    _utilities.DegreesToDM(value, "*", "", _digitsDe);
+
+                var s = value < 0 ? "-" : "+";
+
+                var command = $"Sa{s}{dms}";
+
+                LogMessage("TargetAltitude Set", $"{command}");
+                var response = SharedResourcesWrapper.SendBool(command);
+                //:SasDD*MM#
+                //  Set target object altitude to sDD*MM# or sDD*MM’SS# [LX 16”, Autostar, Autostar II]
+                //    Returns:
+                //      1 Object within slew range
+                //      0 Object out of slew range
+                if (!response)
+                    throw new InvalidOperationException("Target Altitude out of slew range.");
+            }
+        }
+
+        private double TargetAzimuth
+        {
+            set
+            {
+                CheckConnected("TargetAzimuth");
+                CheckParked();
+
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException($"Target Altitude cannot be below 0.");
+
+                if (value >= 360)
+                    throw new ArgumentOutOfRangeException($"Target Altitude cannot be above 360.");
+
+                var dms = _utilities.DegreesToDM(value, "*", "", _digitsDe);
+
+                var command = $"Sz{dms}";
+
+                LogMessage("TargetAzimuth Set", $"{command}");
+                var response = SharedResourcesWrapper.SendBool(command);
+                //:SzDDD*MM#
+                //  Sets the target Object Azimuth[LX 16” and Autostar II only]
+                //    Returns:
+                //      0 – Invalid
+                //      1 - Valid
+                if (!response)
+                    throw new InvalidOperationException("Target Azimuth out of slew range.");
+            }
         }
 
         private void DoSlewAsync(bool polar)
