@@ -1749,7 +1749,11 @@ namespace ASCOM.Meade.net
             }
             else
             {
-                Tracking = false;
+                if (CanSetTracking)
+                    Tracking = false;
+                else
+                    SharedResourcesWrapper.SendBlind("AL"); //todo need to route this to the real commands.
+
                 var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
                 SlewToAltAz(0, parkAlt, false);
             }
