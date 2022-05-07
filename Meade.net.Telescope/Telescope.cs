@@ -508,12 +508,14 @@ namespace ASCOM.Meade.net
                         }
                         catch (Exception)
                         {
+                            IsConnected = false;
                             SharedResourcesWrapper.Disconnect("Serial", DriverId);
                             throw;
                         }
                     }
                     catch (Exception ex)
                     {
+                        IsConnected = false;
                         LogMessage("Connected Set", "Error connecting to port {0} - {1}", _profileProperties.ComPort, ex.Message);
                     }
                 }
