@@ -503,8 +503,9 @@ namespace ASCOM.Meade.net
                             }
 
                             var raAndDec = GetTelescopeRaAndDec();
+                            var altAndAz = GetTelescopeAltAz();
                             LogMessage("Connected Set",
-                                $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}");
+                                $"Connected OK.  Current RA = {_utilitiesExtra.HoursToHMS(raAndDec.RightAscension)} Dec = {_utilitiesExtra.DegreesToDMS(raAndDec.Declination)}  Az={altAndAz.Azimuth} Alt={altAndAz.Altitude}");
                         }
                         catch (Exception)
                         {
@@ -1102,33 +1103,38 @@ namespace ASCOM.Meade.net
 
                 if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                 {
-                    try
-                    {
-                        CheckParked();
-
-                        //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
-                        var result = SharedResourcesWrapper.SendString("GA");
-                        //:GA# Get Telescope Altitude
-                        //Returns: sDD* MM# or sDD*MM'SS#
-                        //The current scope altitude. The returned format depending on the current precision setting.
-
-                        var alt = _utilities.DMSToDegrees(result);
-                        LogMessage("Altitude", $"{alt}");
-                        return alt;
-                    }
-                    catch (ParkedException)
-                    {
-                        var parkedPosition = SharedResourcesWrapper.ParkedPosition;
-                        if (parkedPosition != null)
-                            return parkedPosition.Altitude;
-
-                        throw;
-                    }
+                    return GetRealTelescopeAltitude();
                 }
 
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Altitude", $"{altAz.Altitude}");
                 return altAz.Altitude;
+            }
+        }
+
+        private double GetRealTelescopeAltitude()
+        {
+            try
+            {
+                CheckParked();
+
+                //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
+                var result = SharedResourcesWrapper.SendString("GA");
+                //:GA# Get Telescope Altitude
+                //Returns: sDD* MM# or sDD*MM'SS#
+                //The current scope altitude. The returned format depending on the current precision setting.
+
+                var alt = _utilities.DMSToDegrees(result);
+                LogMessage("Altitude", $"{alt}");
+                return alt;
+            }
+            catch (ParkedException)
+            {
+                var parkedPosition = SharedResourcesWrapper.ParkedPosition;
+                if (parkedPosition != null)
+                    return parkedPosition.Altitude;
+
+                throw;
             }
         }
 
@@ -1156,6 +1162,15 @@ namespace ASCOM.Meade.net
             {
                 RightAscension = RightAscension,
                 Declination = Declination
+            };
+        }
+
+        private HorizonCoordinates GetTelescopeAltAz()
+        {
+            return new HorizonCoordinates()
+            {
+                Altitude = GetRealTelescopeAltitude(),
+                Azimuth = GetRealTelescopeAzimuth()
             };
         }
 
@@ -1212,33 +1227,38 @@ namespace ASCOM.Meade.net
 
                 if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                 {
-                    try
-                    {
-                        CheckParked();
-
-                        var result = SharedResourcesWrapper.SendString("GZ");
-                        //:GZ# Get telescope azimuth
-                        //Returns: DDD*MM#T or DDD*MM'SS#
-                        //The current telescope Azimuth depending on the selected precision.
-
-                        double az = _utilities.DMSToDegrees(result);
-
-                        LogMessage("Azimuth Get", $"{az}");
-                        return az;
-                    }
-                    catch (ParkedException)
-                    {
-                        var parkedPosition = SharedResourcesWrapper.ParkedPosition;
-                        if (parkedPosition != null)
-                            return parkedPosition.Azimuth;
-
-                        throw;
-                    }
+                    return GetRealTelescopeAzimuth();
                 }
 
                 var altAz = CalcAltAzFromTelescopeEqData();
                 LogMessage("Azimuth Get", $"{altAz.Azimuth}");
                 return altAz.Azimuth;
+            }
+        }
+
+        private double GetRealTelescopeAzimuth()
+        {
+            try
+            {
+                CheckParked();
+
+                var result = SharedResourcesWrapper.SendString("GZ");
+                //:GZ# Get telescope azimuth
+                //Returns: DDD*MM#T or DDD*MM'SS#
+                //The current telescope Azimuth depending on the selected precision.
+
+                double az = _utilities.DMSToDegrees(result);
+
+                LogMessage("Azimuth Get", $"{az}");
+                return az;
+            }
+            catch (ParkedException)
+            {
+                var parkedPosition = SharedResourcesWrapper.ParkedPosition;
+                if (parkedPosition != null)
+                    return parkedPosition.Azimuth;
+
+                throw;
             }
         }
 

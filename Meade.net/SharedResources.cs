@@ -391,8 +391,9 @@ namespace ASCOM.Meade.net
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
                         SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
+                        SharedSerial.ReceiveTimeout = 5; //5 second timeout;
                         SharedSerial.Connected = true;
-
+                        
                         try
                         {
                             ProductName = SendString("GVP");
