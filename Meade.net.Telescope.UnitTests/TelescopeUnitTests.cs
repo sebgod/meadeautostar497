@@ -221,9 +221,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             string expectedResult = "test result string";
             _sharedResourcesWrapperMock.Setup(x => x.SendString("ED", false)).Returns(expectedResult);
-            _telescope.Connected = true;
-
-
+            ConnectTelescope();
 
             var actualResult = _telescope.Action("handbox", "readdisplay");
 
@@ -830,21 +828,17 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, AlignmentModes.algGermanPolar, "AP")]
         public void AlignmentMode_Set_WhenConnected_ThenSendsExpectedCommand(string productName, string firmware, AlignmentModes alignmentMode, string expectedCommand)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
-            _telescope.Connected = true;
+            ConnectTelescope(productName, firmware);
 
             _telescope.AlignmentMode = alignmentMode;
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedCommand, false), Times.Once);
         }
 
-        [TestCase("AUTOSTAR", "43Ef")]
+        [TestCase(TelescopeList.Autostar497, "43Ef")]
         public void AlignmentMode_Set_WhenAutostarFirmwareToLow_ThenThrowsException(string productName, string firmware)
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(productName);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(firmware);
-            _telescope.Connected = true;
+            ConnectTelescope(productName, firmware);
 
             var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.AlignmentMode = AlignmentModes.algAltAz);
 
@@ -983,9 +977,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void CanSetGuideRates_Get_WhenConnectedToLX200GPS_ThenReturnsTrue()
         {
-            _sharedResourcesWrapperMock.Setup(x => x.ProductName).Returns(() => TelescopeList.LX200GPS);
-            _sharedResourcesWrapperMock.Setup(x => x.FirmwareVersion).Returns(() => TelescopeList.LX200GPS_42G);
-            _telescope.Connected = true;
+            ConnectTelescope(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G);
 
             var result = _telescope.CanSetGuideRates;
 
