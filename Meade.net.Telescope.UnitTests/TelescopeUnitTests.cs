@@ -477,7 +477,7 @@ namespace Meade.net.Telescope.UnitTests
 
             if (expectedConnected)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendString("GZ", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendString("GZ", false), Times.AtLeastOnce);
                 _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}", false), Times.Never);
             }
         }
@@ -488,7 +488,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope(TelescopeList.LX200GPS, string.Empty);
 
             _sharedResourcesWrapperMock.Verify(x => x.Connect("Serial", It.IsAny<string>(), It.IsAny<ITraceLogger>()), Times.Once);
-            _sharedResourcesWrapperMock.Verify(x => x.SendString("GZ", false), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString("GZ", false), Times.AtLeastOnce);
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"Rg{_profileProperties.GuideRateArcSecondsPerSecond:00.0}", false), Times.Once);
         }

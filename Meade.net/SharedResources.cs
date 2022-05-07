@@ -390,6 +390,7 @@ namespace ASCOM.Meade.net
                         SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
+                        SharedSerial.ReceiveTimeout = 5; //5 second timeout;
                         SharedSerial.Speed = SerialSpeed.ps9600;
                         
                         var wantedSpeed = (SerialSpeed)profileProperties.Speed;
@@ -454,7 +455,7 @@ namespace ASCOM.Meade.net
                             }
                         }
                         SharedSerial.Connected = true;
-
+                        
                         try
                         {
                             ProductName = SendString("GVP");
