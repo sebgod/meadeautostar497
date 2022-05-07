@@ -3066,7 +3066,9 @@ namespace ASCOM.Meade.net
         {
             if (!IsConnected)
             {
-                throw new NotConnectedException($"Not connected to telescope when trying to execute: {message}");
+                var msg = $"Not connected to telescope when trying to execute: {message}";
+                LogMessage("CheckConnected", msg);
+                throw new NotConnectedException(msg);
             }
         }
 
