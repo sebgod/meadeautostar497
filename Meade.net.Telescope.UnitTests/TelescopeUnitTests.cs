@@ -2715,15 +2715,15 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(_telescope.Tracking, Is.True);
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void Tracking_Set_WhenCanSetTrackingIsFalse_ThenThrowsNotImplementedException(bool tracking)
-        {
-            // GW is not supported, so CanSetTracking is false
-            ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_30Ee);
+        //[TestCase(true)]
+        //[TestCase(false)]
+        //public void Tracking_Set_WhenCanSetTrackingIsFalse_ThenThrowsNotImplementedException(bool tracking)
+        //{
+        //    // GW is not supported, so CanSetTracking is false
+        //    ConnectTelescope(firmwareVersion: TelescopeList.Autostar497_30Ee);
 
-            Assert.Throws<ASCOM.NotImplementedException>( () => { _telescope.Tracking = tracking; } );
-        }
+        //    Assert.Throws<ASCOM.NotImplementedException>( () => { _telescope.Tracking = tracking; } );
+        //}
 
         [TestCase(true, "AP")]
         [TestCase(false, "AL")]
