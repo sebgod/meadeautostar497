@@ -979,10 +979,13 @@ namespace ASCOM.Meade.net
                 if (IsGwCommandSupported())
                 {
                     var alignmentStatus = GetScopeAlignmentStatus();
+                    LogMessage("AlignmentMode Get", $"alignmode = {alignmentStatus.AlignmentMode}");
                     return alignmentStatus.AlignmentMode;
                 }
-                else
+
+                return Retry(6, () =>
                 {
+                    LogMessage("AlignmentMode Get", $"Sending Ack code.");
                     const char ack = (char)6;
                     //ACK <0x06> Query of alignment mounting mode.
                     //Returns:
@@ -995,22 +998,29 @@ namespace ASCOM.Meade.net
                     switch (alignmentString)
                     {
                         case "A":
+                            LogMessage("AlignmentMode Get", $"Telescope is in AltAz");
                             alignmentMode = AlignmentModes.algAltAz;
                             break;
                         case "P":
+                            LogMessage("AlignmentMode Get", $"Telescope is in Polar");
                             alignmentMode = AlignmentModes.algPolar;
                             break;
+                        case "L":
+                            LogMessage("AlignmentMode Get", $"Telescope is in Land mode");
+                            alignmentMode = AlignmentModes.algAltAz;
+                            break;
                         //case "G":
-                            //alignmentMode = AlignmentModes.algGermanPolar;
-                            //break;
+                        //alignmentMode = AlignmentModes.algGermanPolar;
+                        //break;
                         default:
-                            throw new InvalidValueException(
-                                $"unknown alignment returned from telescope: {alignmentString}");
+                            var msg = $"unknown alignment returned from telescope: {alignmentString}";
+                            LogMessage("AlignmentMode Get", msg);
+                            throw new InvalidValueException(msg);
                     }
 
                     LogMessage("AlignmentMode Get", $"alignmode = {alignmentMode}");
                     return alignmentMode;
-                }
+                });
             }
             set
             {
@@ -2419,6 +2429,27 @@ namespace ASCOM.Meade.net
                     LogMessage("Retry", $"Attempt failed {i} attempts remaining error: {e.Message}");
                 }
                 i--;
+            }
+        }
+
+        private T Retry<T>(int i, Func<T> func)
+        {
+            while (true)
+            {
+                try
+                {
+                    return func();
+                }
+                catch (Exception e)
+                {
+                    LogMessage("Retry", $"Attempt failed {i} attempts remaining error: {e.Message}");
+                    if (i > 0)
+                    {
+                        i--;
+                    }
+                    else
+                        throw;
+                }
             }
         }
 
