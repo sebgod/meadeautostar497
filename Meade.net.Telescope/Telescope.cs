@@ -177,7 +177,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                LogMessage("SupportedActions Get", "Returning empty arraylist");
+                LogMessage("SupportedActions Get", "Returning Actions Array");
                 var supportedActions = new ArrayList {"handbox", "site"};
                 return supportedActions;
             }
@@ -1750,16 +1750,16 @@ namespace ASCOM.Meade.net
             else
             {
                 LogMessage("Park", $"Parking LX200 Classic");
-                LogMessage("Park", $"Setting Telescope to land targets.");
-                try
-                {
-                    SharedResourcesWrapper.SendBlind("AL"); //todo need to route this to the real commands.
-                    _utilities.WaitForMilliseconds(1000); //Need to wait 1 second according to old driver.
-                }
-                catch (Exception ex)
-                {
-                    LogMessage("Park", $"AL command failed: {ex.Message}");
-                }
+                //LogMessage("Park", $"Setting Telescope to land targets.");
+                //try
+                //{
+                //    SharedResourcesWrapper.SendBlind("AL"); //todo need to route this to the real commands.
+                //    _utilities.WaitForMilliseconds(1000); //Need to wait 1 second according to old driver.
+                //}
+                //catch (Exception ex)
+                //{
+                //    LogMessage("Park", $"AL command failed: {ex.Message}");
+                //}
 
                 var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
                 LogMessage("Park", $"Slewing to park position az:0 alt:{parkAlt}");
