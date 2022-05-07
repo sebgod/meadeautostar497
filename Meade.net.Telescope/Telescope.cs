@@ -2204,7 +2204,7 @@ namespace ASCOM.Meade.net
 
         public void SlewToAltAz(double azimuth, double altitude, bool polar)
         {
-            LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude}");
+            LogMessage("SlewToAltAz", $"Az=~{azimuth} Alt={altitude} polar={polar}");
             CheckConnected("SlewToAltAz");
             CheckParked();
 
@@ -2238,7 +2238,7 @@ namespace ASCOM.Meade.net
             if (azimuth < 0)
                 throw new InvalidValueException("Azimuth cannot be less than 0.");
 
-            LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude}");
+            LogMessage("SlewToAltAzAsync", $"Az={azimuth} Alt={altitude} polar={polar}");
 
             if (polar)
             {
@@ -2325,6 +2325,7 @@ namespace ASCOM.Meade.net
 
         private void DoSlewAsync(bool polar)
         {
+            LogMessage("DoSlewAsync", "Beginning slew sequence");
             CheckConnected("DoSlewAsync");
             CheckParked();
             if (Slewing)
@@ -2336,6 +2337,7 @@ namespace ASCOM.Meade.net
             switch (polar)
             {
                 case true:
+                    LogMessage("DoSlewAsync", "Executing Polar slew");
                     var response = SharedResourcesWrapper.SendChar("MS");
                     //:MS# Slew to Target Object
                     //Returns:
@@ -2382,20 +2384,41 @@ namespace ASCOM.Meade.net
 
                     break;
                 case false:
-                    var maResponse = SharedResourcesWrapper.SendChar("MA");
-                    //:MA# Autostar, LX 16", Autostar II - Slew to target Alt and Az
-                    //Returns:
-                    //0 - No fault
-                    //1 - Fault
-                    //LX200 - Not supported
-
-                    if (maResponse == "1")
+                    Retry(6, () =>
                     {
-                        throw new InvalidOperationException("fault");
-                    }
+                        LogMessage("DoSlewAsync", "Executing Alt Az");
+                        var maResponse = SharedResourcesWrapper.SendChar("MA");
+                        //:MA# Autostar, LX 16", Autostar II - Slew to target Alt and Az
+                        //Returns:
+                        //0 - No fault
+                        //1 - Fault
+                        //LX200 - Not supported
+
+                        if (maResponse != "0")
+                        {
+                            throw new InvalidOperationException($"fault ({maResponse})");
+                        }
+                    });
 
                     SetSlewingMinEndTime();
                     break;
+            }
+        }
+
+        private void Retry(int i, Action action)
+        {
+            while (i >= 0)
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (Exception e)
+                {
+                    LogMessage("Retry", $"Attempt failed {i} attempts remaining error: {e.Message}");
+                }
+                i--;
             }
         }
 
