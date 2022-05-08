@@ -567,23 +567,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        public static void Lock(Action action)
-        {
-            lock (LockObject)
-            {
-                action();
-            }
-        }
-
-        public static T Lock<T>(Func<T> func)
-        {
-            lock (LockObject)
-            {
-                return func();
-            }
-        }
-
+        
         /// <summary>
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
         /// in reality extra code will be needed to handle the hardware in some way
@@ -611,7 +595,7 @@ namespace ASCOM.Meade.net
             get => _restartTracking;
             private set => _restartTracking.Set(value);
         }
-        
+
         private static ParkedPosition _parkedPosition;
         public static ParkedPosition ParkedPosition
         {
@@ -624,6 +608,13 @@ namespace ASCOM.Meade.net
         {
             get => _isParked;
             private set => _isParked.Set(value);
+        }
+
+        private static readonly ThreadSafeValue<AlignmentModes> _alignmentMode = AlignmentModes.algAltAz;
+        public static AlignmentModes AlignmentMode
+        {
+            get => _alignmentMode;
+            set => _alignmentMode.Set(value);
         }
 
         private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;

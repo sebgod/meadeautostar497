@@ -131,6 +131,7 @@ namespace Meade.net.Telescope.UnitTests
             _testProperties.AlignmentStatus = alignmentStatus.ToCharArray();
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChars("GW", false, 3)).Returns(() => new string(_testProperties.AlignmentStatus));
+            _sharedResourcesWrapperMock.Setup(x => x.SendString("GW", false)).Returns(() => new string(_testProperties.AlignmentStatus));
             _sharedResourcesWrapperMock.Setup(x => x.SendBlind("AP", false)).Callback(() => _testProperties.AlignmentStatus[1] = 'T');
             _sharedResourcesWrapperMock.Setup(x => x.SendBlind("AL", false)).Callback(() => _testProperties.AlignmentStatus[1] = 'N');
 
@@ -808,8 +809,9 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void AlignmentMode_Get_WhenUnknownAlignmentMode_ThrowsException()
         {
-            _testProperties.AlignmentMode = "";
             ConnectTelescope();
+
+            _testProperties.AlignmentMode = "";
 
             Assert.Throws<InvalidValueException>(() =>
             {

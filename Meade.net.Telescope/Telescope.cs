@@ -488,6 +488,8 @@ namespace ASCOM.Meade.net
                                         SendCurrentDateTime("Connect");
                                     }
                                 }
+
+                                SharedResources.AlignmentMode = AlignmentMode;
                             }
                             else
                             {
@@ -1050,6 +1052,8 @@ namespace ASCOM.Meade.net
 
                 //:AL# Sets telescope to Land alignment mode
                 //Returns: nothing
+
+                SharedResources.AlignmentMode = AlignmentMode;
             }
         }
 
@@ -2805,8 +2809,6 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private AlignmentModes _savedAlignmode;
-
         public bool Tracking
         {
             get
@@ -2833,12 +2835,12 @@ namespace ASCOM.Meade.net
 
                 if (!value)
                 {
-                    _savedAlignmode = AlignmentMode;
+                    SharedResources.AlignmentMode = AlignmentMode;
                     SharedResourcesWrapper.SendBlind("AL");
                 }
                 else
                 {
-                    AlignmentMode = _savedAlignmode;
+                    AlignmentMode = SharedResources.AlignmentMode;
                 }
             }
         }
