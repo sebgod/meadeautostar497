@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -1433,7 +1434,14 @@ namespace ASCOM.Meade.net
                 CheckConnected("CanUnpark");
 
                 LogMessage("CanUnpark", "Get - " + true);
-                return SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS;
+
+                var unParkableScopes = new List<string>
+                {
+                    TelescopeList.LX200GPS,
+                    TelescopeList.LX200CLASSIC
+                };
+
+                return unParkableScopes.Contains(SharedResourcesWrapper.ProductName);
             }
         }
 
@@ -2788,6 +2796,8 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private AlignmentModes _savedAlignmode;
+
         public bool Tracking
         {
             get
@@ -2811,7 +2821,16 @@ namespace ASCOM.Meade.net
                 //}
 
                 LogMessage("Tracking Set", $"{value}");
-                SharedResourcesWrapper.SendBlind(value ? "AP" : "AL"); //todo need to route this to the real commands.
+
+                if (!value)
+                {
+                    _savedAlignmode = AlignmentMode;
+                    SharedResourcesWrapper.SendBlind("AL");
+                }
+                else
+                {
+                    AlignmentMode = _savedAlignmode;
+                }
             }
         }
 
@@ -3014,17 +3033,25 @@ namespace ASCOM.Meade.net
             LogMessage("Unpark", "Unparking telescope");
             CheckConnected("Unpark");
 
-            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200GPS)
+            if (!IsUnParkable())
                 throw new InvalidOperationException("Unable to unpark this telescope type");
 
             if (!AtPark)
                 return;
 
-            SharedResourcesWrapper.SendChar("I");
-            //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
-            //Returns: X once the handset restart has completed
+            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            {
 
-            BypassHandboxEntryForAutostarII();
+                SharedResourcesWrapper.SendChar("I");
+                //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
+                //Returns: X once the handset restart has completed
+
+                BypassHandboxEntryForAutostarII();
+            }
+            else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+            {
+
+            }
 
             SharedResourcesWrapper.SetParked(false, null);
 
