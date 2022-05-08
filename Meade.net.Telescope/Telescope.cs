@@ -434,7 +434,7 @@ namespace ASCOM.Meade.net
 
                             if (connectionInfo.SameDevice == 1)
                             {
-                                SharedResourcesWrapper.SetParked(false, null);
+                                SharedResourcesWrapper.SetParked(false, null, false);
                                 LogMessage("Connected Set", "Making first connection telescope adjustments");
 
                                 LogMessage("Connected Set", $"Site Longitude: {SiteLongitude}");
@@ -1435,6 +1435,14 @@ namespace ASCOM.Meade.net
 
                 LogMessage("CanUnpark", "Get - " + true);
 
+                return IsUnparkable;
+            }
+        }
+
+        private bool IsUnparkable
+        {
+            get
+            {
                 var unParkableScopes = new List<string>
                 {
                     TelescopeList.LX200GPS,
@@ -1740,7 +1748,7 @@ namespace ASCOM.Meade.net
 
             if (AtPark)
                 return;
-
+            
             ParkedPosition parkedPosition;
             switch (_profileProperties.ParkedBehaviour)
             {
@@ -1780,6 +1788,7 @@ namespace ASCOM.Meade.net
                     parkedPosition = null;
                     break;
             }
+            var isTracking = Tracking;
 
             if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
             {
@@ -1802,7 +1811,7 @@ namespace ASCOM.Meade.net
 
             //Setting park to true before sending the park command as the Autostar and Audiostar stop serial communications once the park command has been issued.
             LogMessage("Park", $"Setting driver to parked");
-            SharedResourcesWrapper.SetParked(true, parkedPosition);
+            SharedResourcesWrapper.SetParked(true, parkedPosition, isTracking);
         }
 
         private bool _userNewerPulseGuiding = true;
@@ -3033,7 +3042,7 @@ namespace ASCOM.Meade.net
             LogMessage("Unpark", "Unparking telescope");
             CheckConnected("Unpark");
 
-            if (!IsUnParkable())
+            if (!IsUnparkable)
                 throw new InvalidOperationException("Unable to unpark this telescope type");
 
             if (!AtPark)
@@ -3050,10 +3059,11 @@ namespace ASCOM.Meade.net
             }
             else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
             {
-
+                if (SharedResourcesWrapper.RestartTracking)
+                    Tracking = true;
             }
 
-            SharedResourcesWrapper.SetParked(false, null);
+            SharedResourcesWrapper.SetParked(false, null, false);
 
             // reset side of pier
             SideOfPier = PierSide.pierUnknown;

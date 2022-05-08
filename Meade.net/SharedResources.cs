@@ -598,10 +598,25 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static void SetParked(bool atPark, ParkedPosition parkedPosition)
+        public static void SetParked(bool atPark, ParkedPosition parkedPosition, bool restartTracking)
         {
             IsParked = atPark;
             ParkedPosition = parkedPosition;
+            RestartTracking = restartTracking;
+        }
+
+        private static readonly ThreadSafeValue<bool> _restartTracking = false;
+        public static bool RestartTracking
+        {
+            get => _restartTracking;
+            private set => _restartTracking.Set(value);
+        }
+        
+        private static ParkedPosition _parkedPosition;
+        public static ParkedPosition ParkedPosition
+        {
+            get => _parkedPosition;
+            private set => Interlocked.Exchange(ref _parkedPosition, value);
         }
 
         private static readonly ThreadSafeValue<bool> _isParked = false;
@@ -609,13 +624,6 @@ namespace ASCOM.Meade.net
         {
             get => _isParked;
             private set => _isParked.Set(value);
-        }
-
-        private static ParkedPosition _parkedPosition;
-        public static ParkedPosition ParkedPosition
-        {
-            get => _parkedPosition;
-            private set => Interlocked.Exchange(ref _parkedPosition, value);
         }
 
         private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;
