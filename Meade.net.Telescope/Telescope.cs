@@ -3041,39 +3041,47 @@ namespace ASCOM.Meade.net
 
         public void Unpark()
         {
-            LogMessage("Unpark", "Unparking telescope");
-            CheckConnected("Unpark");
-
-            if (!IsUnparkable)
-                throw new InvalidOperationException("Unable to unpark this telescope type");
-
-            if (!AtPark)
-                return;
-
-            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            try
             {
+                LogMessage("Unpark", "Unparking telescope");
+                CheckConnected("Unpark");
 
-                SharedResourcesWrapper.SendChar("I");
-                //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
-                //Returns: X once the handset restart has completed
+                if (!IsUnparkable)
+                    throw new InvalidOperationException("Unable to unpark this telescope type");
 
-                BypassHandboxEntryForAutostarII();
-            }
-            else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
-            {
-                if (SharedResourcesWrapper.RestartTracking)
+                if (!AtPark)
+                    return;
+
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
                 {
-                    LogMessage("Unpark", "Turning tracking on");
-                    Tracking = true;
-                    LogMessage("Unpark", "Turning tracking on completed");
+
+                    SharedResourcesWrapper.SendChar("I");
+                    //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
+                    //Returns: X once the handset restart has completed
+
+                    BypassHandboxEntryForAutostarII();
                 }
+                else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
+                {
+                    if (SharedResourcesWrapper.RestartTracking)
+                    {
+                        LogMessage("Unpark", "Turning tracking on");
+                        Tracking = true;
+                        LogMessage("Unpark", "Turning tracking on completed");
+                    }
+                }
+
+                SharedResourcesWrapper.SetParked(false, null, false);
+
+                // reset side of pier
+                SideOfPier = PierSide.pierUnknown;
+                LogMessage("Unpark", "Unparking Completed");
             }
-
-            SharedResourcesWrapper.SetParked(false, null, false);
-
-            // reset side of pier
-            SideOfPier = PierSide.pierUnknown;
-            LogMessage("Unpark", "Unparking Completed");
+            catch (Exception ex)
+            {
+                LogMessage("Unpark", $"Error: {ex.Message}");
+                throw;
+            }
         }
 
         private bool BypassHandboxEntryForAutostarII()
