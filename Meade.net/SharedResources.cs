@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ASCOM.DeviceInterface;
@@ -389,8 +389,70 @@ namespace ASCOM.Meade.net
                         SharedSerial.DataBits = profileProperties.DataBits;
                         SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
-                        SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
+                        SharedSerial.Speed = SerialSpeed.ps9600;
+                        
+                        var wantedSpeed = (SerialSpeed)profileProperties.Speed;
+                        if (wantedSpeed != SerialSpeed.ps9600)
+                        {
+                            SharedSerial.Speed = wantedSpeed;
+                            SharedSerial.Connected = true;
+
+                            var speedRampNeeded = false;
+
+                            //Test if communication is working.
+                            try
+                            {
+                                string utcOffSet = SendString("GG");
+                            }
+                            catch (Exception)
+                            {
+                                speedRampNeeded = true;
+                            }
+
+                            if (speedRampNeeded)
+                            {
+                                SharedSerial.Connected = false;
+                                SharedSerial.Speed = SerialSpeed.ps9600;
+                                SharedSerial.Connected = true;
+
+                                int newSpeedIndex = GetSpeedIndex(wantedSpeed);
+                                //:SBn# Set Baud Rate n, where n is an ASCII digit (1..9) with the following interpertation
+                                //  1 56.7K
+                                //  2 38.4K
+                                //  3 28.8K
+                                //  4 19.2K
+                                //  5 14.4K
+                                //  6 9600
+                                //  7 4800
+                                //  8 2400
+                                //  9 1200
+                                //Returns:
+                                //  1 At the current baud rate and then changes to the new rate for further communication
+                                //SendBlind($"SB{newSpeedIndex}");
+                                try
+                                {
+                                    var speedChanged = SendChar($"SB{newSpeedIndex}");
+                                    if (speedChanged == "1")
+                                    {
+                                        SharedSerial.Connected = false;
+                                        SharedSerial.Speed = wantedSpeed;
+                                        traceLogger.LogIssue("Connect",
+                                            $"Telescope serial port speed change, connecting at {SharedSerial.Speed}.");
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Autostar not signalled speed change.");
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    SharedSerial.Connected = false;
+                                    SharedSerial.Speed = SerialSpeed.ps9600;
+                                    traceLogger.LogIssue("Connect", $"Telescope not responding to speed change, connecting at {SharedSerial.Speed}.");
+                                }
+                            }
+                        }
                         SharedSerial.Connected = true;
 
                         try
@@ -448,6 +510,23 @@ namespace ASCOM.Meade.net
                     //Connections = ConnectedDevices[deviceId].Count,
                     SameDevice = ConnectedDeviceIds[driverId].Count
                 };
+            }
+        }
+
+        private static int GetSpeedIndex(SerialSpeed speed)
+        {
+            switch (speed)
+            {
+                case SerialSpeed.ps57600: return 1;
+                case SerialSpeed.ps38400: return 2;
+                case SerialSpeed.ps28800: return 3;
+                case SerialSpeed.ps19200: return 4;
+                case SerialSpeed.ps14400: return 5;
+                case SerialSpeed.ps9600: return 6;
+                case SerialSpeed.ps4800: return 7;
+                case SerialSpeed.ps2400: return 8;
+                case SerialSpeed.ps1200: return 9;
+                default: throw new NotSupportedException($"{SpeedDefault} not supported");
             }
         }
 

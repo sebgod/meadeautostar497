@@ -25,7 +25,7 @@ namespace ASCOM.Meade.net
 
             SetItemsFromEnum(cboStopBits.Items, typeof(SerialStopBits));
             SetItemsFromEnum(cboParity.Items, typeof(SerialParity));
-            SetItemsFromEnumValues(cboSpeed.Items, typeof(SerialSpeed));
+            SetItemFromEnumValues(cboSpeed.Items, SerialSpeed.ps1200, SerialSpeed.ps57600);
             SetItemsFromEnum(cboHandShake.Items, typeof(SerialHandshake));
             SetItemsFromEnum(cboParkedBehaviour.Items, typeof(ParkedBehaviour));
         }
@@ -41,13 +41,30 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private void SetItemsFromEnumValues(IList items, Type enumItems)
+        //private void SetItemsFromEnumValues(IList items, Type enumItems)
+        //{
+        //    items.Clear();
+
+        //    foreach (int item in Enum.GetValues(enumItems))
+        //    {
+        //        items.Add(item);
+        //    }
+        //}
+
+        private void SetItemFromEnumValues<T>(IList items, T minValue, T maxValue)
         {
             items.Clear();
 
-            foreach (int item in Enum.GetValues(enumItems))
+            var type = typeof(T);
+
+            var intMinValue = (int)Convert.ChangeType(minValue, typeof(int));
+
+            var intMaxValue = (int)Convert.ChangeType(maxValue, typeof(int));
+
+            foreach (int item in Enum.GetValues(type))
             {
-                items.Add(item);
+                if ((item >= intMinValue) && (item <= intMaxValue))
+                    items.Add(item);
             }
         }
 

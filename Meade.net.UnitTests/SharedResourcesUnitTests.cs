@@ -591,6 +591,349 @@ namespace Meade.net.UnitTests
         }
 
         [Test]
+        public void Connect_WhenSpeedIsFastAndAutostarSetToFast_ThenConnectsDirectlyAtFastSpeed()
+        {
+            string deviceId = "Serial";
+
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string TraceStateDefault = "false";
+
+            string ComPortDefault = "COM1";
+            string SpeedDefault = "57600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
+            string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+            string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
+
+            Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
+                .Returns(TraceStateDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
+                .Returns(ComPortDefault);
+            profileWrapperMock
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                    GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
+                .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+               x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                   .Returns(() => SpeedDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            string serialPortReturn = string.Empty;
+
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS; });
+            _serialMock.Setup(x => x.Transmit("#:GVN#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS_42G; });
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => { serialPortReturn = "0"; });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
+
+            var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
+            try
+            {
+                Assert.That(connectionResult.SameDevice, Is.EqualTo(1));
+                Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200GPS));
+                Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.LX200GPS_42G));
+            }
+            finally
+            {
+                SharedResources.Disconnect(deviceId, String.Empty);
+            }
+        }
+
+        [TestCase("57600")]
+        [TestCase("38400")]
+        [TestCase("28800")]
+        [TestCase("19200")]
+        [TestCase("14400")]
+        [TestCase("4800")]
+        [TestCase("2400")]
+        [TestCase("1200")]
+        public void Connect_WhenSpeedIsFastAndAutostarAtDefault_ThenConnectsAutoStarSpeedChanged(string WantedSpeed)
+        {
+            string deviceId = "Serial";
+
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string TraceStateDefault = "false";
+
+            string ComPortDefault = "COM1";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
+            string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+            string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
+
+            Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
+                .Returns(TraceStateDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
+                .Returns(ComPortDefault);
+            profileWrapperMock
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                    GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
+                .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+               x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                   .Returns(() => WantedSpeed);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            string serialPortReturn = string.Empty;
+
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS; });
+            _serialMock.Setup(x => x.Transmit("#:GVN#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS_42G; });
+            _serialMock.Setup(x => x.Transmit("#:SB1#")).Callback(() => { serialPortReturn = "1"; });
+
+            var ggCall = 0;
+
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => {
+                ggCall++;
+                if (ggCall == 1)
+                    throw new Exception("Fake Timeout");
+                else
+                    serialPortReturn = "0"; });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
+            _serialMock.Setup(x => x.ReceiveCounted(1)).Returns(() => "1");
+
+            var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
+            try
+            {
+                Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200GPS));
+                Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.LX200GPS_42G));
+
+                _traceLoggerMock.Verify(x => x.LogIssue("Connect", $"Telescope serial port speed change, connecting at ps{WantedSpeed}."), Times.Once);
+            }
+            finally
+            {
+                SharedResources.Disconnect(deviceId, String.Empty);
+            }
+        }
+
+        [TestCase("57600")]
+        [TestCase("38400")]
+        [TestCase("28800")]
+        [TestCase("19200")]
+        [TestCase("14400")]
+        [TestCase("4800")]
+        [TestCase("2400")]
+        [TestCase("1200")]
+        public void Connect_WhenAutostarReportsFailedToChangeSpeec_ThenConnectsAutoStarAtDefaultSpeed(string WantedSpeed)
+        {
+            string deviceId = "Serial";
+
+            string DriverId = "ASCOM.MeadeGeneric.Telescope";
+
+            string TraceStateDefault = "false";
+
+            string ComPortDefault = "COM1";
+            string SpeedDefault = "9600";
+            string DataBitsDefault = "8";
+            string StopBitsDefault = "One";
+            string HandshakeDefault = "None";
+            string ParityDefault = "None";
+            string RtsDtrEnabledDefault = "false";
+
+            string GuideRateProfileNameDefault = "10.077939"; //67% of sidereal rate
+            string PrecisionDefault = "Unchanged";
+
+            string ParkedBehaviourDefault = "No Coordinates";
+            string ParkedAltDefault = "0";
+            string ParkedAzimuthDefault = "180";
+            string FocalLengthDefault = "2000";
+            string ApertureAreaDefault = "32685";
+            string ApertureDiameterDefault = "203";
+
+            Mock<IProfileWrapper> profileWrapperMock = new Mock<IProfileWrapper>();
+            profileWrapperMock.SetupAllProperties();
+
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Trace Level", string.Empty, TraceStateDefault))
+                .Returns(TraceStateDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "COM Port", string.Empty, ComPortDefault))
+                .Returns(ComPortDefault);
+            profileWrapperMock
+                .Setup(x => x.GetValue(DriverId, "Guide Rate Arc Seconds Per Second", string.Empty,
+                    GuideRateProfileNameDefault)).Returns(GuideRateProfileNameDefault);
+            profileWrapperMock.Setup(x => x.GetValue(DriverId, "Precision", string.Empty, PrecisionDefault))
+                .Returns(PrecisionDefault);
+            profileWrapperMock.Setup(x =>
+               x.GetValue(DriverId, "Speed", string.Empty, SpeedDefault))
+                   .Returns(() => WantedSpeed);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Data Bits", string.Empty, DataBitsDefault))
+                .Returns(() => DataBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Stop Bits", string.Empty, StopBitsDefault))
+                .Returns(() => StopBitsDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Hand Shake", string.Empty, HandshakeDefault))
+                .Returns(() => HandshakeDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parity", string.Empty, ParityDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Rts / Dtr", string.Empty, RtsDtrEnabledDefault))
+                .Returns(() => RtsDtrEnabledDefault);
+
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Behaviour", string.Empty, ParkedBehaviourDefault))
+                .Returns(() => ParityDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Altitude", string.Empty, ParkedAltDefault))
+                .Returns(() => ParkedAltDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Parked Azimuth", string.Empty, ParkedAzimuthDefault))
+                .Returns(() => ParkedAzimuthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Focal Length (mm)", string.Empty, FocalLengthDefault))
+                .Returns(() => FocalLengthDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Area (mm²)", string.Empty, ApertureAreaDefault))
+                .Returns(() => ApertureAreaDefault);
+            profileWrapperMock.Setup(x =>
+                    x.GetValue(DriverId, "Aperture Diameter (mm)", string.Empty, ApertureDiameterDefault))
+                .Returns(() => ApertureDiameterDefault);
+
+            Mock<IProfileFactory> profileFactoryMock = new Mock<IProfileFactory>();
+            profileFactoryMock.Setup(x => x.Create()).Returns(profileWrapperMock.Object);
+
+            SharedResources.ProfileFactory = profileFactoryMock.Object;
+
+            string serialPortReturn = string.Empty;
+
+            _serialMock.Setup(x => x.Transmit("#:GVP#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS; });
+            _serialMock.Setup(x => x.Transmit("#:GVN#")).Callback(() => { serialPortReturn = TelescopeList.LX200GPS_42G; });
+            _serialMock.Setup(x => x.Transmit("#:SB1#")).Callback(() => { serialPortReturn = "1"; });
+
+            var ggCall = 0;
+
+            _serialMock.Setup(x => x.Transmit("#:GG#")).Callback(() => {
+                ggCall++;
+                if (ggCall == 1)
+                    throw new Exception("Fake Timeout");
+                else
+                    serialPortReturn = "0";
+            });
+            _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(() => serialPortReturn);
+            _serialMock.Setup(x => x.ReceiveCounted(1)).Returns(() => "0");
+
+            var connectionResult = SharedResources.Connect(deviceId, string.Empty, _traceLoggerMock.Object);
+            try
+            {
+                Assert.That(SharedResources.ProductName, Is.EqualTo(TelescopeList.LX200GPS));
+                Assert.That(SharedResources.FirmwareVersion, Is.EqualTo(TelescopeList.LX200GPS_42G));
+
+                _traceLoggerMock.Verify(x => x.LogIssue("Connect", $"Telescope not responding to speed change, connecting at ps{SpeedDefault}."), Times.Once);
+            }
+            finally
+            {
+                SharedResources.Disconnect(deviceId, String.Empty);
+            }
+        }
+
+        [Test]
         public void Connect_WhenSerialPortIsNotRespondingCorrectly_ThenExceptionThrown()
         {
             string deviceId = "Serial";
