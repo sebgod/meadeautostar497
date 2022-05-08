@@ -3062,13 +3062,18 @@ namespace ASCOM.Meade.net
             else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
             {
                 if (SharedResourcesWrapper.RestartTracking)
+                {
+                    LogMessage("Unpark", "Turning tracking on");
                     Tracking = true;
+                    LogMessage("Unpark", "Turning tracking on completed");
+                }
             }
 
             SharedResourcesWrapper.SetParked(false, null, false);
 
             // reset side of pier
             SideOfPier = PierSide.pierUnknown;
+            LogMessage("Unpark", "Unparking Completed");
         }
 
         private bool BypassHandboxEntryForAutostarII()
