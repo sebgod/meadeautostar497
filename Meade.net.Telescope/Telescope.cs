@@ -1030,8 +1030,8 @@ namespace ASCOM.Meade.net
                 CheckConnected("AlignmentMode Set");
 
                 //todo tidy this up into a better solution that means can :GW#, :AL#, :AA#, & :AP# and checked for Autostar properly
-                if (!IsGwCommandSupported())
-                    throw new PropertyNotImplementedException("AlignmentMode", true);
+                //if (!IsGwCommandSupported())
+                //    throw new PropertyNotImplementedException("AlignmentMode", true);
 
                 switch (value)
                 {

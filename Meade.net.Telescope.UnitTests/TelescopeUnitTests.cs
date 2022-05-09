@@ -839,16 +839,16 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedCommand, false), Times.Once);
         }
 
-        [TestCase(TelescopeList.Autostar497, "43Ef")]
-        public void AlignmentMode_Set_WhenAutostarFirmwareToLow_ThenThrowsException(string productName, string firmware)
-        {
-            ConnectTelescope(productName, firmware);
+        //[TestCase(TelescopeList.Autostar497, "43Ef")]
+        //public void AlignmentMode_Set_WhenAutostarFirmwareToLow_ThenThrowsException(string productName, string firmware)
+        //{
+        //    ConnectTelescope(productName, firmware);
 
-            var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.AlignmentMode = AlignmentModes.algAltAz);
+        //    var excpetion = Assert.Throws<PropertyNotImplementedException>(() => _telescope.AlignmentMode = AlignmentModes.algAltAz);
 
-            Assert.That(excpetion.Property, Is.EqualTo("AlignmentMode"));
-            Assert.That(excpetion.AccessorSet, Is.True);
-        }
+        //    Assert.That(excpetion.Property, Is.EqualTo("AlignmentMode"));
+        //    Assert.That(excpetion.AccessorSet, Is.True);
+        //}
 
         [Test]
         public void ApertureArea_Get_ReturnsExpectedResult()
