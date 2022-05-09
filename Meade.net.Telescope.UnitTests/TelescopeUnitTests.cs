@@ -3465,7 +3465,7 @@ namespace Meade.net.Telescope.UnitTests
             ConnectTelescope();
 
             var exception = Assert.Throws<InvalidValueException>(() => _telescope.SlewToAltAzAsync(0, -0.1));
-            Assert.That(exception.Message, Is.EqualTo("Altitide cannot be less than 0."));
+            Assert.That(exception.Message, Is.EqualTo("Altitude cannot be less than 0."));
         }
 
         [Test]
