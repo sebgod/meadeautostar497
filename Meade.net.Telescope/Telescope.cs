@@ -3074,7 +3074,7 @@ namespace ASCOM.Meade.net
                 SharedResourcesWrapper.SetParked(false, null, false);
 
                 // reset side of pier
-                SideOfPier = PierSide.pierUnknown;
+                //SideOfPier = PierSide.pierUnknown;
                 LogMessage("Unpark", "Unparking Completed");
             }
             catch (Exception ex)
