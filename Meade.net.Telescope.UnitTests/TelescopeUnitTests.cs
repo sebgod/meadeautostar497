@@ -2713,11 +2713,16 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Verify(x => x.SendChar(command, false), Times.Once);
         }
 
-        [Test]
-        public void Tracking_Get_WhenDefault_ThenIsTrue()
+        [TestCase("A", true)]
+        [TestCase("P", true)]
+        [TestCase("L", false)]
+        public void Tracking_Get_WhenGetsValue_ThenIsExpectedResult(string alignmentMode, bool expectedResult)
         {
-            Assert.That(_telescope.Tracking, Is.True);
-        }
+            ConnectTelescope();
+            _testProperties.AlignmentMode = alignmentMode;
+
+            Assert.That(_telescope.Tracking, Is.EqualTo(expectedResult));
+        }        
 
         //[TestCase(true)]
         //[TestCase(false)]
@@ -2729,7 +2734,7 @@ namespace Meade.net.Telescope.UnitTests
         //    Assert.Throws<ASCOM.NotImplementedException>( () => { _telescope.Tracking = tracking; } );
         //}
 
-       // [TestCase(true, "AP")]
+        // [TestCase(true, "AP")]
         [TestCase(false, "AL")]
         public void Tracking_Set_WhenCanSetTrackingIsTrue_ThenValueIsUpdated(bool tracking, string alignmentCommand)
         {

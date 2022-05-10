@@ -1107,14 +1107,7 @@ namespace ASCOM.Meade.net
                     return Retry(6, () =>
                     {
                         LogMessage("AlignmentMode Get", $"Sending Ack code.");
-                        const char ack = (char)6;
-                        //ACK <0x06> Query of alignment mounting mode.
-                        //Returns:
-                        //A If scope in AltAz Mode
-                        //D If scope is currently in the Downloader[Autostar II & Autostar]
-                        //L If scope in Land Mode
-                        //P If scope in Polar Mode
-                        var alignmentString = SharedResourcesWrapper.SendChar(ack.ToString());
+                        var alignmentString = GetAlignmentString();
                         AlignmentModes alignmentMode;
                         switch (alignmentString)
                         {
@@ -1187,6 +1180,19 @@ namespace ASCOM.Meade.net
                     throw;
                 }
             }
+        }
+
+        private string GetAlignmentString()
+        {
+            const char ack = (char)6;
+            //ACK <0x06> Query of alignment mounting mode.
+            //Returns:
+            //A If scope in AltAz Mode
+            //D If scope is currently in the Downloader[Autostar II & Autostar]
+            //L If scope in Land Mode
+            //P If scope in Polar Mode
+            var alignmentString = SharedResourcesWrapper.SendChar(ack.ToString());
+            return alignmentString;
         }
 
         private AlignmentStatus GetScopeAlignmentStatus()
@@ -2251,14 +2257,16 @@ namespace ASCOM.Meade.net
                 }
                 else
                 {
-                    LogMessage("Park", $"Parking LX200 Classic");
+                    LogMessage("Park", $"Calculating Park Alt Az");
+                    var siteLatitude = SiteLatitude;
+                    var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - siteLatitude;
+                    var parkAz = siteLatitude >= 0 ? 180 : 0;
 
+                    LogMessage("Park", $"Parking LX200 Classic");
                     Tracking = false;
 
-                    LogMessage("Park", $"Calculating Park Altitude");
-                    var parkAlt = AlignmentMode == AlignmentModes.algAltAz ? 0 : 90 - SiteLatitude;
-                    LogMessage("Park", $"Slewing to park position az:0 alt:{parkAlt}");
-                    SlewToAltAz(0, parkAlt, false);
+                    LogMessage("Park", $"Slewing to park position az:{parkAz} alt:{parkAlt}");
+                    SlewToAltAz(parkAz, parkAlt, false);
                     LogMessage("Park", $"Arrived at park position");
                 }
 
@@ -3541,6 +3549,11 @@ namespace ASCOM.Meade.net
                     {
                         var alignmentStatus = GetScopeAlignmentStatus();
                         isTracking = alignmentStatus.Tracking;
+                    }
+                    else
+                    {
+                        var alignmentString = GetAlignmentString();
+                        isTracking = alignmentString != "L";
                     }
 
                     LogMessage("Tracking", $"Get = {isTracking}");
