@@ -390,6 +390,7 @@ namespace ASCOM.Meade.net
                         SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
+                        SharedSerial.ReceiveTimeout = 5; //5 second timeout;
                         SharedSerial.Speed = SerialSpeed.ps9600;
                         
                         var wantedSpeed = (SerialSpeed)profileProperties.Speed;
@@ -454,7 +455,7 @@ namespace ASCOM.Meade.net
                             }
                         }
                         SharedSerial.Connected = true;
-
+                        
                         try
                         {
                             ProductName = SendString("GVP");
@@ -566,23 +567,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        public static void Lock(Action action)
-        {
-            lock (LockObject)
-            {
-                action();
-            }
-        }
-
-        public static T Lock<T>(Func<T> func)
-        {
-            lock (LockObject)
-            {
-                return func();
-            }
-        }
-
+        
         /// <summary>
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
         /// in reality extra code will be needed to handle the hardware in some way
@@ -597,10 +582,25 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static void SetParked(bool atPark, ParkedPosition parkedPosition)
+        public static void SetParked(bool atPark, ParkedPosition parkedPosition, bool restartTracking)
         {
             IsParked = atPark;
             ParkedPosition = parkedPosition;
+            RestartTracking = restartTracking;
+        }
+
+        private static readonly ThreadSafeValue<bool> _restartTracking = false;
+        public static bool RestartTracking
+        {
+            get => _restartTracking;
+            private set => _restartTracking.Set(value);
+        }
+
+        private static ParkedPosition _parkedPosition;
+        public static ParkedPosition ParkedPosition
+        {
+            get => _parkedPosition;
+            private set => Interlocked.Exchange(ref _parkedPosition, value);
         }
 
         private static readonly ThreadSafeValue<bool> _isParked = false;
@@ -610,11 +610,11 @@ namespace ASCOM.Meade.net
             private set => _isParked.Set(value);
         }
 
-        private static ParkedPosition _parkedPosition;
-        public static ParkedPosition ParkedPosition
+        private static readonly ThreadSafeValue<AlignmentModes> _alignmentMode = AlignmentModes.algAltAz;
+        public static AlignmentModes AlignmentMode
         {
-            get => _parkedPosition;
-            private set => Interlocked.Exchange(ref _parkedPosition, value);
+            get => _alignmentMode;
+            set => _alignmentMode.Set(value);
         }
 
         private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;

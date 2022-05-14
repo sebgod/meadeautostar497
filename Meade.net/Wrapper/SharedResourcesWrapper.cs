@@ -27,9 +27,10 @@ namespace ASCOM.Meade.net.Wrapper
         void WriteProfile(ProfileProperties profileProperties);
         void ReadCharacters(int throwAwayCharacters);
 
-        void SetParked(bool atPark, ParkedPosition parkedPosition);
+        void SetParked(bool atPark, ParkedPosition parkedPosition, bool restartTracking);
         bool IsParked { get; }
         ParkedPosition ParkedPosition { get; }
+        bool RestartTracking { get; }
 
         PierSide SideOfPier { get; set; }
         double? TargetRightAscension { get; set; }
@@ -116,12 +117,14 @@ namespace ASCOM.Meade.net.Wrapper
             SharedResources.WriteProfile(profileProperties);
         }
 
-        public void SetParked(bool atPark, ParkedPosition parkedPosition)
+        public void SetParked(bool atPark, ParkedPosition parkedPosition, bool restartTracking)
         {
-            SharedResources.SetParked(atPark, parkedPosition);
+            SharedResources.SetParked(atPark, parkedPosition, restartTracking);
         }
 
         public bool IsParked => SharedResources.IsParked;
+
+        public bool RestartTracking => SharedResources.RestartTracking;
 
         public ParkedPosition ParkedPosition => SharedResources.ParkedPosition;
 
