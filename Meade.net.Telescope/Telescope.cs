@@ -2905,8 +2905,8 @@ namespace ASCOM.Meade.net
                         throw new ArgumentOutOfRangeException($"Target Altitude cannot be above 90.");
 
                     var dms = SharedResourcesWrapper.IsLongFormat
-                        ? _utilities.DegreesToDMS(value, "*", "'", "", _digitsDe)
-                        : _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                        ? _utilities.DegreesToDMS(value, "*", "'", "", 2)
+                        : _utilities.DegreesToDM(value, "*", "", 2);
 
                     var s = value < 0 ? "-" : "+";
 
@@ -2945,7 +2945,7 @@ namespace ASCOM.Meade.net
                     if (value >= 360)
                         throw new ArgumentOutOfRangeException($"Target Altitude cannot be above 360.");
 
-                    var dms = _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                    var dms = _utilities.DegreesToDM(value, "*", "", 2);
 
                     var command = $"Sz{dms}";
 

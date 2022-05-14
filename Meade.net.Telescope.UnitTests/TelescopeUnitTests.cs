@@ -24,7 +24,7 @@ namespace Meade.net.Telescope.UnitTests
         internal double declination { get; set; } = 45;
 
         internal string SiteLatitudeString { get; set; } = "testLatString";
-        internal double SiteLatitudeValue { get; set; } = 123.45;
+        internal double SiteLatitudeValue { get; set; } = 12.45;
 
         internal string telescopeDate { get; set; } = "10/15/20";
         internal string telescopeTime { get; set; } = "20:15:10";
@@ -1630,6 +1630,28 @@ namespace Meade.net.Telescope.UnitTests
             _telescope.Park();
 
             _sharedResourcesWrapperMock.Verify(x => x.SendBlind("hP", false), Times.Once);
+            Assert.That(_telescope.AtPark, Is.True);
+        }
+
+        [Test]
+        public void Park_WhenLX200NotParked_ThenSendsParkCommand()
+        {
+            var alt = 77.55;
+            var altAsDM = "77*30";
+            _utilMock.Setup(x => x.DegreesToDM(alt, "*", "", 2)).Returns(altAsDM);
+
+            var az = 180;
+            var azAsDM = "180*00";
+            _utilMock.Setup(x => x.DegreesToDM(az, "*", "", 2)).Returns(azAsDM);
+
+            _sharedResourcesWrapperMock.Setup(x => x.SendBool("Sa+77*30", false)).Returns(true);
+            _sharedResourcesWrapperMock.Setup(x => x.SendBool("Sz180*00", false)).Returns(true);           
+
+            ConnectTelescope(TelescopeList.LX200CLASSIC);
+            Assert.That(_telescope.AtPark, Is.False);
+
+            _telescope.Park();
+
             Assert.That(_telescope.AtPark, Is.True);
         }
 
