@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ASCOM.DeviceInterface;
@@ -198,6 +198,9 @@ namespace ASCOM.Meade.net
         private const string ParkedBehaviourName = "Parked Behaviour";
         private const string ParkedAltName = "Parked Altitude";
         private const string ParkedAzimuthName = "Parked Azimuth";
+        private const string FocalLengthName = "Focal Length (mm)";
+        private const string ApertureAreaName = "Aperture Area (mm²)";
+        private const string ApertureDiameterName = "Aperture Diameter (mm)";
 
         public static void WriteProfile(ProfileProperties profileProperties)
         {
@@ -226,6 +229,9 @@ namespace ASCOM.Meade.net
                     driverProfile.WriteValue(DriverId, ParkedBehaviourName, profileProperties.ParkedBehaviour.GetDescription());
                     driverProfile.WriteValue(DriverId, ParkedAltName, profileProperties.ParkedAlt.ToString(CultureInfo.InvariantCulture));
                     driverProfile.WriteValue(DriverId, ParkedAzimuthName, profileProperties.ParkedAz.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, FocalLengthName, profileProperties.FocalLength.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, ApertureAreaName, profileProperties.ApertureArea.ToString(CultureInfo.InvariantCulture));
+                    driverProfile.WriteValue(DriverId, ApertureDiameterName, profileProperties.ApertureDiameter.ToString(CultureInfo.InvariantCulture));
                 }
             }
         }
@@ -250,6 +256,9 @@ namespace ASCOM.Meade.net
         private const string ParkedBehaviourDefault = "No Coordinates";
         private const string ParkedAltDefault = "0";
         private const string ParkedAzimuthDefault = "180";
+        private const string FocalLengthDefault = "2000";
+        private const string ApertureAreaDefault = "32685";
+        private const string ApertureDiameterDefault = "203";
 
         public static ProfileProperties ReadProfile()
         {
@@ -280,6 +289,9 @@ namespace ASCOM.Meade.net
                     profileProperties.ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(driverProfile.GetValue(DriverId, ParkedBehaviourName, string.Empty, ParkedBehaviourDefault));
                     profileProperties.ParkedAlt = double.Parse(driverProfile.GetValue(DriverId, ParkedAltName, string.Empty, ParkedAltDefault), NumberFormatInfo.InvariantInfo);
                     profileProperties.ParkedAz = double.Parse(driverProfile.GetValue(DriverId, ParkedAzimuthName, string.Empty, ParkedAzimuthDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.FocalLength = double.Parse(driverProfile.GetValue(DriverId, FocalLengthName, string.Empty, FocalLengthDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.ApertureArea = double.Parse(driverProfile.GetValue(DriverId, ApertureAreaName, string.Empty, ApertureAreaDefault), NumberFormatInfo.InvariantInfo);
+                    profileProperties.ApertureDiameter = double.Parse(driverProfile.GetValue(DriverId, ApertureDiameterName, string.Empty, ApertureDiameterDefault), NumberFormatInfo.InvariantInfo);
                 }
 
                 return profileProperties;
@@ -377,10 +389,73 @@ namespace ASCOM.Meade.net
                         SharedSerial.DataBits = profileProperties.DataBits;
                         SharedSerial.StopBits = (SerialStopBits)Enum.Parse(typeof(SerialStopBits), profileProperties.StopBits);
                         SharedSerial.Parity = (SerialParity)Enum.Parse(typeof(SerialParity), profileProperties.Parity);
-                        SharedSerial.Speed = (SerialSpeed)profileProperties.Speed;
                         SharedSerial.Handshake = (SerialHandshake)Enum.Parse(typeof(SerialHandshake), profileProperties.Handshake);
-                        SharedSerial.Connected = true;
+                        SharedSerial.ReceiveTimeout = 5; //5 second timeout;
+                        SharedSerial.Speed = SerialSpeed.ps9600;
+                        
+                        var wantedSpeed = (SerialSpeed)profileProperties.Speed;
+                        if (wantedSpeed != SerialSpeed.ps9600)
+                        {
+                            SharedSerial.Speed = wantedSpeed;
+                            SharedSerial.Connected = true;
 
+                            var speedRampNeeded = false;
+
+                            //Test if communication is working.
+                            try
+                            {
+                                string utcOffSet = SendString("GG");
+                            }
+                            catch (Exception)
+                            {
+                                speedRampNeeded = true;
+                            }
+
+                            if (speedRampNeeded)
+                            {
+                                SharedSerial.Connected = false;
+                                SharedSerial.Speed = SerialSpeed.ps9600;
+                                SharedSerial.Connected = true;
+
+                                int newSpeedIndex = GetSpeedIndex(wantedSpeed);
+                                //:SBn# Set Baud Rate n, where n is an ASCII digit (1..9) with the following interpertation
+                                //  1 56.7K
+                                //  2 38.4K
+                                //  3 28.8K
+                                //  4 19.2K
+                                //  5 14.4K
+                                //  6 9600
+                                //  7 4800
+                                //  8 2400
+                                //  9 1200
+                                //Returns:
+                                //  1 At the current baud rate and then changes to the new rate for further communication
+                                //SendBlind($"SB{newSpeedIndex}");
+                                try
+                                {
+                                    var speedChanged = SendChar($"SB{newSpeedIndex}");
+                                    if (speedChanged == "1")
+                                    {
+                                        SharedSerial.Connected = false;
+                                        SharedSerial.Speed = wantedSpeed;
+                                        traceLogger.LogIssue("Connect",
+                                            $"Telescope serial port speed change, connecting at {SharedSerial.Speed}.");
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Autostar not signalled speed change.");
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    SharedSerial.Connected = false;
+                                    SharedSerial.Speed = SerialSpeed.ps9600;
+                                    traceLogger.LogIssue("Connect", $"Telescope not responding to speed change, connecting at {SharedSerial.Speed}.");
+                                }
+                            }
+                        }
+                        SharedSerial.Connected = true;
+                        
                         try
                         {
                             ProductName = SendString("GVP");
@@ -439,6 +514,23 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private static int GetSpeedIndex(SerialSpeed speed)
+        {
+            switch (speed)
+            {
+                case SerialSpeed.ps57600: return 1;
+                case SerialSpeed.ps38400: return 2;
+                case SerialSpeed.ps28800: return 3;
+                case SerialSpeed.ps19200: return 4;
+                case SerialSpeed.ps14400: return 5;
+                case SerialSpeed.ps9600: return 6;
+                case SerialSpeed.ps4800: return 7;
+                case SerialSpeed.ps2400: return 8;
+                case SerialSpeed.ps1200: return 9;
+                default: throw new NotSupportedException($"{SpeedDefault} not supported");
+            }
+        }
+
         public static void Disconnect(string deviceId, string driverId)
         {
             lock (LockObject)
@@ -475,23 +567,7 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        public static void Lock(Action action)
-        {
-            lock (LockObject)
-            {
-                action();
-            }
-        }
-
-        public static T Lock<T>(Func<T> func)
-        {
-            lock (LockObject)
-            {
-                return func();
-            }
-        }
-
+        
         /// <summary>
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
         /// in reality extra code will be needed to handle the hardware in some way
@@ -506,10 +582,25 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static void SetParked(bool atPark, ParkedPosition parkedPosition)
+        public static void SetParked(bool atPark, ParkedPosition parkedPosition, bool restartTracking)
         {
             IsParked = atPark;
             ParkedPosition = parkedPosition;
+            RestartTracking = restartTracking;
+        }
+
+        private static readonly ThreadSafeValue<bool> _restartTracking = false;
+        public static bool RestartTracking
+        {
+            get => _restartTracking;
+            private set => _restartTracking.Set(value);
+        }
+
+        private static ParkedPosition _parkedPosition;
+        public static ParkedPosition ParkedPosition
+        {
+            get => _parkedPosition;
+            private set => Interlocked.Exchange(ref _parkedPosition, value);
         }
 
         private static readonly ThreadSafeValue<bool> _isParked = false;
@@ -519,11 +610,11 @@ namespace ASCOM.Meade.net
             private set => _isParked.Set(value);
         }
 
-        private static ParkedPosition _parkedPosition;
-        public static ParkedPosition ParkedPosition
+        private static readonly ThreadSafeValue<AlignmentModes> _alignmentMode = AlignmentModes.algAltAz;
+        public static AlignmentModes AlignmentMode
         {
-            get => _parkedPosition;
-            private set => Interlocked.Exchange(ref _parkedPosition, value);
+            get => _alignmentMode;
+            set => _alignmentMode.Set(value);
         }
 
         private static readonly ThreadSafeValue<PierSide> _sideOfPier = PierSide.pierUnknown;

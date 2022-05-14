@@ -82,6 +82,15 @@ namespace ASCOM.Meade.net
             this.label24 = new System.Windows.Forms.Label();
             this.txtParkedAlt = new System.Windows.Forms.TextBox();
             this.txtParkedAz = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.txtFocalLength = new System.Windows.Forms.TextBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.txtApertureDiameter = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.label29 = new System.Windows.Forms.Label();
+            this.txtApertureArea = new System.Windows.Forms.TextBox();
+            this.label30 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
@@ -389,10 +398,65 @@ namespace ASCOM.Meade.net
             this.txtParkedAz.Name = "txtParkedAz";
             this.txtParkedAz.TextChanged += new System.EventHandler(this.txtParkedAz_TextChanged);
             // 
+            // label25
+            // 
+            resources.ApplyResources(this.label25, "label25");
+            this.label25.Name = "label25";
+            // 
+            // txtFocalLength
+            // 
+            resources.ApplyResources(this.txtFocalLength, "txtFocalLength");
+            this.txtFocalLength.Name = "txtFocalLength";
+            this.txtFocalLength.TextChanged += new System.EventHandler(this.txt_FocalLength_TextChanged_1);
+            // 
+            // label26
+            // 
+            resources.ApplyResources(this.label26, "label26");
+            this.label26.Name = "label26";
+            // 
+            // label27
+            // 
+            resources.ApplyResources(this.label27, "label27");
+            this.label27.Name = "label27";
+            // 
+            // txtApetureDiameter
+            // 
+            resources.ApplyResources(this.txtApertureDiameter, "txtApertureDiameter");
+            this.txtApertureDiameter.Name = "txtApertureDiameter";
+            // 
+            // label28
+            // 
+            resources.ApplyResources(this.label28, "label28");
+            this.label28.Name = "label28";
+            // 
+            // label29
+            // 
+            resources.ApplyResources(this.label29, "label29");
+            this.label29.Name = "label29";
+            // 
+            // txtApetureArea
+            // 
+            resources.ApplyResources(this.txtApertureArea, "txtApertureArea");
+            this.txtApertureArea.Name = "txtApertureArea";
+            // 
+            // label30
+            // 
+            resources.ApplyResources(this.label30, "label30");
+            this.label30.Name = "label30";
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label29);
+            this.Controls.Add(this.txtApertureArea);
+            this.Controls.Add(this.label30);
+            this.Controls.Add(this.label27);
+            this.Controls.Add(this.txtApertureDiameter);
+            this.Controls.Add(this.label28);
+            this.Controls.Add(this.label26);
+            this.Controls.Add(this.txtFocalLength);
+            this.Controls.Add(this.label25);
             this.Controls.Add(this.txtParkedAz);
             this.Controls.Add(this.txtParkedAlt);
             this.Controls.Add(this.label24);
@@ -507,5 +571,14 @@ namespace ASCOM.Meade.net
         private Label label24;
         private TextBox txtParkedAlt;
         private TextBox txtParkedAz;
+        private Label label25;
+        private TextBox txtFocalLength;
+        private Label label26;
+        private Label label27;
+        private TextBox txtApertureDiameter;
+        private Label label28;
+        private Label label29;
+        private TextBox txtApertureArea;
+        private Label label30;
     }
 }

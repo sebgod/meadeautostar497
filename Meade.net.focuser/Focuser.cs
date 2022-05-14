@@ -176,12 +176,12 @@ namespace ASCOM.Meade.net
                     }
                     catch (Exception ex)
                     {
-                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", ComPort, ex.Message);
+                        LogMessage("Connected Set", "Error connecting to port {0} - {1}", _profileProperties.ComPort, ex.Message);
                     }
                 }
                 else
                 {
-                    LogMessage("Connected Set", "Disconnecting from port {0}", ComPort);
+                    LogMessage("Connected Set", "Disconnecting from port {0}", _profileProperties.ComPort);
                     SharedResourcesWrapper.Disconnect("Serial", DriverId);
                     IsConnected = false;
                 }
@@ -295,37 +295,34 @@ namespace ASCOM.Meade.net
                 return;
 
             var direction = position > 0;
-            if (ReverseFocusDirection)
+            if (_profileProperties.ReverseFocusDirection)
                 direction = !direction;
+            
+            //backlash compensation.
+            var backlashCompensationSteps = direction ? Math.Abs(_profileProperties.BacklashCompensation) : 0;
 
-            SharedResourcesWrapper.Lock(() =>
+            var steps = Math.Abs(position) + backlashCompensationSteps;
+
+
+            MoveFocuser(direction, steps);
+
+
+            //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
+            //ApplyBacklashCompensation(direction);
+            if (direction & backlashCompensationSteps != 0)
             {
-                //backlash compensation.
-                var backlashCompensationSteps = direction ? Math.Abs(BacklashCompensation) : 0;
+                Tl.LogMessage("Move", "Applying backlash compensation");
+                MoveFocuser(!direction, backlashCompensationSteps);
+            }
 
-                var steps = Math.Abs(position) + backlashCompensationSteps;
-
-
-                MoveFocuser(direction, steps);
-
-
-                //todo refactor the backlash compensation to combine the commands into as few moves as practicle.
-                //ApplyBacklashCompensation(direction);
-                if (direction & backlashCompensationSteps != 0)
-                {
-                    Tl.LogMessage("Move", "Applying backlash compensation");
-                    MoveFocuser(!direction, backlashCompensationSteps);
-                }
-
-                DynamicBreaking(direction);
-                //todo implement dynamic braking
-                //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
-            });
+            DynamicBreaking(direction);
+            //todo implement dynamic braking
+            //dynamic breaking is sending the command to move in the opposite direction immediatly followed by the command to stop.
         }
 
         private void DynamicBreaking(bool directionOut)
         {
-            if (!UseDynamicBreaking)
+            if (!_profileProperties.DynamicBreaking)
                 return;
 
             Tl.LogMessage("Move", "Applying dynamic breaking");

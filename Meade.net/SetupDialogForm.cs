@@ -25,7 +25,7 @@ namespace ASCOM.Meade.net
 
             SetItemsFromEnum(cboStopBits.Items, typeof(SerialStopBits));
             SetItemsFromEnum(cboParity.Items, typeof(SerialParity));
-            SetItemsFromEnumValues(cboSpeed.Items, typeof(SerialSpeed));
+            SetItemFromEnumValues(cboSpeed.Items, SerialSpeed.ps1200, SerialSpeed.ps57600);
             SetItemsFromEnum(cboHandShake.Items, typeof(SerialHandshake));
             SetItemsFromEnum(cboParkedBehaviour.Items, typeof(ParkedBehaviour));
         }
@@ -41,13 +41,30 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private void SetItemsFromEnumValues(IList items, Type enumItems)
+        //private void SetItemsFromEnumValues(IList items, Type enumItems)
+        //{
+        //    items.Clear();
+
+        //    foreach (int item in Enum.GetValues(enumItems))
+        //    {
+        //        items.Add(item);
+        //    }
+        //}
+
+        private void SetItemFromEnumValues<T>(IList items, T minValue, T maxValue)
         {
             items.Clear();
 
-            foreach (int item in Enum.GetValues(enumItems))
+            var type = typeof(T);
+
+            var intMinValue = (int)Convert.ChangeType(minValue, typeof(int));
+
+            var intMaxValue = (int)Convert.ChangeType(maxValue, typeof(int));
+
+            foreach (int item in Enum.GetValues(type))
             {
-                items.Add(item);
+                if ((item >= intMinValue) && (item <= intMaxValue))
+                    items.Add(item);
             }
         }
 
@@ -188,6 +205,33 @@ namespace ASCOM.Meade.net
                 txtParkedAz.Text = "180";
             }
 
+            try
+            {
+                txtFocalLength.Text = profileProperties.FocalLength.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtFocalLength.Text = "2000";
+            }
+
+            try
+            {
+                txtApertureArea.Text = profileProperties.ApertureArea.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtApertureArea.Text = "32685";
+            }
+
+            try
+            {
+                txtApertureDiameter.Text = profileProperties.ApertureDiameter.ToString(CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                txtApertureDiameter.Text = "203";
+            }
+
             UpdateParkedItemsEnabled();
         }
 
@@ -214,7 +258,10 @@ namespace ASCOM.Meade.net
                 SendDateTime = cbxSendDateTime.Checked,
                 ParkedBehaviour = EnumExtensionMethods.GetValueFromDescription<ParkedBehaviour>(cboParkedBehaviour.SelectedItem.ToString()),
                 ParkedAlt = double.Parse(txtParkedAlt.Text),
-                ParkedAz = double.Parse(txtParkedAz.Text)
+                ParkedAz = double.Parse(txtParkedAz.Text),
+                FocalLength = double.Parse(txtFocalLength.Text),
+                ApertureArea = double.Parse(txtApertureArea.Text),
+                ApertureDiameter = double.Parse(txtApertureDiameter.Text)
             };
 
             return profileProperties;
@@ -318,6 +365,15 @@ namespace ASCOM.Meade.net
             {
                 MessageBox.Show(Resources.SetupDialogForm_txtElevation_TextChanged_1_Please_enter_only_numbers_);
                 txtParkedAz.Text = txtParkedAz.Text.Remove(txtParkedAz.Text.Length - 1);
+            }
+        }
+
+        private void txt_FocalLength_TextChanged_1(object sender, EventArgs e)
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(txtFocalLength.Text, "[^0-9]"))
+            {
+                MessageBox.Show(Resources.SetupDialogForm_txtFocalLength_TextChanged_1_Please_enter_only_numbers_);
+                txtFocalLength.Text = txtFocalLength.Text.Remove(txtFocalLength.Text.Length - 1);
             }
         }
     }
