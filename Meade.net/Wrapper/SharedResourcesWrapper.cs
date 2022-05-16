@@ -31,8 +31,7 @@ namespace ASCOM.Meade.net.Wrapper
         bool IsParked { get; }
         ParkedPosition ParkedPosition { get; }
         bool RestartTracking { get; }
-
-        PierSide SideOfPier { get; set; }
+        
         double? TargetRightAscension { get; set; }
         double? TargetDeclination { get; set; }
 

@@ -512,7 +512,6 @@ namespace ASCOM.Meade.net
                                     SetTelescopePrecision("Connect");
 
                                     // target RA, DEC and SideOfPier are set to default values
-                                    SharedResourcesWrapper.SideOfPier = PierSide.pierUnknown;
                                     SharedResourcesWrapper.TargetDeclination = InvalidParameter;
                                     SharedResourcesWrapper.TargetRightAscension = InvalidParameter;
 
@@ -1857,13 +1856,7 @@ namespace ASCOM.Meade.net
             {
                 CheckConnected("DestinationSideOfPier");
 
-                double hourAngle = _astroUtilities.ConditionHA(SiderealTime - rightAscension);
-
-                var destinationSOP = hourAngle > 0
-                    ? PierSide.pierEast
-                    : (hourAngle < 0
-                        ? PierSide.pierWest
-                        : SharedResourcesWrapper.SideOfPier); // avoid pierUnknown while Slewing
+                var destinationSOP = CalculateSideOfPier(rightAscension);
 
                 LogMessage("DestinationSideOfPier",
                     $"Destination SOP of RA {rightAscension.ToString(CultureInfo.InvariantCulture)} is {destinationSOP}");
@@ -1875,6 +1868,16 @@ namespace ASCOM.Meade.net
                 LogMessage("DestinationSideOfPier", $"Error: {ex.Message}");
                 throw;
             }
+        }
+
+        private PierSide CalculateSideOfPier(double rightAscension)
+        {
+            double hourAngle = _astroUtilities.ConditionHA(SiderealTime - rightAscension);
+
+            var destinationSOP = hourAngle > 0
+                ? PierSide.pierEast
+                : PierSide.pierWest;
+            return destinationSOP;
         }
 
         public bool DoesRefraction
@@ -2502,16 +2505,7 @@ namespace ASCOM.Meade.net
                         throw new PropertyNotImplementedException("SideOfPier", false);
                     }
 
-                    PierSide pierSide;
-                    if (Slewing)
-                    {
-                        // because we update SideOfPier after initiating the slew command we return unknown while still slewing
-                        pierSide = PierSide.pierUnknown;
-                    }
-                    else
-                    {
-                        pierSide = SharedResourcesWrapper.SideOfPier;
-                    }
+                    var pierSide = CalculateSideOfPier(RightAscension);
 
                     LogMessage("SideOfPier", "Get - " + pierSide);
                     return pierSide;
@@ -2990,21 +2984,12 @@ namespace ASCOM.Meade.net
                         //0 Slew is Possible
                         //1<string># Object Below Horizon w/string message
                         //2<string># Object Below Higher w/string message
-
+                        
                         switch (response)
                         {
                             case "0":
                                 //We're slewing everything should be working just fine.
                                 LogMessage("DoSlewAsync", "Slewing to target");
-
-                                if (IsMeridianFlipOnSlewSupported())
-                                {
-                                    // Update side of pier to destination side of pier
-                                    // Assumption: Mount will do meridian flip if required
-                                    SharedResourcesWrapper.SideOfPier =
-                                        DestinationSideOfPier(TargetRightAscension, TargetDeclination);
-                                }
-
                                 SetSlewingMinEndTime();
                                 break;
                             case "1":
