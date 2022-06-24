@@ -21,13 +21,13 @@
                       Type="raw" />
     </Property>
 
-    <Condition Message="This application requires Ascom Platform 6.4 SP1 or higher. Please install this before installing the driver.">
-      <![CDATA[Installed OR ASCOMPLATFORMVERSION >= "6.4.1"]]>
+    <Condition Message="This application requires Ascom Platform 6.6.0 higher. Please install this before installing the driver.">
+      <![CDATA[Installed OR ASCOMPLATFORMVERSION >= "6.6.0"]]>
     </Condition>
 
     <PropertyRef Id="NETFRAMEWORK45"/>
-    <Condition Message="This application requires .NET Framework 4.5 or higher. Please install the .NET Framework then run this installer again.">
-      <![CDATA[Installed OR NETFRAMEWORK45]]>
+    <Condition Message="This application requires .NET Framework 4.8 or higher. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR Net48_Installed]]>
     </Condition>
 
     <!-- <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
