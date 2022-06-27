@@ -488,9 +488,9 @@ namespace ASCOM.Meade.net
                                 LogMessage("Connected Set",
                                     $"Connected to port {_profileProperties.ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
 
-                                _userNewerPulseGuiding = IsNewPulseGuidingSupported();
+                                _useNewerPulseGuiding = IsNewPulseGuidingSupported();
 
-                                LogMessage("Connected Set", $"New Pulse Guiding Supported: {_userNewerPulseGuiding}");
+                                LogMessage("Connected Set", $"New Pulse Guiding Supported: {_useNewerPulseGuiding}");
                                 IsConnected = true;
 
                                 if (connectionInfo.SameDevice == 1)
@@ -1523,7 +1523,12 @@ namespace ASCOM.Meade.net
                 try
                 {
                     CheckConnected("CanPulseGuide");
-                    var canPulseGuide = AlignmentMode != AlignmentModes.algAltAz;
+                    
+                    var canPulseGuide = true;
+
+                    if (_useNewerPulseGuiding)
+                        canPulseGuide = AlignmentMode != AlignmentModes.algAltAz;
+                    
                     LogMessage("CanPulseGuide", $"Get - {canPulseGuide}");
                     return canPulseGuide;
                 }
@@ -2284,7 +2289,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private bool _userNewerPulseGuiding = true;
+        private bool _useNewerPulseGuiding = true;
 
         public void PulseGuide(GuideDirections direction, int duration)
         {
@@ -2312,7 +2317,7 @@ namespace ASCOM.Meade.net
 
                     var coordinatesBeforeMove = GetTelescopeRaAndDec();
 
-                    if (_userNewerPulseGuiding)
+                    if (_useNewerPulseGuiding)
                     {
                         string d = string.Empty;
                         switch (direction)

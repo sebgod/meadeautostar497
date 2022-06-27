@@ -1,5 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <HiddenComponentWarnings>
+      <Value>CopyReferencedAssembliesToWorkspaceIsOn</Value>
+    </HiddenComponentWarnings>
     <UseCPUArchitecture>x86</UseCPUArchitecture>
   </Settings>
 </ProjectConfiguration>
