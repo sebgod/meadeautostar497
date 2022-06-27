@@ -489,6 +489,7 @@ namespace ASCOM.Meade.net
                                     $"Connected to port {_profileProperties.ComPort}. Product: {SharedResourcesWrapper.ProductName} Version:{SharedResourcesWrapper.FirmwareVersion}");
 
                                 _useNewerPulseGuiding = IsNewPulseGuidingSupported();
+                                _isStarPatch = IsStarPatch();
 
                                 LogMessage("Connected Set", $"New Pulse Guiding Supported: {_useNewerPulseGuiding}");
                                 IsConnected = true;
@@ -597,6 +598,17 @@ namespace ASCOM.Meade.net
                     throw;
                 }
             }
+        }
+
+        private bool IsStarPatch()
+        {
+            //Todo add tests to see if the firmware is star patch.
+            //Check if last character is a letter
+            //   lower case = Meade, upper case = StarPatch
+            //If last character is a number
+            //  Get case of second to last character
+            //   lower case = StarPatch, upper case = Meade
+            return false;
         }
 
         private void SendCurrentDateTime(string connect)
@@ -1528,7 +1540,10 @@ namespace ASCOM.Meade.net
 
                     if (_useNewerPulseGuiding)
                         canPulseGuide = AlignmentMode != AlignmentModes.algAltAz;
-                    
+
+                    if (_isStarPatch)
+                        canPulseGuide = true;
+
                     LogMessage("CanPulseGuide", $"Get - {canPulseGuide}");
                     return canPulseGuide;
                 }
@@ -2290,6 +2305,7 @@ namespace ASCOM.Meade.net
         }
 
         private bool _useNewerPulseGuiding = true;
+        private bool _isStarPatch = false;
 
         public void PulseGuide(GuideDirections direction, int duration)
         {
