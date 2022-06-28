@@ -602,13 +602,29 @@ namespace ASCOM.Meade.net
 
         private bool IsStarPatch()
         {
-            //Todo add tests to see if the firmware is star patch.
-            //Check if last character is a letter
-            //   lower case = Meade, upper case = StarPatch
-            //If last character is a number
-            //  Get case of second to last character
-            //   lower case = StarPatch, upper case = Meade
-            return false;
+            var isStarPatch =  false;
+
+            var firmwareVersionArray = SharedResourcesWrapper.FirmwareVersion.ToCharArray();
+            if (firmwareVersionArray.Length > 1)
+            {
+                //If last character is a number
+                var lastChr = firmwareVersionArray[firmwareVersionArray.Length - 1];
+                if (char.IsNumber(lastChr))
+                {
+                    //  Get case of second to last character
+                    var secondLastChar = firmwareVersionArray[firmwareVersionArray.Length - 2];
+                    //   lower case = StarPatch, upper case = Meade
+                    isStarPatch = char.IsLower(secondLastChar);
+                }
+                else
+                {
+                    //   lower case = Meade, upper case = StarPatch
+                    isStarPatch = char.IsUpper(lastChr);
+                }
+            }
+
+            LogMessage("Is StarPatch Firmware", $": {isStarPatch}");
+            return isStarPatch;
         }
 
         private void SendCurrentDateTime(string connect)

@@ -916,24 +916,31 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.True);
         }
 
-        [Test]
-        public void CanPulseGuide_GetInPolarMode_ReturnsTrue()
+        [TestCase("Autostar", "43Eg")]
+        public void CanPulseGuide_GetInPolarMode_ReturnsTrue(string productName, string firmware)
         {
             _testProperties.AlignmentMode = "P";
-            ConnectTelescope();
+
+            ConnectTelescope(productName, firmware, $"{_testProperties.AlignmentMode}N0");
             var result = _telescope.CanPulseGuide;
 
             Assert.That(result, Is.True);
         }
 
-        [Test]
-        public void CanPulseGuide_GetInAltAzMode_ReturnsFalse()
+        [TestCase("Autostar", "30Ab", true)]
+        [TestCase("Autostar", "43Eg", false)]
+        [TestCase("Autostar", "A4S4", false)]
+        [TestCase("Autostar", "43EG", true)]
+        [TestCase("Autostar", "A4s4", true)]
+        public void CanPulseGuide_GetInAltAzMode_ReturnsExpectedResult(string productName, string firmware, bool canPulseGuide)
         {
             _testProperties.AlignmentMode = "A";
-            ConnectTelescope();
+
+            ConnectTelescope(productName, firmware, $"{_testProperties.AlignmentMode}N0");
+
             var result = _telescope.CanPulseGuide;
 
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.EqualTo(canPulseGuide));
         }
 
         [Test]
