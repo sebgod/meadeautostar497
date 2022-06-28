@@ -1027,7 +1027,7 @@ namespace Meade.net.Telescope.UnitTests
 
             _connectionInfo.SameDevice = 2;
 
-            _telescope.Connected = true;
+            ConnectTelescope();
 
             _sharedResourcesWrapperMock.Verify(x => x.SendChar("P", false), Times.Never);
             _sharedResourcesWrapperMock.Verify(x => x.IsLongFormat, Times.Once);
