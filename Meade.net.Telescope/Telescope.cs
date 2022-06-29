@@ -458,8 +458,9 @@ namespace ASCOM.Meade.net
             {
                 try
                 {
-                    LogMessage("Connected", "Get {0}", IsConnected);
-                    return IsConnected;
+                    var isConnected = IsConnected;
+                    LogMessage("Connected", "Get {0}", isConnected);
+                    return isConnected;
                 }
                 catch (Exception ex)
                 {
@@ -754,7 +755,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        // true iff the mount will perform a meridian flip when required
+        // true if the mount will perform a meridian flip when required
         // According to "A User's Guide to the Meade LXD55 and LXD75 Telescopes" Autostar supports meridian flip so
         // we assume that for any telescope that supports the GW command and is not in Alt-Az mode then
         // meridian flip on slew is supported
@@ -765,76 +766,6 @@ namespace ASCOM.Meade.net
             var currentVersion = SharedResourcesWrapper.FirmwareVersion;
             var comparison = string.Compare(currentVersion, minVersion, StringComparison.Ordinal);
             return comparison >= 0;
-        }
-
-        /// <summary>
-        /// classic LX200 needs initial set of target coordinates, if it is slewing and the target RA DE coordinates are 0 and differ from the current coordinates
-        /// </summary>
-        private bool IsTargetCoordinateInitRequired()
-        {
-            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
-                return false;
-
-            if (!SharedResourcesWrapper.IsTargetCoordinateInitRequired)
-                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-
-            if (!IsConnected)
-                return true;
-
-            if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
-            {
-                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
-                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-            }
-
-            const double eps = 0.00001d;
-
-            double rightTargetAscension = RightAscension;
-            //target RA == 0
-            if (Math.Abs(rightTargetAscension) > eps)
-            {
-                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
-                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-            }
-
-            double targetDeclination = Declination;
-            //target DE == 0
-            if (Math.Abs(targetDeclination) > eps)
-            {
-                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
-                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-            }
-
-            //target coordinates are equal current coordinates
-            if ((Math.Abs(RightAscension - rightTargetAscension) <= eps) &&
-                (Math.Abs(Declination - targetDeclination) <= eps))
-            {
-                LogMessage("IsTargetCoordinateInitRequired", "0 diff -> false");
-                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
-                return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-            }
-
-            LogMessage("IsTargetCoordinateInitRequired", $"{SharedResourcesWrapper.IsTargetCoordinateInitRequired}");
-            return SharedResourcesWrapper.IsTargetCoordinateInitRequired;
-        }
-
-        private void InitTargetCoordinates()
-        {
-            try
-            {
-                var raAndDec = GetTelescopeRaAndDec();
-                //when connection the first time the telescope target coordinates should be the current ones.
-                //for the classic LX200 at least this is not the case, target ra and dec are 0, when switched on.
-                LogMessage("InitTargetCoordinates", "sync telescope target");
-                SyncToCoordinates(raAndDec.RightAscension, raAndDec.Declination);
-
-                //do it only once
-                SharedResourcesWrapper.IsTargetCoordinateInitRequired = false;
-            }
-            catch (Exception ex)
-            {
-                LogMessage("InitTargetCoordinates", "Error sync telescope position", ex.Message);
-            }
         }
 
         public void SetLongFormat(bool setLongFormat)
@@ -2726,7 +2657,6 @@ namespace ASCOM.Meade.net
                 }
             }
         }
-
 
         public double SiteLongitude
         {
