@@ -25,9 +25,9 @@
       <![CDATA[Installed OR ASCOMPLATFORMVERSION >= "6.6.0"]]>
     </Condition>
 
-    <PropertyRef Id="Net48_Installed"/>
+    <PropertyRef Id='WIXNETFX4RELEASEINSTALLED'/>
     <Condition Message="This application requires .NET Framework 4.8 or higher. Please install the .NET Framework then run this installer again.">
-      <![CDATA[Installed OR Net48_Installed]]>
+      <![CDATA[Installed OR (WIXNETFX4RELEASEINSTALLED >= "#528040")]]>
     </Condition>
 
     <!-- <Condition Message="Please use the correct installer for your operating system - x86 for 32-bit, x64 for 64-bit.">
