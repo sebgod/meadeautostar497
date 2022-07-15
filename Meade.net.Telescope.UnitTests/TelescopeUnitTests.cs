@@ -233,6 +233,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("enter", "EK13")]
         [TestCase("mode", "EK9")]
         [TestCase("longMode", "EK11")]
+        [TestCase("longenter", "EK10")]
+        [TestCase("longgoto", "EK25")]
         [TestCase("goto", "EK24")]
         [TestCase("0", "EK48")]
         [TestCase("1", "EK49")]

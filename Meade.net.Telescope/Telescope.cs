@@ -220,6 +220,9 @@ namespace ASCOM.Meade.net
                             case "enter":
                                 SharedResourcesWrapper.SendBlind("EK13");
                                 break;
+                            case "longenter":
+                                SharedResourcesWrapper.SendBlind("EK10");
+                                break;
                             case "mode":
                                 SharedResourcesWrapper.SendBlind("EK9");
                                 break;
@@ -229,7 +232,9 @@ namespace ASCOM.Meade.net
                             case "goto":
                                 SharedResourcesWrapper.SendBlind("EK24");
                                 break;
-
+                            case "longgoto":
+                                SharedResourcesWrapper.SendBlind("EK25");
+                                break;
                             case "0": //light and 0
                                 SharedResourcesWrapper.SendBlind("EK48");
                                 break;
