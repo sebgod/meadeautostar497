@@ -638,7 +638,8 @@ namespace Meade.net.Telescope.UnitTests
         [TestCase("Auto", ":GVP", "", false)] //LX200 Classic
         [TestCase("Guide Rate Slew", "LX2001", "", false)] //force old style
         [TestCase("Pulse Guiding", ":GVP", "", true)] //force new style
-
+        [TestCase("Auto", "RCX400", "2.1i", false)] //don't what the real minimum firmware is.
+        [TestCase("Auto", "RCX400", "2.2i", true)]
         public void IsNewPulseGuidingSupported_ThenIsSupported_ThenReturnsTrue(string guidingStyle, string productName, string firmware, bool isSupported)
         {
             _profileProperties.GuidingStyle = guidingStyle;

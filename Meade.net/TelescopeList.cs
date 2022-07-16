@@ -32,5 +32,13 @@
         // ReSharper disable once InconsistentNaming
         public const string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!
         #endregion
+
+        #region RCX400
+        // ReSharper disable once InconsistentNaming
+        public const string RCX400 = "RCX400";
+
+        public const string RCX400_22I = "2.2i";
+
+        #endregion
     }
 }

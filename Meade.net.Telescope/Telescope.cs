@@ -522,39 +522,7 @@ namespace ASCOM.Meade.net
                                     SharedResourcesWrapper.TargetDeclination = InvalidParameter;
                                     SharedResourcesWrapper.TargetRightAscension = InvalidParameter;
 
-                                    LogMessage("Connected Set", $"SendDateTime: {_profileProperties.SendDateTime}");
-                                    if (_profileProperties.SendDateTime)
-                                    {
-                                        if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-                                        {
-                                            LogMessage("Connected Set",
-                                                $"LX200GPS Detecting if daylight savings message on screen: {_profileProperties.SendDateTime}");
-                                            var displayText = Action("Handbox", "readdisplay");
-                                            LogMessage("Connected Set", $"Current Handset display: {displayText}");
-                                            if (displayText.Contains("Daylight"))
-                                            {
-                                                LogMessage("Connected Set",
-                                                    $"LX200GPS Setting Date time and bypassing settings screens: {_profileProperties.SendDateTime}");
-                                                BypassHandboxEntryForAutostarII();
-                                            }
-                                            else
-                                            {
-                                                LogMessage("Connected Set",
-                                                    $"LX200GPS Sending current date and time: {_profileProperties.SendDateTime}");
-                                                SendCurrentDateTime("Connect");
-                                                LogMessage("Connected Set",
-                                                    $"LX200GPS Attempting manual bypass of prompts: {_profileProperties.SendDateTime}");
-                                                ApplySkipAutoStarPrompts("Connect");
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            LogMessage("Connected Set", "Autostar Attempting manual bypass of prompts");
-                                            ApplySkipAutoStarPrompts("Connect");
-                                            SendCurrentDateTime("Connect");
-                                        }
-                                    }
+                                    SendTimeTimeToHandbox();
 
                                     SharedResources.AlignmentMode = AlignmentMode;
                                 }
@@ -606,6 +574,42 @@ namespace ASCOM.Meade.net
             }
         }
 
+        private void SendTimeTimeToHandbox()
+        {
+            LogMessage("SendTimeTimeToHandbox", $"SendDateTime: {_profileProperties.SendDateTime}");
+            if (_profileProperties.SendDateTime)
+            {
+                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                {
+                    LogMessage("SendTimeTimeToHandbox",
+                        $"LX200GPS Detecting if daylight savings message on screen: {_profileProperties.SendDateTime}");
+                    var displayText = Action("Handbox", "readdisplay");
+                    LogMessage("SendTimeTimeToHandbox", $"Current Handset display: {displayText}");
+                    if (displayText.Contains("Daylight"))
+                    {
+                        LogMessage("SendTimeTimeToHandbox",
+                            $"LX200GPS Setting Date time and bypassing settings screens: {_profileProperties.SendDateTime}");
+                        BypassHandboxEntryForAutostarII();
+                    }
+                    else
+                    {
+                        LogMessage("SendTimeTimeToHandbox",
+                            $"LX200GPS Sending current date and time: {_profileProperties.SendDateTime}");
+                        SendCurrentDateTime();
+                        LogMessage("SendTimeTimeToHandbox",
+                            $"LX200GPS Attempting manual bypass of prompts: {_profileProperties.SendDateTime}");
+                        ApplySkipAutoStarPrompts();
+                    }
+                }
+                else
+                {
+                    LogMessage("Connected Set", "Autostar Attempting manual bypass of prompts");
+                    ApplySkipAutoStarPrompts();
+                    SendCurrentDateTime();
+                }
+            }
+        }
+
         private bool IsStarPatch()
         {
             var isStarPatch =  false;
@@ -633,7 +637,7 @@ namespace ASCOM.Meade.net
             return isStarPatch;
         }
 
-        private void SendCurrentDateTime(string connect)
+        private void SendCurrentDateTime()
         {
             if (_profileProperties.SendDateTime)
             {
@@ -641,9 +645,9 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private void ApplySkipAutoStarPrompts(string connect)
+        private void ApplySkipAutoStarPrompts()
         {
-            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS || SharedResourcesWrapper.ProductName == TelescopeList.RCX400) 
             {
                 var displayText = Action("Handbox", "readdisplay");
 
@@ -715,6 +719,11 @@ namespace ASCOM.Meade.net
                             return true;
                         }
 
+                        if (SharedResourcesWrapper.ProductName == TelescopeList.RCX400)
+                        {
+                            return FirmwareIsGreaterThan(TelescopeList.RCX400_22I);
+                        }
+
                         return false;
                 }
             }
@@ -755,6 +764,8 @@ namespace ASCOM.Meade.net
                     return FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
                 case TelescopeList.LX200GPS:
                     return FirmwareIsGreaterThan(TelescopeList.LX200GPS_42G);
+                case TelescopeList.RCX400:
+                    return FirmwareIsGreaterThan(TelescopeList.RCX400_22I);
                 default:
                     return false;
             }
@@ -769,7 +780,7 @@ namespace ASCOM.Meade.net
         private bool FirmwareIsGreaterThan(string minVersion)
         {
             var currentVersion = SharedResourcesWrapper.FirmwareVersion;
-            var comparison = string.Compare(currentVersion, minVersion, StringComparison.Ordinal);
+            var comparison = string.Compare(currentVersion, minVersion, StringComparison.OrdinalIgnoreCase);
             return comparison >= 0;
         }
 
