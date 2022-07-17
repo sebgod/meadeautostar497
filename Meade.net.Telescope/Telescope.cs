@@ -579,33 +579,38 @@ namespace ASCOM.Meade.net
             LogMessage("SendTimeTimeToHandbox", $"SendDateTime: {_profileProperties.SendDateTime}");
             if (_profileProperties.SendDateTime)
             {
-                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                switch (SharedResourcesWrapper.ProductName)
                 {
-                    LogMessage("SendTimeTimeToHandbox",
-                        $"LX200GPS Detecting if daylight savings message on screen: {_profileProperties.SendDateTime}");
-                    var displayText = Action("Handbox", "readdisplay");
-                    LogMessage("SendTimeTimeToHandbox", $"Current Handset display: {displayText}");
-                    if (displayText.Contains("Daylight"))
-                    {
+                    case TelescopeList.LX200GPS:
+                    case TelescopeList.RCX400:
+                        {
                         LogMessage("SendTimeTimeToHandbox",
-                            $"LX200GPS Setting Date time and bypassing settings screens: {_profileProperties.SendDateTime}");
-                        BypassHandboxEntryForAutostarII();
+                            $"{SharedResourcesWrapper.ProductName} Detecting if daylight savings message on screen: {_profileProperties.SendDateTime}");
+                        var displayText = Action("Handbox", "readdisplay");
+                        LogMessage("SendTimeTimeToHandbox", $"Current Handset display: {displayText}");
+                        if (displayText.Contains("Daylight"))
+                        {
+                            LogMessage("SendTimeTimeToHandbox",
+                                $"{SharedResourcesWrapper.ProductName} Setting Date time and bypassing settings screens: {_profileProperties.SendDateTime}");
+                            BypassHandboxEntryForAutostarII();
+                        }
+                        else
+                        {
+                            LogMessage("SendTimeTimeToHandbox",
+                                $"{SharedResourcesWrapper.ProductName} Sending current date and time: {_profileProperties.SendDateTime}");
+                            SendCurrentDateTime();
+                            LogMessage("SendTimeTimeToHandbox",
+                                $"{SharedResourcesWrapper.ProductName} Attempting manual bypass of prompts: {_profileProperties.SendDateTime}");
+                            ApplySkipAutoStarPrompts();
+                        }
+
+                        break;
                     }
-                    else
-                    {
-                        LogMessage("SendTimeTimeToHandbox",
-                            $"LX200GPS Sending current date and time: {_profileProperties.SendDateTime}");
-                        SendCurrentDateTime();
-                        LogMessage("SendTimeTimeToHandbox",
-                            $"LX200GPS Attempting manual bypass of prompts: {_profileProperties.SendDateTime}");
+                    default:
+                        LogMessage("Connected Set", $"{SharedResourcesWrapper.ProductName} Attempting manual bypass of prompts");
                         ApplySkipAutoStarPrompts();
-                    }
-                }
-                else
-                {
-                    LogMessage("Connected Set", "Autostar Attempting manual bypass of prompts");
-                    ApplySkipAutoStarPrompts();
-                    SendCurrentDateTime();
+                        SendCurrentDateTime();
+                        break;
                 }
             }
         }
@@ -647,34 +652,42 @@ namespace ASCOM.Meade.net
 
         private void ApplySkipAutoStarPrompts()
         {
-            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS || SharedResourcesWrapper.ProductName == TelescopeList.RCX400) 
+            switch (SharedResourcesWrapper.ProductName)
             {
-                var displayText = Action("Handbox", "readdisplay");
-
-                if (displayText.Contains("Daylight"))
-                {
-                    for (var i = 0; i < 3; i++)
-                    {
-                        Action("Handbox", "enter");
-                        _utilities.WaitForMilliseconds(2000);
-                    }
-                }
-            }
-            else if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
-            {
-                var i = 10;
-                while (i > 0)
+                case TelescopeList.LX200GPS:
+                case TelescopeList.RCX400:
                 {
                     var displayText = Action("Handbox", "readdisplay");
-                    if (displayText.Contains("Align:"))
+
+                    if (displayText.Contains("Daylight"))
                     {
-                        i = 0;
-                        continue;
+                        for (var i = 0; i < 3; i++)
+                        {
+                            Action("Handbox", "enter");
+                            _utilities.WaitForMilliseconds(2000);
+                        }
                     }
 
-                    Action("Handbox", "mode");
-                    _utilities.WaitForMilliseconds(500);
-                    i--;
+                    break;
+                }
+                default:
+                {
+                    var i = 10;
+                    while (i > 0)
+                    {
+                        var displayText = Action("Handbox", "readdisplay");
+                        if (displayText.Contains("Align:"))
+                        {
+                            i = 0;
+                            continue;
+                        }
+
+                        Action("Handbox", "mode");
+                        _utilities.WaitForMilliseconds(500);
+                        i--;
+                    }
+
+                    break;
                 }
             }
         }
@@ -707,24 +720,18 @@ namespace ASCOM.Meade.net
                         return false;
                     case "pulse guiding":
                         return true;
-
                     default:
-                        if (SharedResourcesWrapper.ProductName == TelescopeList.Autostar497)
+                        switch (SharedResourcesWrapper.ProductName)
                         {
-                            return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
+                            case TelescopeList.Autostar497:
+                                return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
+                            case TelescopeList.LX200GPS:
+                                return true;
+                            case TelescopeList.RCX400:
+                                return FirmwareIsGreaterThan(TelescopeList.RCX400_22I);
+                            default:
+                                return false;
                         }
-
-                        if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
-                        {
-                            return true;
-                        }
-
-                        if (SharedResourcesWrapper.ProductName == TelescopeList.RCX400)
-                        {
-                            return FirmwareIsGreaterThan(TelescopeList.RCX400_22I);
-                        }
-
-                        return false;
                 }
             }
             catch (Exception ex)
@@ -746,12 +753,14 @@ namespace ASCOM.Meade.net
 
         private bool IsGuideRateSettingSupported()
         {
-            if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+            switch (SharedResourcesWrapper.ProductName)
             {
-                return true;
+                case TelescopeList.LX200GPS:
+                case TelescopeList.RCX400:
+                    return true;
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         private bool IsGwCommandSupported()
@@ -1230,14 +1239,16 @@ namespace ASCOM.Meade.net
                 {
                     CheckConnected("Altitude Get");
 
-                    if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                    switch (SharedResourcesWrapper.ProductName)
                     {
-                        return GetRealTelescopeAltitude();
+                        case TelescopeList.LX200GPS:
+                        case TelescopeList.RCX400:
+                            return GetRealTelescopeAltitude();
+                        default:
+                            var altAz = CalcAltAzFromTelescopeEqData();
+                            LogMessage("Altitude", $"{altAz.Altitude}");
+                            return altAz.Altitude;
                     }
-
-                    var altAz = CalcAltAzFromTelescopeEqData();
-                    LogMessage("Altitude", $"{altAz.Altitude}");
-                    return altAz.Altitude;
                 }
                 catch (Exception ex)
                 {
@@ -1394,14 +1405,16 @@ namespace ASCOM.Meade.net
                 {
                     CheckConnected("Azimuth Get");
 
-                    if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                    switch (SharedResourcesWrapper.ProductName)
                     {
-                        return GetRealTelescopeAzimuth();
+                        case TelescopeList.LX200GPS:
+                        case TelescopeList.RCX400:
+                            return GetRealTelescopeAzimuth();
+                        default:
+                            var altAz = CalcAltAzFromTelescopeEqData();
+                            LogMessage("Azimuth Get", $"{altAz.Azimuth}");
+                            return altAz.Azimuth;
                     }
-
-                    var altAz = CalcAltAzFromTelescopeEqData();
-                    LogMessage("Azimuth Get", $"{altAz.Azimuth}");
-                    return altAz.Azimuth;
                 }
                 catch (Exception ex)
                 {
@@ -1754,6 +1767,7 @@ namespace ASCOM.Meade.net
                 var unParkableScopes = new List<string>
                 {
                     TelescopeList.LX200GPS,
+                    TelescopeList.RCX400,
                     TelescopeList.LX200CLASSIC
                 };
 
@@ -3812,22 +3826,26 @@ namespace ASCOM.Meade.net
                 if (!AtPark)
                     return;
 
-                if (SharedResourcesWrapper.ProductName == TelescopeList.LX200GPS)
+                switch (SharedResourcesWrapper.ProductName)
                 {
+                    case TelescopeList.RCX400:
+                    case TelescopeList.LX200GPS:
+                        SharedResourcesWrapper.SendChar("I");
+                        //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
+                        //Returns: X once the handset restart has completed
 
-                    SharedResourcesWrapper.SendChar("I");
-                    //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
-                    //Returns: X once the handset restart has completed
-
-                    BypassHandboxEntryForAutostarII();
-                }
-                else if (SharedResourcesWrapper.ProductName == TelescopeList.LX200CLASSIC)
-                {
-                    if (SharedResourcesWrapper.RestartTracking)
+                        BypassHandboxEntryForAutostarII();
+                        break;
+                    case TelescopeList.LX200CLASSIC:
                     {
-                        LogMessage("Unpark", "Turning tracking on");
-                        Tracking = true;
-                        LogMessage("Unpark", "Turning tracking on completed");
+                        if (SharedResourcesWrapper.RestartTracking)
+                        {
+                            LogMessage("Unpark", "Turning tracking on");
+                            Tracking = true;
+                            LogMessage("Unpark", "Turning tracking on completed");
+                        }
+
+                        break;
                     }
                 }
 

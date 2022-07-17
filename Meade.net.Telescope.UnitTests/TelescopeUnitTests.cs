@@ -965,24 +965,16 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to telescope when trying to execute: CanSetGuideRates Get"));
         }
 
-        [Test]
-        public void CanSetGuideRates_Get_WhenConnectedToAutostar_ThenReturnsFalse()
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_31Ee, false)]
+        [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G, true )]
+        [TestCase(TelescopeList.RCX400, TelescopeList.RCX400_22I, true)]
+        public void CanSetGuideRates_Get_WhenConnectedToTelescope_ThenReturnsExpectedValue( string productName, string firmware, bool expectedResult)
         {
-            ConnectTelescope();
+            ConnectTelescope(productName, firmware);
 
             var result = _telescope.CanSetGuideRates;
 
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
-        public void CanSetGuideRates_Get_WhenConnectedToLX200GPS_ThenReturnsTrue()
-        {
-            ConnectTelescope(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G);
-
-            var result = _telescope.CanSetGuideRates;
-
-            Assert.That(result, Is.True);
+            Assert.That(result, Is.EqualTo(expectedResult));
         }
 
         [Test]
@@ -1195,6 +1187,7 @@ namespace Meade.net.Telescope.UnitTests
         }
 
         [TestCase(TelescopeList.LX200GPS, TelescopeList.LX200GPS_42G, true)]
+        [TestCase(TelescopeList.RCX400, TelescopeList.RCX400_22I, true)]
         [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, false)]
         public void CanUnpark_Get_ReturnsExpectedValue(string productVersion, string firmware, bool expectedResult)
         {
