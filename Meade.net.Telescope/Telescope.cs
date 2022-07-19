@@ -2294,8 +2294,11 @@ namespace ASCOM.Meade.net
                 if (IsSlewingToTarget())
                     throw new InvalidOperationException("Unable to PulseGuide whilst slewing to target.");
 
-                if (AlignmentMode == AlignmentModes.algAltAz)
-                    throw new InvalidOperationException("Unable to PulseGuide whilst in AltAz mode.");
+                if (!_isStarPatch)
+                {
+                    if (AlignmentMode == AlignmentModes.algAltAz)
+                        throw new InvalidOperationException("Unable to PulseGuide whilst in AltAz mode.");
+                }
 
                 SharedResourcesWrapper.IsGuiding = true;
                 try
