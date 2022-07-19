@@ -1701,6 +1701,57 @@ namespace Meade.net.Telescope.UnitTests
             _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
         }
 
+        [TestCase(GuideDirections.guideEast, 0, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideWest, 0, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideNorth, 0, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideSouth, 0, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideEast, 22161, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideWest, 22161, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideNorth, 22161, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideSouth, 22161, TelescopeList.LX200GPS, "4.2G")]
+        [TestCase(GuideDirections.guideEast, 0, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideWest, 0, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideNorth, 0, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideSouth, 0, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideEast, 22161, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideWest, 22161, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideNorth, 22161, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideSouth, 22161, TelescopeList.RCX400, "2.2I")]
+        [TestCase(GuideDirections.guideEast, 0, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideWest, 0, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideNorth, 0, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideSouth, 0, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideEast, 22161, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideWest, 22161, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideNorth, 22161, TelescopeList.Autostar497, "43EG")]
+        [TestCase(GuideDirections.guideSouth, 22161, TelescopeList.Autostar497, "43EG")]
+        public void PulseGuide_WhenConnectedInAlTAzModeAndUsingStarGPSFirmware_ThenSendsNewCommandsAndWaits(GuideDirections direction, int duration, string product, string firmware)
+        {            
+            ConnectTelescope(product, firmware, "AT0");
+
+            _telescope.PulseGuide(direction, duration);
+
+            string d = string.Empty;
+            switch (direction)
+            {
+                case GuideDirections.guideEast:
+                    d = "e";
+                    break;
+                case GuideDirections.guideWest:
+                    d = "w";
+                    break;
+                case GuideDirections.guideNorth:
+                    d = "n";
+                    break;
+                case GuideDirections.guideSouth:
+                    d = "s";
+                    break;
+            }
+
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind($"Mg{d}{duration:0000}", false));
+            _utilMock.Verify(x => x.WaitForMilliseconds(duration), Times.Once);
+        }
+
         [TestCase(GuideDirections.guideEast)]
         [TestCase(GuideDirections.guideWest)]
         [TestCase(GuideDirections.guideNorth)]
