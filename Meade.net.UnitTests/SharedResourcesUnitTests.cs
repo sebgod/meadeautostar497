@@ -38,7 +38,7 @@ namespace Meade.net.UnitTests
         public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage(bool raw, string expectedMessage)
         {
             var sendMessage = "Test";
-            SharedResources.SendBlind(sendMessage, raw);
+            SharedResources.SendBlind(_traceLoggerMock.Object, sendMessage, raw);
 
             _serialMock.Verify(x=> x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x=>x.Transmit(expectedMessage), Times.Once);

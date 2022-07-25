@@ -80,7 +80,7 @@ namespace ASCOM.Meade.net
         }
 
         //todo add code to ensure that there is a minimum gap between commands. 5ms as default.
-        public static void SendBlind(string message, bool raw = false)
+        public static void SendBlind(ITraceLogger traceLogger, string message, bool raw = false)
         {
             lock (LockObject)
             {

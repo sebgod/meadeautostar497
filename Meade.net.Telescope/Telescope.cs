@@ -128,7 +128,7 @@ namespace ASCOM.Meade.net
         }
 
         public Telescope(IUtil util, IUtilExtra utilExtra, IAstroUtils astroUtilities,
-            ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock, INOVAS31 novas) : base(
+            ISharedResourcesWrapper sharedResourcesWrapper, IAstroMaths astroMaths, IClock clock, INOVAS31 novas, ITraceLogger traceLogger) : base(
             sharedResourcesWrapper)
         {
             _clock = clock;
@@ -138,7 +138,7 @@ namespace ASCOM.Meade.net
             _astroMaths = astroMaths;
             _novas = novas;
 
-            Initialise(nameof(Telescope));
+            Initialise(nameof(Telescope), traceLogger);
         }
 
         //
@@ -213,81 +213,81 @@ namespace ASCOM.Meade.net
                         {
                             //Read the screen
                             case "readdisplay":
-                                var output = SharedResourcesWrapper.SendString("ED");
+                                var output = SharedResourcesWrapper.SendString(Tl, "ED");
                                 return output;
 
                             //top row of buttons
                             case "enter":
-                                SharedResourcesWrapper.SendBlind("EK13");
+                                SharedResourcesWrapper.SendBlind(Tl,"EK13");
                                 break;
                             case "longenter":
-                                SharedResourcesWrapper.SendBlind("EK10");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK10");
                                 break;
                             case "mode":
-                                SharedResourcesWrapper.SendBlind("EK9");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK9");
                                 break;
                             case "longmode":
-                                SharedResourcesWrapper.SendBlind("EK11");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK11");
                                 break;
                             case "goto":
-                                SharedResourcesWrapper.SendBlind("EK24");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK24");
                                 break;
                             case "longgoto":
-                                SharedResourcesWrapper.SendBlind("EK25");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK25");
                                 break;
                             case "0": //light and 0
-                                SharedResourcesWrapper.SendBlind("EK48");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK48");
                                 break;
                             case "1":
-                                SharedResourcesWrapper.SendBlind("EK49");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK49");
                                 break;
                             case "2":
-                                SharedResourcesWrapper.SendBlind("EK50");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK50");
                                 break;
                             case "3":
-                                SharedResourcesWrapper.SendBlind("EK51");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK51");
                                 break;
                             case "4":
-                                SharedResourcesWrapper.SendBlind("EK52");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK52");
                                 break;
                             case "5":
-                                SharedResourcesWrapper.SendBlind("EK53");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK53");
                                 break;
                             case "6":
-                                SharedResourcesWrapper.SendBlind("EK54");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK54");
                                 break;
                             case "7":
-                                SharedResourcesWrapper.SendBlind("EK55");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK55");
                                 break;
                             case "8":
-                                SharedResourcesWrapper.SendBlind("EK56");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK56");
                                 break;
                             case "9":
-                                SharedResourcesWrapper.SendBlind("EK57");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK57");
                                 break;
 
                             case "up":
-                                SharedResourcesWrapper.SendBlind("EK94");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK94");
                                 break;
                             case "down":
-                                SharedResourcesWrapper.SendBlind("EK118");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK118");
                                 break;
                             case "back":
                             case "left":
-                                SharedResourcesWrapper.SendBlind("EK87");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK87");
                                 break;
                             case "forward":
                             case "right":
-                                SharedResourcesWrapper.SendBlind("EK69");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK69");
                                 break;
                             case "scrollup":
-                                SharedResourcesWrapper.SendBlind("EK85");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK85");
                                 break;
                             case "scrolldown":
-                                SharedResourcesWrapper.SendBlind("EK68");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK68");
                                 break;
                             case "?":
-                                SharedResourcesWrapper.SendBlind("EK63");
+                                SharedResourcesWrapper.SendBlind(Tl, "EK63");
                                 break;
                             default:
                                 LogMessage("", "Action {0}, parameters {1} not implemented", actionName,
@@ -385,7 +385,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("CommandBlind");
                 // Call CommandString and return as soon as it finishes
                 //this.CommandString(command, raw);
-                SharedResourcesWrapper.SendBlind(command, raw);
+                SharedResourcesWrapper.SendBlind(Tl, command, raw);
                 // or
                 //throw new ASCOM.MethodNotImplementedException("CommandBlind");
                 // DO NOT have both these sections!  One or the other
@@ -404,7 +404,7 @@ namespace ASCOM.Meade.net
             {
                 LogMessage("CommandBool", $"raw: {raw} command {command}");
                 CheckConnected("CommandBool");
-                var result = SharedResourcesWrapper.SendBool(command, raw);
+                var result = SharedResourcesWrapper.SendBool(Tl, command, raw);
                 LogMessage("CommandBool", $"Completed: {result}");
                 return result;
             }
@@ -429,11 +429,11 @@ namespace ASCOM.Meade.net
                 // https://bitbucket.org/cjdskunkworks/meadeautostar497/issues/24/get-set-tracking#comment-60586901
                 if (command == (raw ? ":GW#" : "GW"))
                 {
-                    result = SharedResourcesWrapper.SendChars(command, raw, count: 3);
+                    result = SharedResourcesWrapper.SendChars(Tl, command, raw, count: 3);
                 }
                 else
                 {
-                    result = SharedResourcesWrapper.SendString(command, raw);
+                    result = SharedResourcesWrapper.SendString(Tl, command, raw);
                 }
 
                 LogMessage("CommandString", $"Completed: {result}");
@@ -453,8 +453,8 @@ namespace ASCOM.Meade.net
 
             // Clean up the tracelogger and util objects
             Tl.Enabled = false;
-            Tl.Dispose();
-            Tl = null;
+            //Tl.Dispose();
+            //Tl = null;
         }
 
         public bool Connected
@@ -805,7 +805,7 @@ namespace ASCOM.Meade.net
                     return;
                 }
 
-                var result = SharedResourcesWrapper.SendString("GZ");
+                var result = SharedResourcesWrapper.SendString(Tl, "GZ");
                 LogMessage("SetLongFormat", $"Get - Azimuth {result}");
                 //:GZ# Get telescope azimuth
                 //Returns: DDD*MM.T or DDD*MM'SS#
@@ -816,12 +816,12 @@ namespace ASCOM.Meade.net
                 if (SharedResourcesWrapper.IsLongFormat != setLongFormat)
                 {
                     _utilities.WaitForMilliseconds(500);
-                    SharedResourcesWrapper.SendBlind("U");
+                    SharedResourcesWrapper.SendBlind(Tl, "U");
                     //:U# Toggle between low/hi precision positions
                     //Low - RA displays and messages HH:MM.T sDD*MM
                     //High - Dec / Az / El displays and messages HH:MM: SS sDD*MM:SS
                     //    Returns Nothing
-                    result = SharedResourcesWrapper.SendString("GZ");
+                    result = SharedResourcesWrapper.SendString(Tl, "GZ");
                     SharedResourcesWrapper.IsLongFormat = result.Length > 6;
                     LogMessage("SetLongFormat", $"Get - Azimuth {result}");
                     if (SharedResourcesWrapper.IsLongFormat == setLongFormat)
@@ -844,7 +844,7 @@ namespace ASCOM.Meade.net
         private bool TogglePrecision()
         {
             LogMessage("TogglePrecision", "Toggling slewing precision");
-            var result = SharedResourcesWrapper.SendChar("P");
+            var result = SharedResourcesWrapper.SendChar(Tl,"P");
             //:P# Toggles High Precsion Pointing. When High precision pointing is enabled scope will first allow the operator to center a nearby bright star before moving to the actual target.
             //Returns: <string>
             //"HIGH PRECISION" Current setting after this command.
@@ -883,7 +883,7 @@ namespace ASCOM.Meade.net
             {
                 CheckConnectedAndValidateSite(site, "SelectSite");
 
-                SharedResourcesWrapper.SendBlind($"W{site}");
+                SharedResourcesWrapper.SendBlind(Tl, $"W{site}");
                 //:W<n>#
                 //Set current site to<n>, an ASCII digit in the range 1..4
                 //Returns: Nothing
@@ -951,7 +951,7 @@ namespace ASCOM.Meade.net
                         Resources.Telescope_GetSiteName_Site_out_of_range);
             }
 
-            var result = SharedResourcesWrapper.SendChar(command);
+            var result = SharedResourcesWrapper.SendChar(Tl, command);
             if (result != "1")
             {
                 throw new InvalidOperationException("Failed to set site name.");
@@ -965,22 +965,22 @@ namespace ASCOM.Meade.net
             switch (site)
             {
                 case 1:
-                    return SharedResourcesWrapper.SendString("GM");
+                    return SharedResourcesWrapper.SendString(Tl, "GM");
                 //:GM# Get Site 1 Name
                 //Returns: <string>#
                 //A '#' terminated string with the name of the requested site.
                 case 2:
-                    return SharedResourcesWrapper.SendString("GN");
+                    return SharedResourcesWrapper.SendString(Tl, "GN");
                 //:GN# Get Site 2 Name
                 //Returns: <string>#
                 //A '#' terminated string with the name of the requested site.
                 case 3:
-                    return SharedResourcesWrapper.SendString("GO");
+                    return SharedResourcesWrapper.SendString(Tl, "GO");
                 //:GO# Get Site 3 Name
                 //Returns: <string>#
                 //A '#' terminated string with the name of the requested site.
                 case 4:
-                    return SharedResourcesWrapper.SendString("GP");
+                    return SharedResourcesWrapper.SendString(Tl, "GP");
                 //:GP# Get Site 4 Name
                 //Returns: <string>#
                 //A '#' terminated string with the name of the requested site.
@@ -1016,11 +1016,11 @@ namespace ASCOM.Meade.net
                 {
                     //string name = "Short driver name - please customise";
 
-                    //var telescopeProduceName = _sharedResourcesWrapper.SendString("GVP");
+                    //var telescopeProduceName = _sharedResourcesWrapper.SendString(Tl, "GVP");
                     ////:GVP# Get Telescope Product Name
                     ////Returns: <string>#
 
-                    //var firmwareVersion = _sharedResourcesWrapper.SendString("GVN");
+                    //var firmwareVersion = _sharedResourcesWrapper.SendString(Tl, "GVN");
                     ////:GVN# Get Telescope Firmware Number
                     ////Returns: dd.d#
 
@@ -1049,7 +1049,7 @@ namespace ASCOM.Meade.net
                 CheckParked();
 
                 LogMessage("AbortSlew", "Aborting slew");
-                SharedResourcesWrapper.SendBlind("Q");
+                SharedResourcesWrapper.SendBlind(Tl, "Q");
                 //:Q# Halt all current slewing
                 //Returns:Nothing
 
@@ -1138,13 +1138,13 @@ namespace ASCOM.Meade.net
                     switch (value)
                     {
                         case AlignmentModes.algAltAz:
-                            SharedResourcesWrapper.SendBlind("AA");
+                            SharedResourcesWrapper.SendBlind(Tl, "AA");
                             //:AA# Sets telescope the AltAz alignment mode
                             //Returns: nothing
                             break;
                         case AlignmentModes.algPolar:
                         case AlignmentModes.algGermanPolar:
-                            SharedResourcesWrapper.SendBlind("AP");
+                            SharedResourcesWrapper.SendBlind(Tl, "AP");
                             //:AP# Sets telescope to Polar alignment mode
                             //Returns: nothing
                             break;
@@ -1174,7 +1174,7 @@ namespace ASCOM.Meade.net
             //D If scope is currently in the Downloader[Autostar II & Autostar]
             //L If scope in Land Mode
             //P If scope in Polar Mode
-            var alignmentString = SharedResourcesWrapper.SendChar(ack.ToString());
+            var alignmentString = SharedResourcesWrapper.SendChar(Tl, ack.ToString());
             return alignmentString;
         }
 
@@ -1265,7 +1265,7 @@ namespace ASCOM.Meade.net
                 CheckParked();
 
                 //firmware bug in 44Eg, :GA# is returning the dec, not the altitude!
-                var result = SharedResourcesWrapper.SendString("GA");
+                var result = SharedResourcesWrapper.SendString(Tl, "GA");
                 //:GA# Get Telescope Altitude
                 //Returns: sDD* MM# or sDD*MM'SS#
                 //The current scope altitude. The returned format depending on the current precision setting.
@@ -1430,7 +1430,7 @@ namespace ASCOM.Meade.net
             {
                 CheckParked();
 
-                var result = SharedResourcesWrapper.SendString("GZ");
+                var result = SharedResourcesWrapper.SendString(Tl, "GZ");
                 //:GZ# Get telescope azimuth
                 //Returns: DDD*MM#T or DDD*MM'SS#
                 //The current telescope Azimuth depending on the selected precision.
@@ -1787,7 +1787,7 @@ namespace ASCOM.Meade.net
                     {
                         CheckParked();
 
-                        var result = SharedResourcesWrapper.SendString("GD");
+                        var result = SharedResourcesWrapper.SendString(Tl, "GD");
                         //:GD# Get Telescope Declination.
                         //Returns: sDD*MM# or sDD*MM'SS#
                         //Depending upon the current precision setting for the telescope.
@@ -1972,7 +1972,7 @@ namespace ASCOM.Meade.net
             }
 
             LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString(CultureInfo.CurrentCulture)} arc seconds/second ({value.ToString(CultureInfo.CurrentCulture)} degrees/second)");
-            SharedResourcesWrapper.SendBlind($"Rg{value:00.0}");
+            SharedResourcesWrapper.SendBlind(Tl, $"Rg{value:00.0}");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
             //Rates when the CCD guider or handbox guider buttons are pressed when the guide rate is selected.Rate shall not exceed
@@ -2097,22 +2097,22 @@ namespace ASCOM.Meade.net
                         //do nothing, it's ok this time as we're halting the slew.
                         break;
                     case 1:
-                        SharedResourcesWrapper.SendBlind("RG");
+                        SharedResourcesWrapper.SendBlind(Tl, "RG");
                         //:RG# Set Slew rate to Guiding Rate (slowest)
                         //Returns: Nothing
                         break;
                     case 2:
-                        SharedResourcesWrapper.SendBlind("RC");
+                        SharedResourcesWrapper.SendBlind(Tl, "RC");
                         //:RC# Set Slew rate to Centering rate (2nd slowest)
                         //Returns: Nothing
                         break;
                     case 3:
-                        SharedResourcesWrapper.SendBlind("RM");
+                        SharedResourcesWrapper.SendBlind(Tl, "RM");
                         //:RM# Set Slew rate to Find Rate (2nd Fastest)
                         //Returns: Nothing
                         break;
                     case 4:
-                        SharedResourcesWrapper.SendBlind("RS");
+                        SharedResourcesWrapper.SendBlind(Tl, "RS");
                         //:RS# Set Slew rate to max (fastest)
                         //Returns: Nothing
                         break;
@@ -2132,21 +2132,21 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SharedResourcesWrapper.MovingPrimary = false;
-                                SharedResourcesWrapper.SendBlind("Qe");
+                                SharedResourcesWrapper.SendBlind(Tl, "Qe");
                                 //:Qe# Halt eastward Slews
                                 //Returns: Nothing
-                                SharedResourcesWrapper.SendBlind("Qw");
+                                SharedResourcesWrapper.SendBlind(Tl, "Qw");
                                 //:Qw# Halt westward Slews
                                 //Returns: Nothing
                                 break;
                             case ComparisonResult.Greater:
-                                SharedResourcesWrapper.SendBlind("Me");
+                                SharedResourcesWrapper.SendBlind(Tl, "Me");
                                 //:Me# Move Telescope East at current slew rate
                                 //Returns: Nothing
                                 SharedResourcesWrapper.MovingPrimary = true;
                                 break;
                             case ComparisonResult.Lower:
-                                SharedResourcesWrapper.SendBlind("Mw");
+                                SharedResourcesWrapper.SendBlind(Tl, "Mw");
                                 //:Mw# Move Telescope West at current slew rate
                                 //Returns: Nothing
                                 SharedResourcesWrapper.MovingPrimary = true;
@@ -2164,21 +2164,21 @@ namespace ASCOM.Meade.net
                                 }
 
                                 SharedResourcesWrapper.MovingSecondary = false;
-                                SharedResourcesWrapper.SendBlind("Qn");
+                                SharedResourcesWrapper.SendBlind(Tl, "Qn");
                                 //:Qn# Halt northward Slews
                                 //Returns: Nothing
-                                SharedResourcesWrapper.SendBlind("Qs");
+                                SharedResourcesWrapper.SendBlind(Tl, "Qs");
                                 //:Qs# Halt southward Slews
                                 //Returns: Nothing
                                 break;
                             case ComparisonResult.Greater:
-                                SharedResourcesWrapper.SendBlind("Mn");
+                                SharedResourcesWrapper.SendBlind(Tl, "Mn");
                                 //:Mn# Move Telescope North at current slew rate
                                 //Returns: Nothing
                                 SharedResourcesWrapper.MovingSecondary = true;
                                 break;
                             case ComparisonResult.Lower:
-                                SharedResourcesWrapper.SendBlind("Ms");
+                                SharedResourcesWrapper.SendBlind(Tl, "Ms");
                                 //:Ms# Move Telescope South at current slew rate
                                 //Returns: Nothing
                                 SharedResourcesWrapper.MovingSecondary = true;
@@ -2251,7 +2251,7 @@ namespace ASCOM.Meade.net
 
                 if (SharedResourcesWrapper.ProductName != TelescopeList.LX200CLASSIC)
                 {
-                    SharedResourcesWrapper.SendBlind("hP");
+                    SharedResourcesWrapper.SendBlind(Tl, "hP");
                     //:hP# Autostar, Autostar II and LX 16" Slew to Park Position
                     //Returns: Nothing
                 }
@@ -2333,7 +2333,7 @@ namespace ASCOM.Meade.net
                         }
 
                         LogMessage("PulseGuide", "Using new pulse guiding technique");
-                        SharedResourcesWrapper.SendBlind($"Mg{d}{duration:0000}");
+                        SharedResourcesWrapper.SendBlind(Tl, $"Mg{d}{duration:0000}");
                         //:MgnDDDD#
                         //:MgsDDDD#
                         //:MgeDDDD#
@@ -2419,7 +2419,7 @@ namespace ASCOM.Meade.net
                     {
                         CheckParked();
 
-                        var result = SharedResourcesWrapper.SendString("GR");
+                        var result = SharedResourcesWrapper.SendString(Tl, "GR");
                         //:GR# Get Telescope RA
                         //Returns: HH:MM.T# or HH:MM:SS#
                         //Depending which precision is set for the telescope
@@ -2627,7 +2627,7 @@ namespace ASCOM.Meade.net
                     {
                         CheckParked();
 
-                        var latitude = SharedResourcesWrapper.SendString("Gt");
+                        var latitude = SharedResourcesWrapper.SendString(Tl, "Gt");
                         //:Gt# Get Current Site Latitude
                         //Returns: sDD* MM#
                         //The latitude of the current site. Positive inplies North latitude.
@@ -2674,7 +2674,7 @@ namespace ASCOM.Meade.net
                     int m = Convert.ToInt32(60 * (absValue - d));
                     var commandString = $"St{sign}{d:00}*{m:00}";
 
-                    var result = SharedResourcesWrapper.SendChar(commandString);
+                    var result = SharedResourcesWrapper.SendChar(Tl, commandString);
                     //:StsDD*MM#
                     //Sets the current site latitude to sDD* MM#
                     //Returns:
@@ -2702,7 +2702,7 @@ namespace ASCOM.Meade.net
                     {
                         CheckParked();
 
-                        var longitude = SharedResourcesWrapper.SendString("Gg");
+                        var longitude = SharedResourcesWrapper.SendString(Tl, "Gg");
                         //:Gg# Get Current Site Longitude
                         //Returns: sDDD*MM#
                         //The current site Longitude. East Longitudes are expressed as negative
@@ -2753,7 +2753,7 @@ namespace ASCOM.Meade.net
 
                     var commandstring = $"Sg{d:000}*{m:00}";
 
-                    var result = SharedResourcesWrapper.SendChar(commandstring);
+                    var result = SharedResourcesWrapper.SendChar(Tl, commandstring);
                     //:SgDDD*MM#
                     //Set current site's longitude to DDD*MM an ASCII position string
                     //Returns:
@@ -2907,7 +2907,7 @@ namespace ASCOM.Meade.net
                     var command = $"Sa{s}{dms}";
 
                     LogMessage("TargetAltitude Set", $"{command}");
-                    var response = SharedResourcesWrapper.SendBool(command);
+                    var response = SharedResourcesWrapper.SendBool(Tl, command);
                     //:SasDD*MM#
                     //  Set target object altitude to sDD*MM# or sDD*MM’SS# [LX 16”, Autostar, Autostar II]
                     //    Returns:
@@ -2944,7 +2944,7 @@ namespace ASCOM.Meade.net
                     var command = $"Sz{dms}";
 
                     LogMessage("TargetAzimuth Set", $"{command}");
-                    var response = SharedResourcesWrapper.SendBool(command);
+                    var response = SharedResourcesWrapper.SendBool(Tl, command);
                     //:SzDDD*MM#
                     //  Sets the target Object Azimuth[LX 16” and Autostar II only]
                     //    Returns:
@@ -2978,7 +2978,7 @@ namespace ASCOM.Meade.net
                 {
                     case true:
                         LogMessage("DoSlewAsync", "Executing Polar slew");
-                        var response = SharedResourcesWrapper.SendChar("MS");
+                        var response = SharedResourcesWrapper.SendChar(Tl, "MS");
                         //:MS# Slew to Target Object
                         //Returns:
                         //0 Slew is Possible
@@ -3018,7 +3018,7 @@ namespace ASCOM.Meade.net
                         Retry(6, () =>
                         {
                             LogMessage("DoSlewAsync", "Executing Alt Az");
-                            var maResponse = SharedResourcesWrapper.SendChar("MA");
+                            var maResponse = SharedResourcesWrapper.SendChar(Tl, "MA");
                             //:MA# Autostar, LX 16", Autostar II - Slew to target Alt and Az
                             //Returns:
                             //0 - No fault
@@ -3242,7 +3242,7 @@ namespace ASCOM.Meade.net
             string result;
             try
             {
-                result = SharedResourcesWrapper.SendString("D");
+                result = SharedResourcesWrapper.SendString(Tl, "D");
             }
             catch (TimeoutException)
             {
@@ -3343,7 +3343,7 @@ namespace ASCOM.Meade.net
                 CheckConnected("SyncToTarget");
                 CheckParked();
 
-                var result = SharedResourcesWrapper.SendString("CM");
+                var result = SharedResourcesWrapper.SendString(Tl, "CM");
                 //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
                 //Returns:
                 //LX200's - a "#" terminated string with the name of the object that was synced.
@@ -3432,7 +3432,7 @@ namespace ASCOM.Meade.net
                     var command = $"Sd{s}{dms}";
 
                     LogMessage("TargetDeclination Set", $"{command}");
-                    var result = SharedResourcesWrapper.SendChar(command);
+                    var result = SharedResourcesWrapper.SendChar(Tl, command);
                     //:SdsDD*MM#
                     //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
                     //Returns:
@@ -3501,7 +3501,7 @@ namespace ASCOM.Meade.net
 
                     var command = $"Sr{hms}";
                     LogMessage("TargetRightAscension Set", $"{command}");
-                    var response = SharedResourcesWrapper.SendChar(command);
+                    var response = SharedResourcesWrapper.SendChar(Tl, command);
                     //:SrHH:MM.T#
                     //:SrHH:MM:SS#
                     //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
@@ -3564,7 +3564,7 @@ namespace ASCOM.Meade.net
                     if (!value)
                     {
                         SharedResources.AlignmentMode = AlignmentMode;
-                        SharedResourcesWrapper.SendBlind("AL");
+                        SharedResourcesWrapper.SendBlind(Tl, "AL");
                     }
                     else
                     {
@@ -3635,22 +3635,22 @@ namespace ASCOM.Meade.net
                     switch (value)
                     {
                         case DriveRates.driveSidereal:
-                            SharedResourcesWrapper.SendBlind("TQ");
+                            SharedResourcesWrapper.SendBlind(Tl, "TQ");
                             //:TQ# Selects sidereal tracking rate
                             //Returns: Nothing
                             break;
                         case DriveRates.driveLunar:
-                            SharedResourcesWrapper.SendBlind("TL");
+                            SharedResourcesWrapper.SendBlind(Tl, "TL");
                             //:TL# Set Lunar Tracking Rage
                             //Returns: Nothing
                             break;
                         case DriveRates.driveSolar:
-                            SharedResourcesWrapper.SendBlind("TS");
+                            SharedResourcesWrapper.SendBlind(Tl, "TS");
                             //    //:TS# Select Solar tracking rate. [LS Only]
                             //    //Returns: Nothing
                             break;
                         //case DriveRates.driveKing:
-                        //    SharedResourcesWrapper.SendBlind("TM");
+                        //    SharedResourcesWrapper.SendBlind(Tl, "TM");
                         //    //:TM# Select custom tracking rate [ no-op in Autostar II]
                         //    //Returns: Nothing
                         //    break;
@@ -3692,7 +3692,7 @@ namespace ASCOM.Meade.net
 
         private TimeSpan GetUtcCorrection()
         {
-            string utcOffSet = SharedResourcesWrapper.SendString("GG");
+            string utcOffSet = SharedResourcesWrapper.SendString(Tl, "GG");
             //:GG# Get UTC offset time
             //Returns: sHH# or sHH.H#
             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the
@@ -3723,11 +3723,11 @@ namespace ASCOM.Meade.net
 
                         var telescopeDateDetails = new TelescopeDateDetails
                         {
-                            TelescopeDate = SharedResourcesWrapper.SendString("GC"),
+                            TelescopeDate = SharedResourcesWrapper.SendString(Tl, "GC"),
                             //:GC# Get current date.
                             //Returns: MM/DD/YY#
                             //The current local calendar date for the telescope.
-                            TelescopeTime = SharedResourcesWrapper.SendString("GL"),
+                            TelescopeTime = SharedResourcesWrapper.SendString(Tl, "GL"),
                             //:GL# Get Local Time in 24 hour format
                             //Returns: HH:MM:SS#
                             //The Local Time in 24 - hour Format
@@ -3780,7 +3780,7 @@ namespace ASCOM.Meade.net
                     var localDateTime = value - utcCorrection;
 
                     string localStingCommand = $"SL{localDateTime:HH:mm:ss}";
-                    var timeResult = SharedResourcesWrapper.SendChar(localStingCommand);
+                    var timeResult = SharedResourcesWrapper.SendChar(Tl, localStingCommand);
                     //:SLHH:MM:SS#
                     //Set the local Time
                     //Returns:
@@ -3792,7 +3792,7 @@ namespace ASCOM.Meade.net
                     }
 
                     string localDateCommand = $"SC{localDateTime:MM/dd/yy}";
-                    var dateResult = SharedResourcesWrapper.SendChar(localDateCommand);
+                    var dateResult = SharedResourcesWrapper.SendChar(Tl, localDateCommand);
                     //:SCMM/DD/YY#
                     //Change Handbox Date to MM/DD/YY
                     //Returns: <D><string>
@@ -3833,7 +3833,7 @@ namespace ASCOM.Meade.net
                 {
                     case TelescopeList.RCX400:
                     case TelescopeList.LX200GPS:
-                        SharedResourcesWrapper.SendChar("I");
+                        SharedResourcesWrapper.SendChar(Tl, "I");
                         //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
                         //Returns: X once the handset restart has completed
 
@@ -3871,7 +3871,7 @@ namespace ASCOM.Meade.net
             var localDateTime = _clock.UtcNow - utcCorrection;
 
             //localDateTime: HH: mm: ss
-            var result = SharedResourcesWrapper.SendChar($"hI{localDateTime:yyMMddHHmmss}");
+            var result = SharedResourcesWrapper.SendChar(Tl, $"hI{localDateTime:yyMMddHHmmss}");
             //:hIYYMMDDHHMMSS#
             //Bypass handbox entry of daylight savings, date and time.Use the values supplied in this command.This feature is
             //intended to allow use of the Autostar II from permanent installations where GPS reception is not possible, such as within
