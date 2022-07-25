@@ -99,21 +99,25 @@ namespace ASCOM.Meade.net
         /// <param name="message"></param>
         /// <param name="raw"></param>
         /// <returns></returns>
-        public static string SendString(string message, bool raw = false)
+        public static string SendString(ITraceLogger traceLogger, string message, bool raw = false)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
 
                 var encodedMessage = raw ? message : $"#:{message}#";
+                traceLogger.LogMessage("SendString", $"Transmitting {encodedMessage}", false);
                 SharedSerial.Transmit(encodedMessage);
 
                 try
                 {
-                    return SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+                    var result = SharedSerial.ReceiveTerminated("#").TrimEnd('#');
+                    traceLogger.LogMessage("SendString", $"Received {result}", false);
+                    return result;
                 }
                 catch (COMException ex)
                 {
+                    traceLogger.LogIssue("SendString", ex.Message);
                     if (ex.Message.Contains("Timed out waiting for received data"))
                         throw new TimeoutException(ex.Message, ex);
 
@@ -122,34 +126,41 @@ namespace ASCOM.Meade.net
             }
         }
 
-        public static bool SendBool(string command, bool raw = false)
+        public static bool SendBool(ITraceLogger traceLogger, string command, bool raw = false)
         {
-            var result = SendChar(command, raw);
+            var result = SendChar(traceLogger, command, raw);
 
             return result == "1";
         }
 
-        public static string SendChar(string command, bool raw = false)
+        public static string SendChar(ITraceLogger traceLogger, string command, bool raw = false)
         {
-            return SendChars(command, raw, count: 1);
+            return SendChars(traceLogger, command, raw, count: 1);
         }
 
-        public static string SendChars(string command, bool raw = false, int count = 1)
+        public static string SendChars(ITraceLogger traceLogger, string command, bool raw = false, int count = 1)
         {
             lock (LockObject)
             {
                 SharedSerial.ClearBuffers();
 
                 var encodedMessage = raw ? command : $"#:{command}#";
+                traceLogger.LogMessage("SendChars", $"Transmitting {encodedMessage}", false);
                 SharedSerial.Transmit(encodedMessage);
 
                 try
                 {
-                    return SharedSerial.ReceiveCounted(count);
+                    var result = SharedSerial.ReceiveCounted(count);
+                    traceLogger.LogMessage("SendChars", $"Received {result}", false);
+                    return result;
                 }
-                catch (COMException ex) when (ex.Message.Contains("Timed out waiting for received data"))
+                catch (COMException ex)
                 {
-                    throw new TimeoutException(ex.Message, ex);
+                    traceLogger.LogIssue("SendString", ex.Message);
+                    if (ex.Message.Contains("Timed out waiting for received data"))
+                        throw new TimeoutException(ex.Message, ex);
+
+                    throw;
                 }
             }
         }
@@ -404,7 +415,7 @@ namespace ASCOM.Meade.net
                             //Test if communication is working.
                             try
                             {
-                                string utcOffSet = SendString("GG");
+                                string utcOffSet = SendString( traceLogger, "GG");
                             }
                             catch (Exception)
                             {
@@ -433,7 +444,7 @@ namespace ASCOM.Meade.net
                                 //SendBlind($"SB{newSpeedIndex}");
                                 try
                                 {
-                                    var speedChanged = SendChar($"SB{newSpeedIndex}");
+                                    var speedChanged = SendChar(traceLogger, $"SB{newSpeedIndex}");
                                     if (speedChanged == "1")
                                     {
                                         SharedSerial.Connected = false;
@@ -458,8 +469,8 @@ namespace ASCOM.Meade.net
                         
                         try
                         {
-                            ProductName = SendString("GVP");
-                            FirmwareVersion = SendString("GVN");
+                            ProductName = SendString(traceLogger, "GVP");
+                            FirmwareVersion = SendString(traceLogger, "GVN");
                         }
                         catch (Exception ex)
                         {
@@ -479,7 +490,7 @@ namespace ASCOM.Meade.net
 
                         try
                         {
-                            string utcOffSet = SendString("GG");
+                            string utcOffSet = SendString(traceLogger, "GG");
                             //:GG# Get UTC offset time
                             //Returns: sHH# or sHH.H#
                             //The number of decimal hours to add to local time to convert it to UTC. If the number is a whole number the

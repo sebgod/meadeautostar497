@@ -68,7 +68,7 @@ namespace ASCOM.Meade.net.Wrapper
 
         public string SendString(ITraceLogger traceLogger, string message, bool raw = false)
         {
-            return SharedResources.SendString(message, raw);
+            return SharedResources.SendString(traceLogger, message, raw);
         }
 
         public void SendBlind(ITraceLogger traceLogger, string message, bool raw = false)
@@ -78,17 +78,17 @@ namespace ASCOM.Meade.net.Wrapper
 
         public bool SendBool(ITraceLogger traceLogger, string command, bool raw = false)
         {
-            return SharedResources.SendBool(command, raw);
+            return SharedResources.SendBool(traceLogger, command, raw);
         }
 
         public string SendChar(ITraceLogger traceLogger, string message, bool raw = false)
         {
-            return SharedResources.SendChar(message, raw);
+            return SharedResources.SendChar(traceLogger, message, raw);
         }
 
         public string SendChars(ITraceLogger traceLogger, string message, bool raw = false, int count = 1)
         {
-            return SharedResources.SendChars(message, raw, count);
+            return SharedResources.SendChars(traceLogger, message, raw, count);
         }
 
         public string ReadTerminated()

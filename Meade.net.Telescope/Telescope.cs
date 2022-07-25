@@ -3597,10 +3597,10 @@ namespace ASCOM.Meade.net
 
                     DriveRates result;
 
-                    if (rateDouble.Equals(60.1))
+                    if (rateDouble.Between(59.9, 60.1))
                         result = DriveRates.driveSidereal;
-                    else if (rateDouble.Equals(60.0))
-                        result = DriveRates.driveSolar;
+                    //else if (rateDouble.Equals(60.0))
+                    //    result = DriveRates.driveSolar;
                     else if (rateDouble.Between(57.3, 58.9))
                         result = DriveRates.driveLunar;
                     else
