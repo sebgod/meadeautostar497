@@ -15,6 +15,7 @@ namespace Meade.net.Focuser.UnitTests
     {
         private Mock<IUtil> _utilMock;
         private Mock<ISharedResourcesWrapper> _sharedResourcesWrapperMock;
+        private Mock<ITraceLogger> _traceLoggerMock;
 
         private ProfileProperties _profileProperties;
 
@@ -40,11 +41,13 @@ namespace Meade.net.Focuser.UnitTests
 
             _utilMock = new Mock<IUtil>();
 
+            _traceLoggerMock = new Mock<ITraceLogger>();
+
             _sharedResourcesWrapperMock = new Mock<ISharedResourcesWrapper>();
 
             _sharedResourcesWrapperMock.Setup(x => x.ReadProfile()).Returns(() => _profileProperties);
 
-            _focuser = new ASCOM.Meade.net.Focuser(_utilMock.Object, _sharedResourcesWrapperMock.Object);
+            _focuser = new ASCOM.Meade.net.Focuser(_utilMock.Object, _sharedResourcesWrapperMock.Object, _traceLoggerMock.Object);
         }
 
         private void ConnectFocuser()
@@ -117,7 +120,7 @@ namespace Meade.net.Focuser.UnitTests
 
             _focuser.CommandBlind(expectedMessage, raw);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(expectedMessage, raw), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, expectedMessage, raw), Times.Once);
         }
 
         [Test]
@@ -134,13 +137,13 @@ namespace Meade.net.Focuser.UnitTests
         public void CommandBool_WhenConnected_ThenSendsExpectedMessage(bool raw)
         {
             string expectedMessage = "test blind Message";
-            _sharedResourcesWrapperMock.Setup(x => x.SendBool(expectedMessage, raw)).Returns(true);
+            _sharedResourcesWrapperMock.Setup(x => x.SendBool(_traceLoggerMock.Object, expectedMessage, raw)).Returns(true);
 
             ConnectFocuser();
 
             var result = _focuser.CommandBool(expectedMessage, raw);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBool(expectedMessage, raw), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBool(_traceLoggerMock.Object, expectedMessage, raw), Times.Once);
             Assert.That(result, Is.True);
         }
 
@@ -161,11 +164,11 @@ namespace Meade.net.Focuser.UnitTests
 
             ConnectFocuser();
 
-            _sharedResourcesWrapperMock.Setup(x => x.SendString(sendMessage, true)).Returns(() => expectedMessage);
+            _sharedResourcesWrapperMock.Setup(x => x.SendString(_traceLoggerMock.Object, sendMessage, true)).Returns(() => expectedMessage);
 
             var actualMessage = _focuser.CommandString(sendMessage, true);
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendString(sendMessage, true), Times.Once);
+            _sharedResourcesWrapperMock.Verify(x => x.SendString(_traceLoggerMock.Object, sendMessage, true), Times.Once);
             Assert.That(actualMessage, Is.EqualTo(expectedMessage));
         }
 
@@ -321,7 +324,7 @@ namespace Meade.net.Focuser.UnitTests
 
             _focuser.Halt();
 
-            _sharedResourcesWrapperMock.Verify(x => x.SendBlind("FQ", false), Times.AtLeastOnce);
+            _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "FQ", false), Times.AtLeastOnce);
         }
 
         [Test]
@@ -411,13 +414,13 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F+", false), Times.Never);
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Never);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F-", false), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F+", false), Times.Once);
             }
 
             _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
@@ -437,16 +440,16 @@ namespace Meade.net.Focuser.UnitTests
 
             if (position < 0)
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Never);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F+", false), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position)), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(_profileProperties.BacklashCompensation)), Times.Never);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(1));
             }
             else
             {
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F-", false), Times.Once);
-                _sharedResourcesWrapperMock.Verify(x => x.SendBlind("F+", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F-", false), Times.Once);
+                _sharedResourcesWrapperMock.Verify(x => x.SendBlind(_traceLoggerMock.Object, "F+", false), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(Math.Abs(position) + _profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(_profileProperties.BacklashCompensation), Times.Once);
                 _utilMock.Verify(x => x.WaitForMilliseconds(100), Times.Exactly(2));

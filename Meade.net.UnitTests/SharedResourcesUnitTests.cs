@@ -38,7 +38,7 @@ namespace Meade.net.UnitTests
         public void SendBlind_WhenCalled_Then_ClearsBuffersAndSendsMessage(bool raw, string expectedMessage)
         {
             var sendMessage = "Test";
-            SharedResources.SendBlind(sendMessage, raw);
+            SharedResources.SendBlind(_traceLoggerMock.Object, sendMessage, raw);
 
             _serialMock.Verify(x=> x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x=>x.Transmit(expectedMessage), Times.Once);
@@ -53,7 +53,7 @@ namespace Meade.net.UnitTests
 
             _serialMock.Setup(x => x.ReceiveCounted(1)).Returns(expectedResult);
 
-            var result = SharedResources.SendChar(command, raw);
+            var result = SharedResources.SendChar(_traceLoggerMock.Object, command, raw);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x => x.Transmit(expectedCommand), Times.Once);
@@ -70,7 +70,7 @@ namespace Meade.net.UnitTests
 
             _serialMock.Setup(x => x.ReceiveTerminated("#")).Returns(expectedResult);
 
-            var result = SharedResources.SendString(transmitMessage, includePrefix);
+            var result = SharedResources.SendString(_traceLoggerMock.Object, transmitMessage, includePrefix);
 
             _serialMock.Verify(x => x.ClearBuffers(), Times.Once);
             _serialMock.Verify(x => x.Transmit(expectedMessage), Times.Once);

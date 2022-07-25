@@ -13,11 +13,11 @@ namespace ASCOM.Meade.net.Wrapper
 
         string FirmwareVersion { get; }
         
-        string SendString(string message, bool raw = false);
-        void SendBlind(string message, bool raw = false);
-        bool SendBool(string command, bool raw = false);
-        string SendChar(string message, bool raw = false);
-        string SendChars(string message, bool raw = false, int count = 1);
+        string SendString(ITraceLogger traceLogger, string message, bool raw = false);
+        void SendBlind(ITraceLogger traceLogger, string message, bool raw = false);
+        bool SendBool(ITraceLogger traceLogger, string command, bool raw = false);
+        string SendChar(ITraceLogger traceLogger, string message, bool raw = false);
+        string SendChars(ITraceLogger traceLogger, string message, bool raw = false, int count = 1);
 
         string ReadTerminated();
 
@@ -66,29 +66,29 @@ namespace ASCOM.Meade.net.Wrapper
 
         public string FirmwareVersion => SharedResources.FirmwareVersion;
 
-        public string SendString(string message, bool raw = false)
+        public string SendString(ITraceLogger traceLogger, string message, bool raw = false)
         {
-            return SharedResources.SendString(message, raw);
+            return SharedResources.SendString(traceLogger, message, raw);
         }
 
-        public void SendBlind(string message, bool raw = false)
+        public void SendBlind(ITraceLogger traceLogger, string message, bool raw = false)
         {
-            SharedResources.SendBlind(message, raw);
+            SharedResources.SendBlind(traceLogger, message, raw);
         }
 
-        public bool SendBool(string command, bool raw = false)
+        public bool SendBool(ITraceLogger traceLogger, string command, bool raw = false)
         {
-            return SharedResources.SendBool(command, raw);
+            return SharedResources.SendBool(traceLogger, command, raw);
         }
 
-        public string SendChar(string message, bool raw = false)
+        public string SendChar(ITraceLogger traceLogger, string message, bool raw = false)
         {
-            return SharedResources.SendChar(message, raw);
+            return SharedResources.SendChar(traceLogger, message, raw);
         }
 
-        public string SendChars(string message, bool raw = false, int count = 1)
+        public string SendChars(ITraceLogger traceLogger, string message, bool raw = false, int count = 1)
         {
-            return SharedResources.SendChars(message, raw, count);
+            return SharedResources.SendChars(traceLogger, message, raw, count);
         }
 
         public string ReadTerminated()

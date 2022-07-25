@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using ASCOM.Meade.net.Wrapper;
 using ASCOM.Utilities;
+using ASCOM.Utilities.Interfaces;
 
 namespace ASCOM.Meade.net
 {
@@ -12,7 +13,7 @@ namespace ASCOM.Meade.net
         /// <summary>
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        protected static TraceLogger Tl;
+        protected static ITraceLogger Tl;
 
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -32,9 +33,9 @@ namespace ASCOM.Meade.net
             SharedResourcesWrapper = sharedResourcesWrapper;
         }
 
-        protected void Initialise(string className)
+        protected void Initialise(string className, ITraceLogger traceLogger = null)
         {
-            Tl = new TraceLogger("", $"Meade.Generic.{className}");
+            Tl = traceLogger ?? new TraceLogger("", $"Meade.Generic.{className}");
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
@@ -79,7 +80,7 @@ namespace ASCOM.Meade.net
         public static void LogMessage(string identifier, string message, params object[] args)
         {
             var msg = string.Format(message, args);
-            Tl.LogMessage(identifier, msg);
+            Tl.LogMessage(identifier, msg, false);
         }
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace ASCOM.Meade.net
         {
             get
             {
-                Tl.LogMessage("Description Get", DriverDescription);
+                Tl.LogMessage("Description Get", DriverDescription, false);
                 return DriverDescription;
             }
         }

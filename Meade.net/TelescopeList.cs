@@ -23,14 +23,22 @@
         // ReSharper disable once InconsistentNaming
         public const string LX200GPS = "LX2001";
 
-        public const string LX200GPS_42F = "4.2F";
+        public const string LX200GPS_42F = "4.2f";
         // ReSharper disable once InconsistentNaming
-        public const string LX200GPS_42G = "4.2G";
+        public const string LX200GPS_42G = "4.2g";
         #endregion
 
         #region LX200EMC
         // ReSharper disable once InconsistentNaming
         public const string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!
+        #endregion
+
+        #region RCX400
+        // ReSharper disable once InconsistentNaming
+        public const string RCX400 = "RCX400";
+
+        public const string RCX400_22I = "2.2i";
+
         #endregion
     }
 }
