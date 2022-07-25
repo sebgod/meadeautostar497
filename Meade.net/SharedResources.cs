@@ -86,6 +86,7 @@ namespace ASCOM.Meade.net
             {
                 SharedSerial.ClearBuffers();
                 var encodedMessage = raw ? message : $"#:{message}#";
+                traceLogger.LogMessage("SendBlind", $"Transmitting {encodedMessage}", false);
                 SharedSerial.Transmit(encodedMessage);
             }
         }
