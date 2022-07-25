@@ -1971,7 +1971,8 @@ namespace ASCOM.Meade.net
                 throw new InvalidValueException(propertyName, value.ToString(CultureInfo.CurrentCulture), $"{0.ToString(CultureInfo.CurrentCulture)} to {15.0417.ToString(CultureInfo.CurrentCulture)}\"/sec");
             }
 
-            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString(CultureInfo.CurrentCulture)} arc seconds/second ({value.ToString(CultureInfo.CurrentCulture)} degrees/second)");
+            var degreesPerSecond = ArcSecondPerSecondToDegreesPerSecond(value);
+            LogMessage($"{propertyName} Set", $"Setting new guiderate {value.ToString(CultureInfo.CurrentCulture)} arc seconds/second ({degreesPerSecond.ToString(CultureInfo.CurrentCulture)} degrees/second)");
             SharedResourcesWrapper.SendBlind(Tl, $"Rg{value:00.0}");
             //:RgSS.S#
             //Set guide rate to +/ -SS.S to arc seconds per second.This rate is added to or subtracted from the current tracking
