@@ -2678,22 +2678,27 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(DriveRates.driveSidereal));
         }
 
-        [TestCase(DriveRates.driveSidereal, "60.1")]
-        [TestCase(DriveRates.driveSidereal, "60.0")]
-        [TestCase(DriveRates.driveLunar, "57.9")]
-        [TestCase(DriveRates.driveSidereal, "+60.1")]
-        [TestCase(DriveRates.driveSidereal, "+60.0")]
-        [TestCase(DriveRates.driveLunar, "+57.9")]
-        [TestCase(DriveRates.driveLunar, "57.3")]
-        [TestCase(DriveRates.driveLunar, "58.9")]
-        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate)
+        [TestCase(DriveRates.driveSidereal, "60.1", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "60.0", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "57.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "+60.1", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "+60.0", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "+57.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "57.3", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "58.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "60.1", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "60.0", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "57.9", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "+60.1", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "+60.0", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "+57.9", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "57.3", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "58.9", "Autostar", "A4S4")]
+        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate, string productName, string firmware)
         {
             _siderealTrackingRate = trackingRate;
 
-            string productName = TelescopeList.Autostar497;
-            string firmwareVersion = TelescopeList.Autostar497_43Eg;
-
-            ConnectTelescope(productName, firmwareVersion);
+            ConnectTelescope(productName, firmware);
 
             _telescope.TrackingRate = rate;
 
