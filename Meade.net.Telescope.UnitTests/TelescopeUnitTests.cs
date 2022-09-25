@@ -1118,15 +1118,17 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.False);
         }
 
-        [TestCase(TelescopeList.Autostar497_30Ee, false)]
-        [TestCase(TelescopeList.Autostar497_43Eg, true)]
-        public void CanSetTracking_Get_ReturnsTrueIffGWCommandIsSupported(string firmware, bool supported)
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_30Ee, false)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, true)]
+        [TestCase(TelescopeList.Audiostar, TelescopeList.AudioStar_A4S4, true)]
+        [TestCase(TelescopeList.Audiostar, TelescopeList.AudioStar_A4S4, true)]
+        public void CanSetTracking_Get_ReturnsTrueIffGWCommandIsSupported(string product, string firmware, bool expectedSupported)
         {
-            ConnectTelescope(firmwareVersion: firmware);
+            ConnectTelescope(product,firmware);
 
             var result = _telescope.CanSetTracking;
 
-            Assert.That(result, Is.EqualTo(supported));
+            Assert.That(result, Is.EqualTo(expectedSupported));
         }
 
         [Test]
