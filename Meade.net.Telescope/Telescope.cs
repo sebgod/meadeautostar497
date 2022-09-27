@@ -1,5 +1,4 @@
 #define Telescope
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -769,6 +768,7 @@ namespace ASCOM.Meade.net
             {
                 case TelescopeList.LX200CLASSIC:
                     return false;
+                case TelescopeList.Audiostar:
                 case TelescopeList.Autostar497:
                     return FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
                 case TelescopeList.LX200GPS:

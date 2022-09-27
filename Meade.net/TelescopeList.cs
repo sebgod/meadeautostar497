@@ -4,6 +4,7 @@
     {
         #region Autostar 497/Audiostar
 
+        public const string Audiostar = "Audiostar"; //This is a synonym for Autostar which can be returned by some of the Audiostar firmware revisions A1f7
         public const string Autostar497 = "Autostar";
 
         //Autostar/Audiostar firmware revisions
@@ -14,6 +15,8 @@
         // ReSharper disable once InconsistentNaming
         public const string Autostar497_43Eg = "43Eg";
 
+        // ReSharper disable once InconsistentNaming
+        public const string AudioStar_A1F7 = "A1F7";
         // ReSharper disable once InconsistentNaming
         public const string AudioStar_A4S4 = "A4S4";
         #endregion

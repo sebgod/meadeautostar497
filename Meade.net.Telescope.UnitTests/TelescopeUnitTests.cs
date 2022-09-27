@@ -1118,15 +1118,17 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.False);
         }
 
-        [TestCase(TelescopeList.Autostar497_30Ee, false)]
-        [TestCase(TelescopeList.Autostar497_43Eg, true)]
-        public void CanSetTracking_Get_ReturnsTrueIffGWCommandIsSupported(string firmware, bool supported)
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_30Ee, false)]
+        [TestCase(TelescopeList.Autostar497, TelescopeList.Autostar497_43Eg, true)]
+        [TestCase(TelescopeList.Audiostar, TelescopeList.AudioStar_A4S4, true)]
+        [TestCase(TelescopeList.Audiostar, TelescopeList.AudioStar_A4S4, true)]
+        public void CanSetTracking_Get_ReturnsTrueIffGWCommandIsSupported(string product, string firmware, bool expectedSupported)
         {
-            ConnectTelescope(firmwareVersion: firmware);
+            ConnectTelescope(product,firmware);
 
             var result = _telescope.CanSetTracking;
 
-            Assert.That(result, Is.EqualTo(supported));
+            Assert.That(result, Is.EqualTo(expectedSupported));
         }
 
         [Test]
@@ -2678,22 +2680,27 @@ namespace Meade.net.Telescope.UnitTests
             Assert.That(result, Is.EqualTo(DriveRates.driveSidereal));
         }
 
-        [TestCase(DriveRates.driveSidereal, "60.1")]
-        [TestCase(DriveRates.driveSidereal, "60.0")]
-        [TestCase(DriveRates.driveLunar, "57.9")]
-        [TestCase(DriveRates.driveSidereal, "+60.1")]
-        [TestCase(DriveRates.driveSidereal, "+60.0")]
-        [TestCase(DriveRates.driveLunar, "+57.9")]
-        [TestCase(DriveRates.driveLunar, "57.3")]
-        [TestCase(DriveRates.driveLunar, "58.9")]
-        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate)
+        [TestCase(DriveRates.driveSidereal, "60.1", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "60.0", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "57.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "+60.1", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "+60.0", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "+57.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "57.3", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveLunar, "58.9", "Autostar", "43Eg")]
+        [TestCase(DriveRates.driveSidereal, "60.1", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "60.0", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "57.9", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "+60.1", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveSidereal, "+60.0", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "+57.9", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "57.3", "Autostar", "A4S4")]
+        [TestCase(DriveRates.driveLunar, "58.9", "Autostar", "A4S4")]
+        public void TrackingRate_Get_WhenConnected_ThenSendsCommandToTelescope(DriveRates rate, string trackingRate, string productName, string firmware)
         {
             _siderealTrackingRate = trackingRate;
 
-            string productName = TelescopeList.Autostar497;
-            string firmwareVersion = TelescopeList.Autostar497_43Eg;
-
-            ConnectTelescope(productName, firmwareVersion);
+            ConnectTelescope(productName, firmware);
 
             _telescope.TrackingRate = rate;
 
