@@ -3496,22 +3496,15 @@ namespace ASCOM.Meade.net
                     if (value >= 24)
                         throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
-                    var hms = SharedResourcesWrapper.IsLongFormat
-                        ? _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa)
-                        : _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',', '.');
-
-                    var command = $"Sr{hms}";
-                    LogMessage("TargetRightAscension Set", $"{command}");
-                    var response = SharedResourcesWrapper.SendChar(Tl, command);
-                    //:SrHH:MM.T#
-                    //:SrHH:MM:SS#
-                    //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
-                    //    Returns:
-                    //0 - Invalid
-                    //1 - Valid
-
-                    if (response == "0")
-                        throw new InvalidOperationException("Failed to set TargetRightAscension.");
+                    string hms;
+                    try
+                    {
+                        hms = SetTargetRightAscension(value, SharedResourcesWrapper.IsLongFormat);
+                    }
+                    catch(InvalidOperationException)
+                    {
+                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat);
+                    }
 
                     SharedResourcesWrapper.TargetRightAscension = _utilities.HMSToHours(hms);
                 }
@@ -3521,6 +3514,27 @@ namespace ASCOM.Meade.net
                     throw;
                 }
             }
+        }
+
+        private string SetTargetRightAscension(double value, bool useLongFormat)
+        {
+            var hms = useLongFormat
+                ? _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa)
+                : _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',', '.');
+
+            var command = $"Sr{hms}";
+            LogMessage("TargetRightAscension Set", $"{command}");
+            var response = SharedResourcesWrapper.SendChar(Tl, command);
+            //:SrHH:MM.T#
+            //:SrHH:MM:SS#
+            //Set target object RA to HH:MM.T or HH: MM: SS depending on the current precision setting.
+            //    Returns:
+            //0 - Invalid
+            //1 - Valid
+
+            if (response == "0")
+                throw new InvalidOperationException("Failed to set TargetRightAscension.");
+            return hms;
         }
 
         public bool Tracking
