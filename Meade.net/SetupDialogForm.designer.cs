@@ -91,6 +91,7 @@ namespace ASCOM.Meade.net
             this.label29 = new System.Windows.Forms.Label();
             this.txtApertureArea = new System.Windows.Forms.TextBox();
             this.label30 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSettleTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDatabits)).BeginInit();
@@ -419,7 +420,7 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label27, "label27");
             this.label27.Name = "label27";
             // 
-            // txtApetureDiameter
+            // txtApertureDiameter
             // 
             resources.ApplyResources(this.txtApertureDiameter, "txtApertureDiameter");
             this.txtApertureDiameter.Name = "txtApertureDiameter";
@@ -434,7 +435,7 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label29, "label29");
             this.label29.Name = "label29";
             // 
-            // txtApetureArea
+            // txtApertureArea
             // 
             resources.ApplyResources(this.txtApertureArea, "txtApertureArea");
             this.txtApertureArea.Name = "txtApertureArea";
@@ -444,10 +445,18 @@ namespace ASCOM.Meade.net
             resources.ApplyResources(this.label30, "label30");
             this.label30.Name = "label30";
             // 
+            // button1
+            // 
+            resources.ApplyResources(this.button1, "button1");
+            this.button1.Name = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // SetupDialogForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.label29);
             this.Controls.Add(this.txtApertureArea);
             this.Controls.Add(this.label30);
@@ -580,5 +589,6 @@ namespace ASCOM.Meade.net
         private Label label29;
         private TextBox txtApertureArea;
         private Label label30;
+        private Button button1;
     }
 }

@@ -376,6 +376,16 @@ namespace ASCOM.Meade.net
                 txtFocalLength.Text = txtFocalLength.Text.Remove(txtFocalLength.Text.Length - 1);
             }
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = "C:\\",
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
     }
 }
 
