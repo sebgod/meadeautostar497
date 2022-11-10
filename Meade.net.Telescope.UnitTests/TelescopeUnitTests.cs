@@ -2518,6 +2518,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, It.IsAny<string>(), false)).Returns("0");
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+            _utilMock.Setup(x => x.HoursToHM(It.IsAny<double>(), ":", "", It.IsAny<int>())).Returns("00:00:00.00");           
 
             ConnectTelescope();
 

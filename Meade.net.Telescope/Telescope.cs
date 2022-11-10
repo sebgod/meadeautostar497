@@ -3496,7 +3496,15 @@ namespace ASCOM.Meade.net
                     if (value >= 24)
                         throw new InvalidValueException("Right ascension value cannot be greater than 23:59:59");
 
-                    var hms = SetTargetRightAscension(value, SharedResourcesWrapper.IsLongFormat);
+                    string hms;
+                    try
+                    {
+                        hms = SetTargetRightAscension(value, SharedResourcesWrapper.IsLongFormat);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat);
+                    }
 
                     SharedResourcesWrapper.TargetRightAscension = _utilities.HMSToHours(hms);
                 }
