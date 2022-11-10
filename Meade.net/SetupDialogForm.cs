@@ -379,9 +379,11 @@ namespace ASCOM.Meade.net
 
         private void button1_Click(object sender, EventArgs e)
         {
+            string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
             Process.Start(new ProcessStartInfo()
             {
-                FileName = "C:\\",
+                FileName = $"{myDocumentsPath}\\ASCOM",
                 UseShellExecute = true,
                 Verb = "open"
             });
