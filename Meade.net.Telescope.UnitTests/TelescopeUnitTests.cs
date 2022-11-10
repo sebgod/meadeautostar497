@@ -2517,6 +2517,7 @@ namespace Meade.net.Telescope.UnitTests
         public void TargetRightAscension_Set_WhenTelescopeReportsInvalidRA_ThenThrowsException()
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, It.IsAny<string>(), false)).Returns("0");
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
 
             ConnectTelescope();
 
@@ -3113,6 +3114,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetDeclinationNotSet_ThenThrowsException()
         {
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 1;
@@ -3135,6 +3138,8 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetSet_ThenAttemptsSlew()
         {
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
@@ -3148,6 +3153,8 @@ namespace Meade.net.Telescope.UnitTests
         public void SlewToTargetAsync_WhenTargetSetAndSlewIsPossible_ThenAttemptsSlew()
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("0");
+
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
 
             ConnectTelescope();
 
@@ -3166,6 +3173,8 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("1");
             _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Below horizon");
 
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
@@ -3181,6 +3190,8 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("2");
             _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Above below elevation");
 
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+
             ConnectTelescope();
 
             _telescope.TargetRightAscension = 2;
@@ -3195,6 +3206,8 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("3");
             _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("the telescope can hit the tripod");
+
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
 
             ConnectTelescope();
 
@@ -3220,6 +3233,9 @@ namespace Meade.net.Telescope.UnitTests
             var preTestItterations = 1;
             var slewCounter = 0;
             var iterations = 10;
+
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
+
             _sharedResourcesWrapperMock.Setup(x => x.SendString(_traceLoggerMock.Object, "D", false)).Returns(() =>
             {
                 slewCounter++;
