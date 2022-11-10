@@ -3427,11 +3427,11 @@ namespace ASCOM.Meade.net
                     string dms;
                     try
                     {
-                        dms = SetTargetDeslination(value, SharedResourcesWrapper.IsLongFormat);
+                        dms = SetTargetDeclination(value, SharedResourcesWrapper.IsLongFormat);
                     }
                     catch (InvalidOperationException)
                     {
-                        dms = SetTargetDeslination(value, !SharedResourcesWrapper.IsLongFormat);
+                        dms = SetTargetDeclination(value, !SharedResourcesWrapper.IsLongFormat);
                     }
 
                     SharedResourcesWrapper.TargetDeclination = _utilities.DMSToDegrees(dms);
@@ -3444,7 +3444,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private string SetTargetDeslination(double value, bool useLongFormat)
+        private string SetTargetDeclination(double value, bool useLongFormat)
         {
             var dms = useLongFormat
                 ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
