@@ -3431,7 +3431,7 @@ namespace ASCOM.Meade.net
                     }
                     catch (InvalidOperationException)
                     {
-                        dms = SetTargetDeclination(value, !SharedResourcesWrapper.IsLongFormat);
+                        dms = SetTargetDeclination(value, !SharedResourcesWrapper.IsLongFormat); //todo add unit test for this scenario
                     }
 
                     SharedResourcesWrapper.TargetDeclination = _utilities.DMSToDegrees(dms);
@@ -3518,7 +3518,7 @@ namespace ASCOM.Meade.net
                     }
                     catch (InvalidOperationException)
                     {
-                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat);
+                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat); //todo add unit test for this scenario
                     }
 
                     SharedResourcesWrapper.TargetRightAscension = _utilities.HMSToHours(hms);
