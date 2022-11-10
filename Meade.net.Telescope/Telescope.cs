@@ -3424,25 +3424,14 @@ namespace ASCOM.Meade.net
                     if (value < -90)
                         throw new InvalidValueException("Declination cannot be less than -90.");
 
-                    var dms = SharedResourcesWrapper.IsLongFormat
-                        ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
-                        : _utilities.DegreesToDM(value, "*", "", _digitsDe);
-
-                    var s = value < 0 ? string.Empty : "+";
-
-                    var command = $"Sd{s}{dms}";
-
-                    LogMessage("TargetDeclination Set", $"{command}");
-                    var result = SharedResourcesWrapper.SendChar(Tl, command);
-                    //:SdsDD*MM#
-                    //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
-                    //Returns:
-                    //1 - Dec Accepted
-                    //0 - Dec invalid
-
-                    if (result == "0")
+                    string dms;
+                    try
                     {
-                        throw new InvalidOperationException("Target declination invalid");
+                        dms = SetTargetDeslination(value, SharedResourcesWrapper.IsLongFormat);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        dms = SetTargetDeslination(value, !SharedResourcesWrapper.IsLongFormat);
                     }
 
                     SharedResourcesWrapper.TargetDeclination = _utilities.DMSToDegrees(dms);
@@ -3453,6 +3442,32 @@ namespace ASCOM.Meade.net
                     throw;
                 }
             }
+        }
+
+        private string SetTargetDeslination(double value, bool useLongFormat)
+        {
+            var dms = useLongFormat
+                ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
+                : _utilities.DegreesToDM(value, "*", "", _digitsDe);
+
+            var s = value < 0 ? string.Empty : "+";
+
+            var command = $"Sd{s}{dms}";
+
+            LogMessage("TargetDeclination Set", $"{command}");
+            var result = SharedResourcesWrapper.SendChar(Tl, command);
+            //:SdsDD*MM#
+            //Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
+            //Returns:
+            //1 - Dec Accepted
+            //0 - Dec invalid
+
+            if (result == "0")
+            {
+                throw new InvalidOperationException("Target declination invalid");
+            }
+
+            return dms;
         }
 
         public double TargetRightAscension
