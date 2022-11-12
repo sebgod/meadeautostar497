@@ -3449,8 +3449,9 @@ namespace ASCOM.Meade.net
         {
             var dms = useLongFormat
                 ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
-                //: _utilities.DegreesToDM(value, "*", "", _digitsDe);
                 : _utilities.DegreesToDM(value, "*", "", 0);
+
+            dms = dms.TrimEnd(':');
 
             var s = value < 0 ? string.Empty : "+";
 
