@@ -1747,10 +1747,11 @@ namespace ASCOM.Meade.net
                 try
                 {
                     CheckConnected("CanUnpark");
+                    var canUnPark = IsUnparkable;
 
-                    LogMessage("CanUnpark", "Get - " + true);
+                    LogMessage("CanUnpark", "Get - " + canUnPark);
 
-                    return IsUnparkable;
+                    return canUnPark;
                 }
                 catch (Exception ex)
                 {
@@ -3448,7 +3449,8 @@ namespace ASCOM.Meade.net
         {
             var dms = useLongFormat
                 ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
-                : _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                //: _utilities.DegreesToDM(value, "*", "", _digitsDe);
+                : _utilities.DegreesToDMS(value, "*", ":", ":", 0);
 
             var s = value < 0 ? string.Empty : "+";
 
@@ -3535,7 +3537,8 @@ namespace ASCOM.Meade.net
         {
             var hms = useLongFormat
                 ? _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa)
-                : _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',', '.');
+                //: _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',', '.');
+                : _utilities.HoursToHMS(value, ":", ":", ":", 0);
 
             hms = hms.TrimEnd(':');
 
