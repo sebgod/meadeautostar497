@@ -3432,7 +3432,7 @@ namespace ASCOM.Meade.net
                     }
                     catch (InvalidOperationException)
                     {
-                        dms = SetTargetDeclination(value, !SharedResourcesWrapper.IsLongFormat); //todo add unit test for this scenario
+                        dms = SetTargetDeclination(value, !SharedResourcesWrapper.IsLongFormat);
                     }
 
                     SharedResourcesWrapper.TargetDeclination = _utilities.DMSToDegrees(dms);
@@ -3450,7 +3450,7 @@ namespace ASCOM.Meade.net
             var dms = useLongFormat
                 ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
                 //: _utilities.DegreesToDM(value, "*", "", _digitsDe);
-                : _utilities.DegreesToDMS(value, "*", ":", ".", 0);
+                : _utilities.DegreesToDM(value, "*", "", 0);
 
             var s = value < 0 ? string.Empty : "+";
 
@@ -3520,7 +3520,7 @@ namespace ASCOM.Meade.net
                     }
                     catch (InvalidOperationException)
                     {
-                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat); //todo add unit test for this scenario
+                        hms = SetTargetRightAscension(value, !SharedResourcesWrapper.IsLongFormat);
                     }
 
                     SharedResourcesWrapper.TargetRightAscension = _utilities.HMSToHours(hms);
@@ -3538,7 +3538,7 @@ namespace ASCOM.Meade.net
             var hms = useLongFormat
                 ? _utilities.HoursToHMS(value, ":", ":", ":", _digitsRa)
                 //: _utilities.HoursToHM(value, ":", "", _digitsRa).Replace(',', '.');
-                : _utilities.HoursToHMS(value, ":", ":", ".", 0);
+                : _utilities.HoursToHMS(value, ":", ".", "", 0);
 
             hms = hms.TrimEnd(':');
 
