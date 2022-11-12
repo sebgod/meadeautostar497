@@ -31,6 +31,13 @@
         public const string LX200GPS_42G = "4.2g";
         #endregion
 
+        #region LX800
+        public const string LX800 = "LX800";
+
+        public const string LX800_11i = "1.1i";
+
+        #endregion
+
         #region LX200EMC
         // ReSharper disable once InconsistentNaming
         public const string LX200CLASSIC = "LX200 Classic"; //GVP command is not supported!

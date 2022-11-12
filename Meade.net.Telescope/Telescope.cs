@@ -582,6 +582,7 @@ namespace ASCOM.Meade.net
                 {
                     case TelescopeList.LX200GPS:
                     case TelescopeList.RCX400:
+                    case TelescopeList.LX800:
                         {
                         LogMessage("SendTimeTimeToHandbox",
                             $"{SharedResourcesWrapper.ProductName} Detecting if daylight savings message on screen: {_profileProperties.SendDateTime}");
@@ -655,7 +656,8 @@ namespace ASCOM.Meade.net
             {
                 case TelescopeList.LX200GPS:
                 case TelescopeList.RCX400:
-                {
+                case TelescopeList.LX800:
+                    {
                     var displayText = Action("Handbox", "readdisplay");
 
                     if (displayText.Contains("Daylight"))
@@ -725,6 +727,7 @@ namespace ASCOM.Meade.net
                             case TelescopeList.Autostar497:
                                 return FirmwareIsGreaterThan(TelescopeList.Autostar497_31Ee);
                             case TelescopeList.LX200GPS:
+                            case TelescopeList.LX800:
                                 return true;
                             case TelescopeList.RCX400:
                                 return FirmwareIsGreaterThan(TelescopeList.RCX400_22I);
@@ -756,6 +759,7 @@ namespace ASCOM.Meade.net
             {
                 case TelescopeList.LX200GPS:
                 case TelescopeList.RCX400:
+                case TelescopeList.LX800:
                     return true;
                 default:
                     return false;
@@ -771,6 +775,8 @@ namespace ASCOM.Meade.net
                 case TelescopeList.Audiostar:
                 case TelescopeList.Autostar497:
                     return FirmwareIsGreaterThan(TelescopeList.Autostar497_43Eg);
+                case TelescopeList.LX800:
+                    return FirmwareIsGreaterThan(TelescopeList.LX800_11i);
                 case TelescopeList.LX200GPS:
                     return FirmwareIsGreaterThan(TelescopeList.LX200GPS_42G);
                 case TelescopeList.RCX400:
@@ -1243,6 +1249,7 @@ namespace ASCOM.Meade.net
                     {
                         case TelescopeList.LX200GPS:
                         case TelescopeList.RCX400:
+                        case TelescopeList.LX800:
                             return GetRealTelescopeAltitude();
                         default:
                             var altAz = CalcAltAzFromTelescopeEqData();
@@ -1409,6 +1416,7 @@ namespace ASCOM.Meade.net
                     {
                         case TelescopeList.LX200GPS:
                         case TelescopeList.RCX400:
+                        case TelescopeList.LX800:
                             return GetRealTelescopeAzimuth();
                         default:
                             var altAz = CalcAltAzFromTelescopeEqData();
@@ -1769,7 +1777,8 @@ namespace ASCOM.Meade.net
                 {
                     TelescopeList.LX200GPS,
                     TelescopeList.RCX400,
-                    TelescopeList.LX200CLASSIC
+                    TelescopeList.LX200CLASSIC,
+                    TelescopeList.LX800
                 };
 
                 return unParkableScopes.Contains(SharedResourcesWrapper.ProductName);
@@ -3869,6 +3878,7 @@ namespace ASCOM.Meade.net
                 {
                     case TelescopeList.RCX400:
                     case TelescopeList.LX200GPS:
+                    case TelescopeList.LX800:
                         SharedResourcesWrapper.SendChar(Tl, "I");
                         //:I# LX200 GPS Only - Causes the telescope to cease current operations and restart at its power on initialization.
                         //Returns: X once the handset restart has completed
