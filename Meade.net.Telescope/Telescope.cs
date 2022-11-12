@@ -3449,7 +3449,7 @@ namespace ASCOM.Meade.net
         {
             var dms = useLongFormat
                 ? _utilities.DegreesToDMS(value, "*", ":", ":", _digitsDe)
-                : _utilities.DegreesToDM(value, "*", "", 0);
+                : _utilities.DegreesToDMS(value, "*", ".", "", 0);
 
             dms = dms.TrimEnd(':');
 

@@ -1038,11 +1038,11 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void IsLongFormat_WhenHighPrecisionNotSupportedAndSecondConnectionMade_ThenDigitPrecisionValuesArePreserved()
         {
-            var ra = 12d;
-            var dec = 34d;
+            double ra = 12;
+            double dec = 34;
 
             _utilMock.Setup(x => x.HoursToHMS(ra, ":", ".", "", 0)).Returns(ra + "HM");
-            _utilMock.Setup(x => x.DegreesToDM(dec, "*", "", 0)).Returns(dec + "DM");
+            _utilMock.Setup(x => x.DegreesToDMS(dec, "*", ".", "", 0)).Returns(dec + "DM");
             _utilMock.Setup(x => x.DMSToDegrees(_testProperties.TelescopeRaResult)).Returns(_testProperties.Declination);
 
             ConnectTelescope(TelescopeList.LX200CLASSIC);
@@ -1065,7 +1065,7 @@ namespace Meade.net.Telescope.UnitTests
             secondTelescopeInstance.TargetDeclination = dec;
 
             _utilMock.Verify(x => x.HoursToHMS(ra, ":", ".", "", 0), Times.Exactly(2));
-            _utilMock.Verify(x => x.DegreesToDM(dec, "*", "", 0), Times.Exactly(2));
+            _utilMock.Verify(x => x.DegreesToDMS(dec, "*", ".", "", 0), Times.Exactly(2));
             _utilMock.Verify(x => x.HoursToHMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
             _utilMock.Verify(x => x.DegreesToDMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
         }
@@ -2390,7 +2390,8 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, It.IsAny<string>(), false)).Returns("0");
             _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("50*00");
-            _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("50*00");          
+            _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("50*00");
+            _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ".", "", It.IsAny<int>())).Returns("50*00");
 
             ConnectTelescope();
 
