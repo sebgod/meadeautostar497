@@ -1041,8 +1041,8 @@ namespace Meade.net.Telescope.UnitTests
             var ra = 12d;
             var dec = 34d;
 
-            _utilMock.Setup(x => x.HoursToHMS(ra, ":", ":", ":", 0)).Returns(ra + "HM");
-            _utilMock.Setup(x => x.DegreesToDMS(dec, "*", ":", ":", 0)).Returns(dec + "DM");
+            _utilMock.Setup(x => x.HoursToHMS(ra, ":", ":", ".", 0)).Returns(ra + "HM");
+            _utilMock.Setup(x => x.DegreesToDMS(dec, "*", ":", ".", 0)).Returns(dec + "DM");
             _utilMock.Setup(x => x.DMSToDegrees(_testProperties.TelescopeRaResult)).Returns(_testProperties.Declination);
 
             ConnectTelescope(TelescopeList.LX200CLASSIC);
@@ -1064,8 +1064,8 @@ namespace Meade.net.Telescope.UnitTests
             secondTelescopeInstance.TargetRightAscension = ra;
             secondTelescopeInstance.TargetDeclination = dec;
 
-            _utilMock.Verify(x => x.HoursToHMS(ra, ":", ":", ":", 0), Times.Exactly(2));
-            _utilMock.Verify(x => x.DegreesToDMS(dec, "*", ":", ":", 0), Times.Exactly(2));
+            _utilMock.Verify(x => x.HoursToHMS(ra, ":", ":", ".", 0), Times.Exactly(2));
+            _utilMock.Verify(x => x.DegreesToDMS(dec, "*", ":", ".", 0), Times.Exactly(2));
             _utilMock.Verify(x => x.HoursToHMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
             _utilMock.Verify(x => x.DegreesToDMS(It.IsAny<double>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 2), Times.Never);
         }
@@ -2517,7 +2517,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, It.IsAny<string>(), false)).Returns("0");
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
-            _utilMock.Setup(x => x.HoursToHM(It.IsAny<double>(), ":", "", It.IsAny<int>())).Returns("00:00:00.00");           
+            _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ".", 0)).Returns("00:00.00");           
 
             ConnectTelescope();
 
