@@ -2389,8 +2389,8 @@ namespace Meade.net.Telescope.UnitTests
         public void TargetDeclination_Set_WhenTelescopeReportsInvalidDec_ThenThrowsException()
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, It.IsAny<string>(), false)).Returns("0");
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
-            _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("50*00");
+            _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("50*00");          
 
             ConnectTelescope();
 
