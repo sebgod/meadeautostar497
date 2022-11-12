@@ -3126,7 +3126,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetRightAscensionNotSet_ThenThrowsException()
         {
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             ConnectTelescope();
@@ -3141,7 +3141,7 @@ namespace Meade.net.Telescope.UnitTests
         public void SlewToTargetAsync_WhenTargetSet_ThenAttemptsSlew()
         {
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             ConnectTelescope();
@@ -3159,7 +3159,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("0");
 
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             ConnectTelescope();
@@ -3180,7 +3180,7 @@ namespace Meade.net.Telescope.UnitTests
             _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("Below horizon");
 
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             ConnectTelescope();
@@ -3195,7 +3195,7 @@ namespace Meade.net.Telescope.UnitTests
         [Test]
         public void SlewToTargetAsync_WhenTargetBelowElevation_ThenThrowsException()
         {
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("2");
@@ -3217,7 +3217,7 @@ namespace Meade.net.Telescope.UnitTests
         {
             _sharedResourcesWrapperMock.Setup(x => x.SendChar(_traceLoggerMock.Object, "MS", false)).Returns("3");
             _sharedResourcesWrapperMock.Setup(x => x.ReadTerminated()).Returns("the telescope can hit the tripod");
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
@@ -3247,7 +3247,7 @@ namespace Meade.net.Telescope.UnitTests
             var slewCounter = 0;
             var iterations = 10;
 
-            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", ":", 0)).Returns("00*00");
+            _utilMock.Setup(x => x.DegreesToDM(It.IsAny<double>(), "*", "", 0)).Returns("00*00");
             _utilMock.Setup(x => x.DegreesToDMS(It.IsAny<double>(), "*", ":", ":", It.IsAny<int>())).Returns("00*00");
 
             _utilMock.Setup(x => x.HoursToHMS(It.IsAny<double>(), ":", ":", ":", It.IsAny<int>())).Returns("00:00:00.00");
