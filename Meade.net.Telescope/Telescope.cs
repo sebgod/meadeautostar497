@@ -3354,7 +3354,16 @@ namespace ASCOM.Meade.net
                 CheckConnected("SyncToTarget");
                 CheckParked();
 
-                var result = SharedResourcesWrapper.SendString(Tl, "CM");
+                string result;
+                try
+                {
+                    result = SharedResourcesWrapper.SendString(Tl, "CM");
+                }
+                catch (TimeoutException)
+                {
+                    //Some old autostars timeout as the result isn't properly returned, until the next successful command is sent!
+                    result = SharedResourcesWrapper.SendString(Tl, "Ga");
+                }
                 //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
                 //Returns:
                 //LX200's - a "#" terminated string with the name of the object that was synced.
