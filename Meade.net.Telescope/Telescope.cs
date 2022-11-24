@@ -3362,7 +3362,7 @@ namespace ASCOM.Meade.net
                 catch (TimeoutException)
                 {
                     //Some old autostars timeout as the result isn't properly returned, until the next successful command is sent!
-                    result = SharedResourcesWrapper.SendString(Tl, "Ga");
+                    result = GetAlignmentString();
                 }
                 //:CM# Synchronizes the telescope's position with the currently selected database object's coordinates.
                 //Returns:
