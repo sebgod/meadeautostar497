@@ -364,7 +364,7 @@ namespace Meade.net.Focuser.UnitTests
         {
             var result = _focuser.MaxIncrement;
 
-            Assert.That(result, Is.EqualTo(7000));
+            Assert.That(result, Is.EqualTo(30000));
         }
 
         [Test]
@@ -372,7 +372,7 @@ namespace Meade.net.Focuser.UnitTests
         {
             var result = _focuser.MaxStep;
 
-            Assert.That(result, Is.EqualTo(7000));
+            Assert.That(result, Is.EqualTo(30000));
         }
 
         [Test]
@@ -382,8 +382,8 @@ namespace Meade.net.Focuser.UnitTests
             Assert.That(exception.Message, Is.EqualTo("Not connected to focuser when trying to execute: Move"));
         }
 
-        [TestCase(-7001)]
-        [TestCase(7001)]
+        [TestCase(-30001)]
+        [TestCase(300001)]
         public void Move_WhenLargerThanMaxIncrement_ThenThrowsException(int position)
         {
             ConnectFocuser();

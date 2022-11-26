@@ -260,7 +260,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private readonly int _maxIncrement = 7000;
+        private readonly int _maxIncrement = 30000;
         public int MaxIncrement
         {
             get
@@ -270,7 +270,7 @@ namespace ASCOM.Meade.net
             }
         }
 
-        private readonly int _maxStep = 7000;
+        private readonly int _maxStep = 30000;
 
         public int MaxStep
         {
