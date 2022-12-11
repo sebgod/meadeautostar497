@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.0.0.0")]
-[assembly: AssemblyFileVersion("0.0.0.0")]
+[assembly: AssemblyVersion("1.3.0.352")]
+[assembly: AssemblyFileVersion("1.3.0.352")]
 
 [assembly: ComVisible(false)]

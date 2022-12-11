@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
 using System.Threading;
 using System.Windows.Forms;
 using ASCOM.DeviceInterface;
@@ -475,22 +474,6 @@ namespace ASCOM.Meade.net
         }
 
         #endregion
-
-        public static void Lock(Action action)
-        {
-            lock (LockObject)
-            {
-                action();
-            }
-        }
-
-        public static T Lock<T>(Func<T> func)
-        {
-            lock (LockObject)
-            {
-                return func();
-            }
-        }
 
         /// <summary>
         /// Skeleton of a hardware class, all this does is hold a count of the connections,
